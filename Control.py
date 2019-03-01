@@ -41,6 +41,9 @@ class Control:
     def has_selected_network(self):
         return self.selectedNetwork != ""
 
+    def get_notify(self, operation, value):
+        return 0
+
 
 if __name__ == '__main__':
     control = Control()

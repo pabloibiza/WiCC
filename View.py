@@ -11,8 +11,15 @@ import Control
 
 class View:
     control = ""
+    interfaces = ""
+    networks = ""
+
     def __init__(self,control):
         self.control = control
 
-    def notify(self, interfaces, networks):
-        return 0
+    def get_notify(self, interfaces, networks):
+        self.interfaces = interfaces
+        self.networks = networks
+
+    def send_notify(self, operation, value):
+        self.control.get_notify(operation, value)
