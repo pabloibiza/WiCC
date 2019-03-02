@@ -8,9 +8,12 @@
 
 import Operations
 import Model
+import ObjectList
+import Interface
 import time
 
-
+#import subprocess
+from subprocess import Popen, PIPE
 
 class Control:
     model = ""
@@ -18,19 +21,58 @@ class Control:
     selectedNetwork = ""
     operations = ""
 
+
     def __init__(self):
-        self.model = Model.__init__(self)
+        self.model = ""
+        #self.model = Model.__init__(self)
+
+    def check_software(self):
+        # check installed software
+        return 0
 
     def scan_interfaces(self):
+        command = "iwconfig"
+        process = Popen(command.split(), stdout=PIPE, stderr=PIPE)
+        output, error = process.communicate()
+        output = output.decode("utf-8")
+        error = error.decode("utf-8")
+        print("output: "+str(output))
+        print("error: "+str(error))
+
+        self.filter_interfaces(output)
+
         interfaces = ""  # get from command output
-        self.set_interfaces(interfaces)
+        #self.set_interfaces(interfaces)
+
+    def filter_interfaces(self, str_interfaces):
+        interfaces = str_interfaces.split('\n')
+        name = ""
+        address = ""
+        type = ""
+        power = 0
+        channel = 0
+
+        for line in interfaces:
+            if line[:1] != " ":
+                info = line.split(":")
+                name = info[0]
+                # print(name)
+            else:
+                info = line.split(':')
+                if info[0] == "inet" or info[0] == "ether":
+                    address = info[1]
+                # elif info[0] ==
+
+
+            new_interface = Interface.__init__()
+        #print(interfaces)
 
     def set_interfaces(self, interfaces):
         self.model.set_interfaces(interfaces)
 
     def scan_networks(self):
         networks = ""  # get from command
-        self.set_networks(networks)
+        #self.set_networks(networks)
 
     def set_networks(self, networks):
         self.model.set_networks(networks)
@@ -54,5 +96,5 @@ if __name__ == '__main__':
             control.scan_networks()
         else:
             control.scan_interfaces()
-
+        exit = True
         time.sleep(1)

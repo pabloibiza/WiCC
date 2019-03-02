@@ -17,7 +17,7 @@ class Model:
 
     def __init__(self, control):
         self.view = ""
-        # self.view = View.__init__(control)
+        self.view = View.__init__(control)
 
     def set_interfaces(self, interfaces):
         self.interfaces = interfaces
