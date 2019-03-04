@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
     WiCC (Wireless Cracking Camp)
     GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
