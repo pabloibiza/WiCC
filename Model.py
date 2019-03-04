@@ -9,10 +9,11 @@
 
 import View
 import ObjectList
+import Interface
 
 
 class Model:
-    interfaces = ""
+    # interfaces = ObjectList()
     networks = ""
     view = ""
 
@@ -22,6 +23,10 @@ class Model:
 
     def set_interfaces(self, interfaces):
         self.interfaces = interfaces
+
+    def add_interface(self, name, address, type, power, channel):
+        interface = Interface.__init__(name, address, type, power, channel)
+        self.interfaces.addObject(interface)
 
     def set_networks(self, networks):
         self.networks = networks

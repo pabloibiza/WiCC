@@ -35,79 +35,87 @@ class Control:
 
     def scan_interfaces(self):
         # ifconfig
-        #command = "ip -o link show | awk -F': ' '{print $2}'"
-        #process = Popen(command.split(), stdout=PIPE, stderr=PIPE)
-        ip = "ip -o link show"
-        awk = "awk -F': ' '{print $2}'"
-        ip_command = Popen(ip.split(), stdout=PIPE)
-        awk_command = Popen(["awk", "-F", "': '", "'{print $2}'"], stdin=ip_command.stdout, stdout=PIPE)
-
-        if_output, if_error = awk_command.communicate()
+        command = "ifconfig"
+        process = Popen(command.split(), stdout=PIPE, stderr=PIPE)
+        if_output, if_error = process.communicate()
         if_output = if_output.decode("utf-8")
         if_error = if_error.decode("utf-8")
         print("Interfaces:\noutput: "+str(if_output))
         print("error: "+str(if_error))
 
-        # iwconfig
-        w_command = "iw wlan0 info"
-        w_process = Popen(w_command.split(), stdout=PIPE, stderr=PIPE)
-        iw_output, iw_error = w_process.communicate()
-        iw_output = iw_output.decode("utf-8")
-        iw_error = iw_error.decode("utf-8")
-        print("\n\nWireless interfaces\noutput: " + str(iw_output))
-        print("error: " + str(iw_error))
+        if if_error != None:
+            w_interfaces = self.filter_interfaces(if_output)
+        else:
+            return
 
-        # self.filter_interfaces(if_output, iw_output)
+        # iw info
+        for w_interface in w_interfaces:
+            print("Wireless interface: " + w_interface)
 
-        interfaces = ""  # get from command output
-        #self.set_interfaces(interfaces)
+            # command: iw wlan0 info
+            w_process = Popen(['iw', w_interface, 'info'], stdout=PIPE, stderr=PIPE)
+            iw_output, iw_error = w_process.communicate()
+            iw_output = iw_output.decode("utf-8")
+            iw_error = iw_error.decode("utf-8")
+            print("\n\nWireless interfaces\noutput: " + str(iw_output))
+            print("error: " + str(iw_error))
 
-    def filter_interfaces(self, str_ifconfig, str_iwconfig):
+            iw_error = iw_error.split(':')
+            # if there is no error, it is a wireless interface
+            if iw_error[0] != "command failed":
+                print("W if: " + iw_output)
+                interface = self.filter_w_interface(iw_output)
+                # self.model.add_interface(interface)
+
+    # Filters the input for all network interfaces, returns array of names of all interfaces
+    def filter_interfaces(self, str_ifconfig):
         interfaces = str_ifconfig.split('\n')
-        w_interfaces = str_iwconfig.split('\n')
-        name = ""
-        address = ""
-        type = ""
-        power = 0
-        channel = 0
+        w_interfaces = []
 
         for line in interfaces:
             if line[:1] != " " and line[:1] != "":
                 info = line.split(":")
                 name = info[0]
                 print("Name: " + name)
-            else:
-                info = line.split(' ')
-                if info[0] == "inet" or info[0] == "ether":
-                    address = info[1]
-                    print("Address: " + address)
-                # elif info[0] ==
+                w_interfaces.append(name)
+        return w_interfaces
 
-            # if end of the interface
-            if False: #line[:] == "":
-                # filter wireless interface
-                for w_line in w_interfaces:
-                    if w_line == "no wireless extensions.":
-                        print ("no wireless extensions")
-                        break
-                    else:
-                        wireless = w_line.split(' ')
-                        if wireless[0] == name:
-                            print ("asdasd" + wireless[1])
-                        else:
-                            break
-                        interface = Interface(name, address, type, power, channel)
-                        self.set_interfaces(interface)
-                        name = ""
-                        address = ""
-                        type = ""
-                        power = 0
-                        channel = 0
+    # Filters the input for a single wireless interfaces, returns array with interface parameters
+    def filter_w_interface(self, str_iw_info):
+        # Interface: name address type power channel
+        interface = ["", "", "", 0, 0]
+        print("str_iw_info: " + str_iw_info)
+        str_iw_info = str_iw_info.split("\n")
+        print("str_iw_info: " + str_iw_info[0])
+        for lines in str_iw_info:
+            print("LINES: " + lines)
+            # if last line
+            if lines == "":
+                print("none")
                 break
 
+            # reads the data from each line
+            line = lines.split()
+            if line[0] == "Interface":
+                interface[0] = line[1]
+                print("name set")
+            elif line[0] == "addr":
+                interface[1] = line[1]
+                print("addr set")
+            elif line[0] == "type":
+                interface[2] = line[1]
+                print("type set")
+            elif line[0] == "txpower":
+                interface[3] = line[1]
+                print("power set")
+            elif line[0] == "channel":
+                interface[4] = line[1]
+                print("channel set")
+        print("******Interfaces:")
+        for i in interface:
+            print(i)
 
-            #new_interface = Interface.__init__()
-        #print(interfaces)
+        return interface
 
     def set_interfaces(self, interfaces):
         self.model.set_interfaces(interfaces)
