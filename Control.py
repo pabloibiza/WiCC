@@ -29,15 +29,52 @@ class Control:
         self.model = ""
         #self.model = Model.__init__(self)
 
+
+    def execute_command(self, command):
+        process = Popen(command, stdout=PIPE, stderr=PIPE)
+        return process.communicate()
+
     def check_software(self):
         # check installed software
-        return 0
+        # ifconfig, aircrack-ng, pyrit, cowpatty
+        software = [False, False, False, False]
+        some_missing = False
+        # ifconfig
+        out, err = self.execute_command(['which', 'ifconfig'])
+
+        if int.from_bytes(out, byteorder="big") != 0:
+            software[0] = True
+        else:
+            some_missing = True
+        # aircrack-ng
+        out, err = self.execute_command(['which', 'aircrack-ng'])
+
+        if int.from_bytes(out, byteorder="big") != 0:
+            software[1] = True
+        else:
+            some_missing = True
+
+        # pyrit
+        out, err = self.execute_command(['which', 'pyrit'])
+
+        if int.from_bytes(out, byteorder="big") != 0:
+            software[2] = True
+        else:
+            some_missing = True
+
+        # cowpatty
+        out, err = self.execute_command(['which', 'cowpatty'])
+
+        if int.from_bytes(out, byteorder="big") != 0:
+            software[3] = True
+        else:
+            some_missing = True
+
+        return software, some_missing
 
     def scan_interfaces(self):
         # ifconfig
-        command = "ifconfig"
-        process = Popen(command.split(), stdout=PIPE, stderr=PIPE)
-        if_output, if_error = process.communicate()
+        if_output, if_error = self.execute_command("ifconfig")
         if_output = if_output.decode("utf-8")
         if_error = if_error.decode("utf-8")
         print("Interfaces:\noutput: "+str(if_output))
@@ -53,8 +90,7 @@ class Control:
             print("Wireless interface: " + w_interface)
 
             # command: iw wlan0 info
-            w_process = Popen(['iw', w_interface, 'info'], stdout=PIPE, stderr=PIPE)
-            iw_output, iw_error = w_process.communicate()
+            iw_output, iw_error = self.execute_command(['iw', w_interface, 'info'])
             iw_output = iw_output.decode("utf-8")
             iw_error = iw_error.decode("utf-8")
             print("\n\nWireless interfaces\noutput: " + str(iw_output))
@@ -65,6 +101,7 @@ class Control:
             if iw_error[0] != "command failed":
                 print("W if: " + iw_output)
                 interface = self.filter_w_interface(iw_output)
+                self.selectedInterface = interface
                 # self.model.add_interface(interface)
 
     # Filters the input for all network interfaces, returns array of names of all interfaces
@@ -142,15 +179,32 @@ if __name__ == '__main__':
     # checks python version
     if sys.version_info[0] < 3:
         print("\n\tMust be executed with Python 3\n")
-        sys.exit(1, "Unsupported Python version")
+        sys.exit(1)
 
     control = Control()
     exit = False
 
+    software, some_missing = control.check_software()
+    if some_missing:
+        print("The required software is not installed:\n")
+        for i in range (0, len(software)):
+            if software[i] == False:
+                if i == 0:
+                    print("\t***Missing ifconfig")
+                elif i == 1:
+                    print("\t***Missing aircrack-ng")
+                elif i == 2:
+                    print("\t***Missing pyrit")
+                elif i == 3:
+                    print("\t***Missing cowpatty")
+
+        print("\n")
+        sys.exit(1)
+
     while not exit:
         if control.has_selected_interface():
             control.scan_networks()
+            exit = True
         else:
             control.scan_interfaces()
-        exit = True # delete after interfaces tests
         time.sleep(1)
