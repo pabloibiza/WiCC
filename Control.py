@@ -8,7 +8,7 @@
 """
 
 
-import sys
+import os, sys
 import Operations
 import Model
 import ObjectList
@@ -209,9 +209,14 @@ class Control:
 
 # Execute from command line, not from IDE
 if __name__ == '__main__':
+    # check root privilege
+    if os.getuid() != 0:
+        print("\n\tError: script must be executed as root\n")
+        sys.exit(1)
+
     # checks python version
     if sys.version_info[0] < 3:
-        print("\n\tMust be executed with Python 3\n")
+        print("\n\tError: Must be executed with Python 3\n")
         sys.exit(1)
 
     control = Control()
