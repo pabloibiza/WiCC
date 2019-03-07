@@ -15,8 +15,10 @@ import ObjectList
 import Interface
 import time
 
-#import subprocess
-from subprocess import Popen, PIPE, check_output, STDOUT
+import csv
+
+from subprocess import Popen, PIPE
+import threading
 
 class Control:
     model = ""
@@ -158,8 +160,39 @@ class Control:
         self.model.set_interfaces(interfaces)
 
     def scan_networks(self):
+        print("**********************\n\tScan networks\n")
+        tempfile = "/tmp/WiCC/net_scan"
+        self.execute_command(['rm', '-r', '/tmp/WiCC'])
+        out, err = self.execute_command(['mkdir', '/tmp/WiCC'])
+        print(err)
+        # change wireless interface name to the parameter one
+
+        # TEMPORARILY with a timeout
+        # MODIFY TO IMPLEMENT CONCURRENCY FOR PROTOTYPE 2
+        # execute airodump-ng with a timeout of 5 seconds
+        print("start airodump ...")
+        command = ['airodump-ng', 'wlan0', '--write', tempfile, '--output-format', 'csv']
+        thread = threading.Thread(target=self.execute_command, args=(command,))
+        thread.start()
+        thread.join(1)
+        #out, err = self.execute_command(['timeout', '1', 'airodump-ng', 'wlan0'])
+        print("finish airodump\n*********************\nstart network filtering")
+        self.filter_networks(tempfile)
+        #print(out)
+        #print(err)
         networks = ""  # get from command
         #self.set_networks(networks)
+
+    def filter_networks(self, tempfile):
+        tempfile += '-01.csv'
+
+        with open(tempfile, newline='') as csvfile:
+            print("csv open")
+            csv_reader = csv.reader(csvfile, delimiter=',')
+            print(csv_reader)
+            for row in csv_reader:
+                print(", ".join(row))
+
 
     def set_networks(self, networks):
         self.model.set_networks(networks)
@@ -204,7 +237,17 @@ if __name__ == '__main__':
     while not exit:
         if control.has_selected_interface():
             control.scan_networks()
-            exit = True
+            # Process(target=control.scan_networks()).start()
+            #scan_process.start()
+            #scan_process.join()
+            print("scanning networks")
+            print("filtering networks")
+            time.sleep(3)
+            while not control.selectedNetwork != "":
+                time.sleep(1)
+                print("**************************************************\n****************start filtering*******************\n**************************************************")
+                control.filter_networks("/tmp/WiCC/net_scan")
+            sys.exit(0)
         else:
             control.scan_interfaces()
         time.sleep(1)
