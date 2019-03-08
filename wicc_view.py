@@ -7,15 +7,13 @@
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
 
-import Control
-
 
 class View:
     control = ""
     interfaces = ""
     networks = ""
 
-    def __init__(self,control):
+    def __init__(self, control):
         self.control = control
 
     def get_notify(self, interfaces, networks):

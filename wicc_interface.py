@@ -22,7 +22,6 @@ class Interface:
         self.power = power
         self.channel = channel
 
-
     def __str__(self):
         output = ""
         output.__add__("Name: " + self.name)

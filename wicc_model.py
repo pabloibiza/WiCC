@@ -7,9 +7,9 @@
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
 
-import View
-import ObjectList
-import Interface
+from wicc_view import View
+from wicc_objectlist import ObjectList
+from wicc_interface import Interface
 
 
 class Model:
@@ -19,7 +19,7 @@ class Model:
 
     def __init__(self, control):
         self.view = ""
-        self.view = View.__init__(control)
+        self.view = View.__init__(control,control)
 
     def set_interfaces(self, interfaces):
         self.interfaces = interfaces
@@ -27,6 +27,7 @@ class Model:
     def add_interface(self, name, address, type, power, channel):
         interface = Interface.__init__(name, address, type, power, channel)
         self.interfaces.addObject(interface)
+        print("Added interface " + interface.get_name())
 
     def set_networks(self, networks):
         self.networks = networks
