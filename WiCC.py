@@ -2,6 +2,12 @@ from wicc_control import Control
 import sys
 import os
 import time
+import threading
+
+
+def start_view(control):
+    control.start_view()
+
 
 if __name__ == '__main__':
     # check root privilege
@@ -34,6 +40,13 @@ if __name__ == '__main__':
         sys.exit(1)
 
     exit = False
+
+    view_thread = threading.Thread(target=start_view, args=(control,))
+    view_thread.start()
+    view_thread.join(1)
+
+    print("finished executing view")
+
     while not exit:
         if control.has_selected_interface():
             control.scan_networks()

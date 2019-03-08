@@ -20,7 +20,7 @@ class Model:
 
     def __init__(self, control):
         self.view = ""
-        # self.view = View(control)
+        self.view = View(control)
 
     def set_interfaces(self, interfaces):
         self.interfaces = interfaces
@@ -112,7 +112,10 @@ class Model:
                                              authentication, power, beacons, ivs, lan_ip, essid, handshake, password))
             print("Model: added network " + id + " " + essid)
         self.networks = networks
-        self.notify_view()
+        # self.notify_view()
+
+    def start_view(self):
+        self.view.build_window()
 
     def notify_view(self):
         self.view.get_notify(self.interfaces, self.networks)

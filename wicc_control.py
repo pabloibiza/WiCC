@@ -32,6 +32,9 @@ class Control:
         self.model = ""
         self.model = Model(self)
 
+    def start_view(self):
+        self.model.start_view()
+
     @staticmethod
     def execute_command(command):
         """
