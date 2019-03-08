@@ -18,12 +18,15 @@ class View:
     interfaces = ""
     networks = ""
 
-    def __init__(self, control):
-        self.control = control
+    # AÑADIR control AL CONSTRUCTOR
+    def __init__(self):
+        # self.control = control
+        self.build_window()
 
+    def build_window(self):
         self.root = Tk()
-        self.root.geometry('600x230')
-        self.root.resizable(width=True, height=True)
+        self.root.geometry('820x260')
+        self.root.resizable(width=False, height=False)
         self.root.title('WiCC - Wifi Cracking Camp')
 
         # LABEL FRAME - ANALYSIS OPTIONS
@@ -60,11 +63,20 @@ class View:
                      ('Four', '4A', '4B'), ('Five', '5A', '5B'), ('Six', '6A', '6B'), ('Seven', '7A', '7B'))
 
         self.networks_treeview = ttk.Treeview(self.networks_labelframe)
-        self.networks_treeview["columns"] = ("one", "two")
-        self.networks_treeview.column("one", width=100)
-        self.networks_treeview.column("two", width=100)
-        self.networks_treeview.heading("one", text="coulmn A")
-        self.networks_treeview.heading("two", text="column B")
+        self.networks_treeview["columns"] = (
+        "essid_col", "channel_col", "encryption_col", "power_col", "wps_col", "clients_col")
+        self.networks_treeview.column("essid_col", width=100)
+        self.networks_treeview.column("channel_col", width=100)
+        self.networks_treeview.column("encryption_col", width=100)
+        self.networks_treeview.column("power_col", width=100)
+        self.networks_treeview.column("wps_col", width=100)
+        self.networks_treeview.column("clients_col", width=100)
+        self.networks_treeview.heading("essid_col", text="ESSID")
+        self.networks_treeview.heading("channel_col", text="CH")
+        self.networks_treeview.heading("encryption_col", text="ENC")
+        self.networks_treeview.heading("power_col", text="PWR")
+        self.networks_treeview.heading("wps_col", text="WPS")
+        self.networks_treeview.heading("clients_col", text="CLNTS")
         self.networks_treeview.pack(side=LEFT, fill=Y)
 
         self.scrollBar = Scrollbar(self.networks_labelframe)
@@ -84,17 +96,15 @@ class View:
 
         self.root.mainloop()
 
-        # Prints current paramers selected in both combo boxes (interface and encryption)
-
+    # Prints current paramers selected in both combo boxes (interface and encryption)
     def print_parameters(self, event):
         selected_parameters = (self.interfaceVar.get(), self.encryptionVar.get())
         print(selected_parameters)
 
-        # Prints the selected item from the treeview widget
-
+    # Prints the selected item from the treeview widget
     def print_selected(self):
-        currentItem = self.networks_treeview.focus()
-        print(self.networks_treeview.item(currentItem)['values'])
+        current_item = self.networks_treeview.focus()
+        print(self.networks_treeview.item(current_item)['values'])
 
     def get_notify(self, interfaces, networks):
         self.interfaces = interfaces
