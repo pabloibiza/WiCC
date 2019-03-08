@@ -18,10 +18,9 @@ class View:
     interfaces = ""
     networks = ""
 
-    # AÑADIR control AL CONSTRUCTOR
-    def __init__(self):
-        # self.control = control
-        self.build_window()
+
+    def __init__(self, control):
+        self.control = control
 
     def build_window(self):
         self.root = Tk()
@@ -40,8 +39,8 @@ class View:
         # COMBO BOX - NETWORK INTERFACES
         self.interfaceVar = StringVar()
         self.interfaces_combobox = ttk.Combobox(self.analysis_labelframe, textvariable=self.interfaceVar)
-        interfaces = ('wlan0', 'wlan1', 'wlan2')
-        self.interfaces_combobox['values'] = interfaces
+        #interfaces = ('wlan0', 'wlan1', 'wlan2')
+        self.interfaces_combobox['values'] = self.interfaces
         self.interfaces_combobox.current(1)
         self.interfaces_combobox.bind("<<ComboboxSelected>>", self.print_parameters)
         self.interfaces_combobox.pack(side=LEFT)
@@ -109,16 +108,6 @@ class View:
     def get_notify(self, interfaces, networks):
         self.interfaces = interfaces
         self.networks = networks
-
     def send_notify(self, operation, value):
         # self.control.get_notify(operation, value)
         return
-
-
-def main():
-    mi_app = View()
-    return 0
-
-
-if __name__ == '__main__':
-    main()
