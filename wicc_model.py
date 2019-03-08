@@ -15,7 +15,7 @@ from wicc_network import Network
 
 class Model:
     interfaces = ObjectList()
-    networks = ""
+    networks = ObjectList()
     view = ""
 
     def __init__(self, control):
@@ -106,17 +106,15 @@ class Model:
             elif id == 'BSSID':
                 print("bssid and break")
 
-
-
             list_networks.add_object(Network(id, bssid, first_seen, last_seen, channel, speed, privacy, cipher,
                                              authentication, power, beacons, ivs, lan_ip, essid, handshake, password))
             print("Model: added network " + id + " " + essid)
-        self.networks = networks
+        self.networks = list_networks
         # self.notify_view()
 
     def start_view(self):
         self.view.build_window()
 
     def notify_view(self):
-        self.view.get_notify(self.interfaces, self.networks)
+        self.view.get_notify(self.interfaces.get_list(), self.networks.get_list())
 
