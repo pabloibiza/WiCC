@@ -12,6 +12,9 @@ class ObjectList:
 
     objects_list = []
 
+    def __init__(self):
+        return
+
     def add_object(self, object):
         if not self.is_on_the_list(object):
             self.objects_list.append(object)
@@ -23,4 +26,7 @@ class ObjectList:
         return False
 
     def get_list(self):
-        return self.objects_list
+        list = []
+        for object in self.objects_list:
+            list.append(object.get_list())
+        return list

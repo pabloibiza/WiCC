@@ -12,6 +12,7 @@ from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
     Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
     HORIZONTAL, END, FALSE, IntVar, StringVar, messagebox as box
 
+
 class View:
     control = ""
     interfaces = ""
@@ -95,13 +96,14 @@ class View:
         currentItem = self.networks_treeview.focus()
         print(self.networks_treeview.item(currentItem)['values'])
 
-
     def get_notify(self, interfaces, networks):
         self.interfaces = interfaces
         self.networks = networks
 
     def send_notify(self, operation, value):
-        self.control.get_notify(operation, value)
+        # self.control.get_notify(operation, value)
+        return
+
 
 def main():
     mi_app = View()

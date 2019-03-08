@@ -30,7 +30,7 @@ class Control:
 
     def __init__(self):
         self.model = ""
-        self.model = Model.__init__(self, self)
+        self.model = Model(self)
 
     @staticmethod
     def execute_command(command):
@@ -119,7 +119,7 @@ class Control:
                 print("W if: " + iw_output)
                 interface = self.filter_w_interface(iw_output)
                 self.selectedInterface = interface
-                # self.set_interfaces(Interface(interface[0], interface[1], interface[2], interface[3], interface[4]))
+                self.set_interfaces(interface)
                 # self.model.add_interface(interface)
 
     @staticmethod
@@ -182,13 +182,13 @@ class Control:
 
         return interface
 
-    def set_interfaces(self, interfaces):
+    def set_interfaces(self, interface):
         """
         Using the model instance, sets the interfaces passed as parameter
         :param interfaces: list of instances of the object Interface
         :return: none
         """
-        self.model.set_interfaces(interfaces)
+        self.model.add_interface(interface[0], interface[1], interface[2], interface[3], interface[4])
 
     def scan_networks(self):
         """
@@ -211,27 +211,32 @@ class Control:
         thread.join(1)
         # out, err = self.execute_command(['timeout', '1', 'airodump-ng', 'wlan0'])
         print("finish airodump\n*********************\nstart network filtering")
-        self.filter_networks(tempfile)
         # print(out)
         # print(err)
         networks = ""  # get from command
         # self.set_networks(networks)
 
-    @staticmethod
-    def filter_networks(tempfile):
+    def filter_networks(self):
         """
         Filters the input from the csv file (open the file and reads it)
         :param tempfile: directory for the csv file of the network scan
         :return: none
         """
-        tempfile += '-01.csv'
+        tempfile = "/tmp/WiCC/net_scan"
+        #networks = self.filter_networks(tempfile)
+        print("----set networks---")
 
+
+        tempfile += '-01.csv'
+        networks = []
+        first_empty_line = False
         with open(tempfile, newline='') as csvfile:
             print("csv open")
             csv_reader = csv.reader(csvfile, delimiter=',')
             print(csv_reader)
             for row in csv_reader:
-                print(", ".join(row))
+                networks.append(row)
+        self.set_networks(networks)
 
     def set_networks(self, networks):
         """
@@ -239,6 +244,9 @@ class Control:
         :param networks: list of instances of objects from the class Network
         :return: none
         """
+        #for network in networks:
+        #    for pair in network:
+
         self.model.set_networks(networks)
 
     def has_selected_interface(self):

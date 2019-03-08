@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 time.sleep(1)
                 print("**************************************************\n****************start filtering"
                       "*******************\n**************************************************")
-                control.filter_networks("/tmp/WiCC/net_scan")
+                control.filter_networks()
             sys.exit(0)
         else:
             control.scan_interfaces()

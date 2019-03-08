@@ -63,4 +63,24 @@ class Network:
         output.__add__(" Password: " + self.password)
         return output
 
+    def get_list(self):
+        list = []
+        list.append(self.id)
+        list.append(self.bssid)
+        list.append(self.first_seen)
+        list.append(self.last_seen)
+        list.append(self.channel)
+        list.append(self.speed)
+        list.append(self.privacy)
+        list.append(self.cipher)
+        list.append(self.authentication)
+        list.append(self.power)
+        list.append(self.beacons)
+        list.append(self.ivs)
+        list.append(self.lan_ip)
+        list.append(self.essid)
+        list.append(self.handshake)
+        list.append(self.password)
+        return list
+
     # getters and setters

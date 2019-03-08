@@ -60,3 +60,12 @@ class Interface:
 
     def set_channel(self, channel):
         self.channel = channel
+
+    def get_list(self):
+        list = []
+        list.append(self.name)
+        list.append(self.address)
+        list.append(self.type)
+        list.append(self.power)
+        list.append(self.channel)
+        return list
