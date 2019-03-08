@@ -13,6 +13,7 @@ import Operations
 import Model
 import ObjectList
 import Interface
+import Network
 import time
 
 import csv
@@ -20,23 +21,32 @@ import csv
 from subprocess import Popen, PIPE
 import threading
 
+
 class Control:
     model = ""
     selectedInterface = ""
     selectedNetwork = ""
     operations = ""
 
-
     def __init__(self):
         self.model = ""
-        #self.model = Model.__init__(self)
+        # self.model = Model.__init__(self)
 
-
-    def execute_command(self, command):
+    @staticmethod
+    def execute_command(command):
+        """
+        Static method to execute a defined command.
+        :param command: parameters for the command. Should be divided into an array. EX: ['ls, '-l']
+        :return: returns both stdout and stderr from the command execution
+        """
         process = Popen(command, stdout=PIPE, stderr=PIPE)
         return process.communicate()
 
     def check_software(self):
+        """
+        Check whether the required software is installed or not.
+        :return: list of software (array of booleans), and a boolean to say if any is missing
+        """
         # check installed software
         # ifconfig, aircrack-ng, pyrit, cowpatty
         software = [False, False, False, False]
@@ -75,6 +85,11 @@ class Control:
         return software, some_missing
 
     def scan_interfaces(self):
+        """
+        Scans all network interfaces. After filtering them (method filter_interfaces,
+        scans available wireless interfaces. Finally calls the method filter_w_interface
+        :return: none
+        """
         # ifconfig
         if_output, if_error = self.execute_command("ifconfig")
         if_output = if_output.decode("utf-8")
@@ -82,7 +97,7 @@ class Control:
         print("Interfaces:\noutput: "+str(if_output))
         print("error: "+str(if_error))
 
-        if if_error != None:
+        if if_error is not None:
             w_interfaces = self.filter_interfaces(if_output)
         else:
             return
@@ -106,8 +121,13 @@ class Control:
                 self.selectedInterface = interface
                 # self.model.add_interface(interface)
 
-    # Filters the input for all network interfaces, returns array of names of all interfaces
-    def filter_interfaces(self, str_ifconfig):
+    @staticmethod
+    def filter_interfaces(str_ifconfig):
+        """
+        Filters the input for all network interfaces
+        :param str_ifconfig: string taken from the command execution stdout
+        :return: array of names of all network interfaces
+        """
         interfaces = str_ifconfig.split('\n')
         w_interfaces = []
 
@@ -119,8 +139,13 @@ class Control:
                 w_interfaces.append(name)
         return w_interfaces
 
-    # Filters the input for a single wireless interfaces, returns array with interface parameters
-    def filter_w_interface(self, str_iw_info):
+    @staticmethod
+    def filter_w_interface(str_iw_info):
+        """
+        Filters the input for a single wireless interface. First checks if the interface is wireless
+        :param str_iw_info: stdout for the command to see the wireless interfaces
+        :return: array with the Interface parameters
+        """
         # Interface: name address type power channel
         interface = ["", "", "", 0, 0]
         print("str_iw_info: " + str_iw_info)
@@ -157,9 +182,20 @@ class Control:
         return interface
 
     def set_interfaces(self, interfaces):
+        """
+        Using the model instance, sets the interfaces passed as parameter
+        :param interfaces: list of instances of the object Interface
+        :return: none
+        """
         self.model.set_interfaces(interfaces)
 
     def scan_networks(self):
+        """
+        Scan all the networks with airodump-ng. Executes the scan concurrently in a thread. Writes the output of the
+        command to the file /tmp/WiCC/net_scan-01.csv
+        This file is then passed to the method filter_networks
+        :return: none
+        """
         print("**********************\n\tScan networks\n")
         tempfile = "/tmp/WiCC/net_scan"
         self.execute_command(['rm', '-r', '/tmp/WiCC'])
@@ -167,23 +203,26 @@ class Control:
         print(err)
         # change wireless interface name to the parameter one
 
-        # TEMPORARILY with a timeout
-        # MODIFY TO IMPLEMENT CONCURRENCY FOR PROTOTYPE 2
-        # execute airodump-ng with a timeout of 5 seconds
         print("start airodump ...")
         command = ['airodump-ng', 'wlan0', '--write', tempfile, '--output-format', 'csv']
         thread = threading.Thread(target=self.execute_command, args=(command,))
         thread.start()
         thread.join(1)
-        #out, err = self.execute_command(['timeout', '1', 'airodump-ng', 'wlan0'])
+        # out, err = self.execute_command(['timeout', '1', 'airodump-ng', 'wlan0'])
         print("finish airodump\n*********************\nstart network filtering")
         self.filter_networks(tempfile)
-        #print(out)
-        #print(err)
+        # print(out)
+        # print(err)
         networks = ""  # get from command
-        #self.set_networks(networks)
+        # self.set_networks(networks)
 
-    def filter_networks(self, tempfile):
+    @staticmethod
+    def filter_networks(tempfile):
+        """
+        Filters the input from the csv file (open the file and reads it)
+        :param tempfile: directory for the csv file of the network scan
+        :return: none
+        """
         tempfile += '-01.csv'
 
         with open(tempfile, newline='') as csvfile:
@@ -193,14 +232,26 @@ class Control:
             for row in csv_reader:
                 print(", ".join(row))
 
-
     def set_networks(self, networks):
+        """
+        Using the model instance, sets the new scanned networks (all of them, overwriting the old ones)
+        :param networks: list of instances of objects from the class Network
+        :return: none
+        """
         self.model.set_networks(networks)
 
     def has_selected_interface(self):
+        """
+        Method to check if there is a selected wireless interface
+        :return: true or false whether the selected interface exists or is null
+        """
         return self.selectedInterface != ""
 
     def has_selected_network(self):
+        """
+        Method to check if there is a selected network to attack
+        :return:  true or false whether the selected network exists or is null
+        """
         return self.selectedNetwork != ""
 
     def get_notify(self, operation, value):
@@ -220,13 +271,12 @@ if __name__ == '__main__':
         sys.exit(1)
 
     control = Control()
-    exit = False
 
     software, some_missing = control.check_software()
     if some_missing:
         print("The required software is not installed:\n")
-        for i in range (0, len(software)):
-            if software[i] == False:
+        for i in range(0, len(software)):
+            if not software[i]:
                 if i == 0:
                     print("\t***Missing ifconfig")
                 elif i == 1:
@@ -239,18 +289,20 @@ if __name__ == '__main__':
         print("\n")
         sys.exit(1)
 
+    exit = False
     while not exit:
         if control.has_selected_interface():
             control.scan_networks()
             # Process(target=control.scan_networks()).start()
-            #scan_process.start()
-            #scan_process.join()
+            # scan_process.start()
+            # scan_process.join()
             print("scanning networks")
             print("filtering networks")
             time.sleep(3)
             while not control.selectedNetwork != "":
                 time.sleep(1)
-                print("**************************************************\n****************start filtering*******************\n**************************************************")
+                print("**************************************************\n****************start filtering"
+                      "*******************\n**************************************************")
                 control.filter_networks("/tmp/WiCC/net_scan")
             sys.exit(0)
         else:
