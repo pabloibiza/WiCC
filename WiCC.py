@@ -5,10 +5,6 @@ import time
 import threading
 
 
-def start_view(control):
-    control.start_view()
-
-
 if __name__ == '__main__':
     # check root privilege
     if os.getuid() != 0:
@@ -41,7 +37,7 @@ if __name__ == '__main__':
 
     exit = False
 
-    view_thread = threading.Thread(target=start_view, args=(control,))
+    view_thread = threading.Thread(target=control.start_view)
     view_thread.start()
     view_thread.join(1)
 

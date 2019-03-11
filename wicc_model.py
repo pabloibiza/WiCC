@@ -7,34 +7,48 @@
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
 
-from wicc_view import View
 from wicc_objectlist import ObjectList
 from wicc_interface import Interface
 from wicc_network import Network
 
 
 class Model:
-    interfaces = ObjectList()
-    networks = ObjectList()
-    view = ""
+    interfaces = ""
+    networks = ""
 
-    def __init__(self, control):
-        self.view = ""
-        self.view = View(control)
+    def __init__(self):
+        """
+        Class constructor. Initializes the list of interfaces and networks
+        """
+        self.interfaces = ObjectList()
+        self.networks = ObjectList()
 
     def set_interfaces(self, interfaces):
+        """
+        Sets the list of interfaces as the one received as parameter
+        :param interfaces: list of objects of the class Interface
+        :return:
+        """
         self.interfaces = interfaces
 
     def add_interface(self, name, address, type, power, channel):
+        """
+        Add a single interface given the parameters to create a new one
+        :param name: string for the name of the interface
+        :param address: string for the physical address of the interface
+        :param type: string for the type of mode of the interface (managed, monitor, ...)
+        :param power: int for the dBm of power of the interface
+        :param channel: int for the selected channel
+        :return:
+        """
         interface = Interface(name, address, type, power, channel)
         self.interfaces.add_object(interface)
         print("Added interface " + interface.get_name())
-        # self.notify_view()
 
     def set_networks(self, networks):
         """
-
-        :param networks: list of lists of networks
+        Creates the new networks based on the list of parameters recevied
+        :param networks: list of lists of network parameters
         :return:
         """
         list_networks = ObjectList()
@@ -110,11 +124,11 @@ class Model:
                                              authentication, power, beacons, ivs, lan_ip, essid, handshake, password))
             print("Model: added network " + id + " " + essid)
         self.networks = list_networks
-        # self.notify_view()
 
-    def start_view(self):
-        self.view.build_window()
-
-    def notify_view(self):
-        self.view.get_notify(self.interfaces.get_list(), self.networks.get_list())
-
+    def get_parameters(self):
+        """
+        Creates a list of parameters for both interfaces and networks.
+        Will be used by the view to print these parameters
+        :return: list of parameters of all interfaces, list of parameters of all networks
+        """
+        return self.interfaces.get_list(), self.networks.get_list()

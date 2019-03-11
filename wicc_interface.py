@@ -16,6 +16,14 @@ class Interface:
     channel = 0
 
     def __init__(self, name, address, type, power, channel):
+        """
+        Constructor for the class Interface, corresponding to the available wireless interfaces
+        :param name: name of the interface
+        :param address: physical address
+        :param type: mode that the interface is running on
+        :param power: power (dB) of the interface
+        :param channel: channel where it's running
+        """
         self.name = name
         self.address = address
         self.type = type
@@ -23,6 +31,10 @@ class Interface:
         self.channel = channel
 
     def __str__(self):
+        """
+        Creates a string with the info of the interface
+        :return: string with info about the interface parameters
+        """
         output = ""
         output.__add__("Name: " + self.name)
         output.__add__(" Address: " + self.address)
@@ -62,6 +74,10 @@ class Interface:
         self.channel = channel
 
     def get_list(self):
+        """
+        Creates a list with the parameters of the interface
+        :return: list of parameters
+        """
         list = []
         list.append(self.name)
         list.append(self.address)

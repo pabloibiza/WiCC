@@ -7,6 +7,7 @@
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
 
+
 class Operation:
     SELECT_INTERFACE = "Select interface"
     SELECT_NETWORK = "Select network"
