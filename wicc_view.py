@@ -18,7 +18,6 @@ class View:
     interfaces = ""
     networks = ""
 
-
     def __init__(self, control):
         self.control = control
 
@@ -41,7 +40,7 @@ class View:
         self.interfaces_combobox = ttk.Combobox(self.analysis_labelframe, textvariable=self.interfaceVar)
         #interfaces = ('wlan0', 'wlan1', 'wlan2')
         self.interfaces_combobox['values'] = self.interfaces
-        self.interfaces_combobox.current(1)
+        #self.interfaces_combobox.current(1)
         self.interfaces_combobox.bind("<<ComboboxSelected>>", self.print_parameters)
         self.interfaces_combobox.pack(side=LEFT)
 
@@ -106,8 +105,11 @@ class View:
         print(self.networks_treeview.item(current_item)['values'])
 
     def get_notify(self, interfaces, networks):
-        self.interfaces = interfaces
+        #self.interfaces = interfaces
+        self.interfaces_combobox['values'] = interfaces
+        self.interfaces_combobox.update()
         self.networks = networks
+
     def send_notify(self, operation, value):
         # self.control.get_notify(operation, value)
         return
