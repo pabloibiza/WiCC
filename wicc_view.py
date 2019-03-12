@@ -106,10 +106,11 @@ class View:
 
     def get_notify(self, interfaces, networks):
         #self.interfaces = interfaces
-        self.interfaces_combobox['values'] = interfaces
+        interfaces_names = interfaces[0][0]
+        self.interfaces_combobox['values'] = interfaces_names
         self.interfaces_combobox.update()
         self.networks = networks
 
     def send_notify(self, operation, value):
-        # self.control.get_notify(operation, value)
+        self.control.get_notify(operation, value)
         return
