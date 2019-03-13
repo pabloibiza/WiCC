@@ -12,7 +12,6 @@ import os, sys
 from wicc_operations import Operation
 from wicc_model import Model
 from wicc_view import View
-from wicc_objectlist import ObjectList
 from wicc_interface import Interface
 from wicc_network import  Network
 import time
