@@ -56,7 +56,7 @@ class View:
         self.encryption_combobox.pack(side=LEFT)
 
         # BUTTON - SEARCH
-        self.search_button = ttk.Button(self.analysis_labelframe, text='Search', command=self.send_notify(Operation.SELECT_INTERFACE, self.encryptionVar.get()))
+        self.search_button = ttk.Button(self.analysis_labelframe, text='Search', command=self.select_interface)
         self.search_button.pack(side=RIGHT)
 
         # TREEVIEW - NETWORKS
@@ -95,6 +95,10 @@ class View:
     def print_parameters(self, event):
         selected_parameters = (self.interfaceVar.get(), self.encryptionVar.get())
         print(selected_parameters)
+
+    # Sends the selected interface to control
+    def select_interface(self):
+        self.send_notify(Operation.SELECT_INTERFACE, self.encryptionVar.get())
 
     # Sends the selected network id to Control
     def select_network(self):
