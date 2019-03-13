@@ -12,11 +12,16 @@ from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
     Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
     HORIZONTAL, END, FALSE, IntVar, StringVar, messagebox as box
 
+from wicc_operations import Operation
+
 
 class View:
     control = ""
     interfaces = ""
     networks = ""
+    interfaces_old = []
+    interfaces_list = []
+    networks_old = []
 
     def __init__(self, control):
         self.control = control
@@ -24,7 +29,7 @@ class View:
     def build_window(self):
         self.root = Tk()
         self.root.geometry('820x260')
-        self.root.resizable(width=False, height=False)
+        self.root.resizable(width=True, height=True)
         self.root.title('WiCC - Wifi Cracking Camp')
 
         # LABEL FRAME - ANALYSIS OPTIONS
@@ -38,9 +43,7 @@ class View:
         # COMBO BOX - NETWORK INTERFACES
         self.interfaceVar = StringVar()
         self.interfaces_combobox = ttk.Combobox(self.analysis_labelframe, textvariable=self.interfaceVar)
-        #interfaces = ('wlan0', 'wlan1', 'wlan2')
         self.interfaces_combobox['values'] = self.interfaces
-        #self.interfaces_combobox.current(1)
         self.interfaces_combobox.bind("<<ComboboxSelected>>", self.print_parameters)
         self.interfaces_combobox.pack(side=LEFT)
 
@@ -53,23 +56,20 @@ class View:
         self.encryption_combobox.pack(side=LEFT)
 
         # BUTTON - SEARCH
-        self.search_button = ttk.Button(self.analysis_labelframe, text='Search')
+        self.search_button = ttk.Button(self.analysis_labelframe, text='Search', command=self.send_notify(Operation.SELECT_INTERFACE, self.encryptionVar.get()))
         self.search_button.pack(side=RIGHT)
 
         # TREEVIEW - NETWORKS
-        self.list = (('Zero', '0A', '0B'), ('One', '1A', '1B'), ('Two', '2A', '2B'), ('Three', '3A', '3B'),
-                     ('Four', '4A', '4B'), ('Five', '5A', '5B'), ('Six', '6A', '6B'), ('Seven', '7A', '7B'))
-
         self.networks_treeview = ttk.Treeview(self.networks_labelframe)
-        self.networks_treeview["columns"] = (
-        "essid_col", "channel_col", "encryption_col", "power_col", "wps_col", "clients_col")
-        self.networks_treeview.column("essid_col", width=100)
-        self.networks_treeview.column("channel_col", width=100)
-        self.networks_treeview.column("encryption_col", width=100)
-        self.networks_treeview.column("power_col", width=100)
-        self.networks_treeview.column("wps_col", width=100)
-        self.networks_treeview.column("clients_col", width=100)
-        self.networks_treeview.heading("essid_col", text="ESSID")
+        self.networks_treeview["columns"] = ("bssid_col", "channel_col", "encryption_col", "power_col", "wps_col", "clients_col")
+        self.networks_treeview.column("bssid_col", width=150)
+        self.networks_treeview.column("channel_col", width=60)
+        self.networks_treeview.column("encryption_col", width=60)
+        self.networks_treeview.column("power_col", width=60)
+        self.networks_treeview.column("wps_col", width=60)
+        self.networks_treeview.column("clients_col", width=60)
+
+        self.networks_treeview.heading("bssid_col", text="BSSID")
         self.networks_treeview.heading("channel_col", text="CH")
         self.networks_treeview.heading("encryption_col", text="ENC")
         self.networks_treeview.heading("power_col", text="PWR")
@@ -82,12 +82,9 @@ class View:
         self.scrollBar.config(command=self.networks_treeview.yview)
         self.networks_treeview.config(yscrollcommand=self.scrollBar.set)
 
-        for item in self.list:
-            self.networks_treeview.insert("", END, text=item[0], values=(item[1], item[2]))
-
-        # BUTTON - PRINT SELECTED LINE
-        self.print_button = Button(self.networks_labelframe, text='Print', command=self.print_selected)
-        self.print_button.pack(side=BOTTOM)
+        # BUTTON - SELECT A NETWORK
+        self.button_select = Button(self.networks_labelframe, text='Print', command=self.select_network)
+        self.button_select.pack(side=BOTTOM)
 
         # FOCUS IN...
         self.search_button.focus_set()
@@ -99,17 +96,26 @@ class View:
         selected_parameters = (self.interfaceVar.get(), self.encryptionVar.get())
         print(selected_parameters)
 
-    # Prints the selected item from the treeview widget
-    def print_selected(self):
+    # Sends the selected network id to Control
+    def select_network(self):
         current_item = self.networks_treeview.focus()
-        print(self.networks_treeview.item(current_item)['values'])
+        self.send_notify(Operation.SELECT_NETWORK, self.networks_treeview.item(current_item)['text'])
 
     def get_notify(self, interfaces, networks):
-        #self.interfaces = interfaces
-        interfaces_names = interfaces[0][0]
-        self.interfaces_combobox['values'] = interfaces_names
-        self.interfaces_combobox.update()
-        self.networks = networks
+        if(self.interfaces_old != interfaces):
+            self.interfaces_old = interfaces
+            self.interfaces_list = []
+            for item in interfaces:
+                self.interfaces_list.append(item[0])
+            self.interfaces_combobox['values'] = self.interfaces_list
+            self.interfaces_combobox.update()
+
+        if(self.networks_old != networks):
+            self.networks_old = networks
+            self.networks_treeview.delete(*self.networks_treeview.get_children())
+            for item in networks:
+                self.networks_treeview.insert("", END, text=item[0], values=(item[1], item[4], item[6], item[9], "yes", "client"))
+                self.networks_treeview.update()
 
     def send_notify(self, operation, value):
         self.control.get_notify(operation, value)
