@@ -55,9 +55,10 @@ class Model:
         list_networks = []
 
         first_time_empty = False
+        id = 1
 
         for network in networks:
-            id = ""
+            # id = ""
             bssid = ""
             first_seen = ""
             last_seen = ""
@@ -79,51 +80,50 @@ class Model:
             for pair in network:
 
                 if cont == 0:
-                    id = pair
-                elif cont == 1:
                     bssid = pair
-                elif cont == 2:
+                elif cont == 1:
                     first_seen = pair
-                elif cont == 3:
+                elif cont == 2:
                     last_seen = pair
-                elif cont == 4:
+                elif cont == 3:
                     channel = pair
-                elif cont == 5:
+                elif cont == 4:
                     speed = pair
-                elif cont == 6:
+                elif cont == 5:
                     privacy = pair
-                elif cont == 7:
+                elif cont == 6:
                     cipher = pair
-                elif cont == 8:
+                elif cont == 7:
                     authentication = pair
-                elif cont == 9:
+                elif cont == 8:
                     power = pair
-                elif cont == 10:
+                elif cont == 9:
                     beacons = pair
-                elif cont == 11:
+                elif cont == 10:
                     ivs = pair
-                elif cont == 12:
+                elif cont == 11:
                     lan_ip = pair
-                elif cont == 13:
+                elif cont == 12:
                     essid = pair
-                elif cont == 14:
+                elif cont == 13:
                     handshake = pair
-                elif cont == 15:
+                elif cont == 14:
                     password = pair
                 cont += 1
 
-            if id == '':
+            if bssid == '':
                 if first_time_empty:
                     print("break")
                     break
                 first_time_empty = True
                 print("first time true")
-            elif id == 'BSSID':
+            elif bssid == 'BSSID':
                 print("bssid and break")
             else:
                 list_networks.append(Network(id, bssid, first_seen, last_seen, channel, speed, privacy, cipher,
                                              authentication, power, beacons, ivs, lan_ip, essid, handshake, password))
-                print("Model: added network " + id + " " + essid)
+                print("Model: added network " + bssid + " " + essid)
+                id += 1
         self.networks = list_networks
 
     def get_parameters(self):
