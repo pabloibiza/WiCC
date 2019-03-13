@@ -112,6 +112,7 @@ class Control:
             return
 
         # iw info
+        interfaces = []
         for w_interface in w_interfaces:
             print("Wireless interface: " + w_interface)
 
@@ -126,9 +127,10 @@ class Control:
             # if there is no error, it is a wireless interface
             if iw_error[0] != "command failed":
                 print("W if: " + iw_output)
-                interface = self.filter_w_interface(iw_output)
-                self.selectedInterface = interface
-                self.set_interfaces(interface)
+                interfaces.append(self.filter_w_interface(iw_output))
+                self.selectedInterface = interfaces[0][0]
+
+        self.set_interfaces(interfaces)
                 # self.model.add_interface(interface)
 
     @staticmethod
@@ -191,13 +193,14 @@ class Control:
 
         return interface
 
-    def set_interfaces(self, interface):
+    def set_interfaces(self, interfaces):
         """
         Using the model instance, sets the interfaces passed as parameter
         :param interfaces: list of instances of the object Interface
         :return: none
         """
-        self.model.add_interface(interface[0], interface[1], interface[2], interface[3], interface[4])
+        for interface in interfaces:
+            self.model.add_interface(interface[0], interface[1], interface[2], interface[3], interface[4])
         self.notify_view()
 
     def scan_networks(self):

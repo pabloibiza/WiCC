@@ -103,12 +103,11 @@ class Model:
                     ivs = pair
                 elif cont == 11:
                     lan_ip = pair
-                elif cont == 12:
-                    essid = pair
                 elif cont == 13:
-                    handshake = pair
-                elif cont == 14:
-                    password = pair
+                    # parameter 12 shows the length of the essid, so it's not necessary
+                    essid = pair
+                # handshake and password aren't read from the interface list
+
                 cont += 1
 
             if bssid == '':
