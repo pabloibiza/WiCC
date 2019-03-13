@@ -7,21 +7,20 @@
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
 
-from wicc_objectlist import ObjectList
 from wicc_interface import Interface
 from wicc_network import Network
 
 
 class Model:
-    interfaces = ""
-    networks = ""
+    interfaces = []
+    networks = []
 
     def __init__(self):
         """
         Class constructor. Initializes the list of interfaces and networks
         """
-        self.interfaces = ObjectList()
-        self.networks = ObjectList()
+        self.interfaces = []
+        self.networks = []
 
     def set_interfaces(self, interfaces):
         """
@@ -42,7 +41,9 @@ class Model:
         :return:
         """
         interface = Interface(name, address, type, power, channel)
-        self.interfaces.add_object(interface)
+        if not self.interfaces.__contains__(interface):
+            self.interfaces.append(interface)
+        #self.interfaces.add_object(interface)
         print("Added interface " + interface.get_name())
 
     def set_networks(self, networks):
@@ -51,7 +52,7 @@ class Model:
         :param networks: list of lists of network parameters
         :return:
         """
-        list_networks = ObjectList()
+        list_networks = []
 
         first_time_empty = False
 
@@ -119,10 +120,10 @@ class Model:
                 print("first time true")
             elif id == 'BSSID':
                 print("bssid and break")
-
-            list_networks.add_object(Network(id, bssid, first_seen, last_seen, channel, speed, privacy, cipher,
+            else:
+                list_networks.append(Network(id, bssid, first_seen, last_seen, channel, speed, privacy, cipher,
                                              authentication, power, beacons, ivs, lan_ip, essid, handshake, password))
-            print("Model: added network " + id + " " + essid)
+                print("Model: added network " + id + " " + essid)
         self.networks = list_networks
 
     def get_parameters(self):
@@ -131,4 +132,16 @@ class Model:
         Will be used by the view to print these parameters
         :return: list of parameters of all interfaces, list of parameters of all networks
         """
-        return self.interfaces.get_list(), self.networks.get_list()
+        list_interfaces = []
+        for object in self.interfaces:
+            list_interfaces.append(object.get_list())
+        list_networks = []
+        for object in self.networks:
+            list_networks.append(object.get_list())
+
+        #return self.interfaces.get_list(), self.networks.get_list()
+        print("XXX list interfaces XXX")
+        print(list_interfaces)
+        print("XXX list networks XXX")
+        print(list_networks)
+        return list_interfaces, list_networks
