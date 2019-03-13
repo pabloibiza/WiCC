@@ -22,6 +22,7 @@ class View:
     interfaces_old = []
     interfaces_list = []
     networks_old = []
+    encryption_types = ('All', 'WEP', 'WPA')
 
     def __init__(self, control):
         self.control = control
@@ -40,6 +41,10 @@ class View:
         self.networks_labelframe = LabelFrame(self.root, text="Available Networks")
         self.networks_labelframe.pack(fill="both", expand="no")
 
+        #LABEL - INTERFACES
+        self.label_interfaces = ttk.Label(self.analysis_labelframe, text="Interface: ")
+        self.label_interfaces.pack(side=LEFT)
+
         # COMBO BOX - NETWORK INTERFACES
         self.interfaceVar = StringVar()
         self.interfaces_combobox = ttk.Combobox(self.analysis_labelframe, textvariable=self.interfaceVar)
@@ -47,11 +52,15 @@ class View:
         self.interfaces_combobox.bind("<<ComboboxSelected>>", self.print_parameters)
         self.interfaces_combobox.pack(side=LEFT)
 
+        # LABEL - INTERFACES
+        self.label_encryptions = ttk.Label(self.analysis_labelframe, text="Encryption: ")
+        self.label_encryptions.pack(side=LEFT)
+
         # COMBO BOX - ENCRYPTOION
         self.encryptionVar = StringVar()
         self.encryption_combobox = ttk.Combobox(self.analysis_labelframe, textvariable=self.encryptionVar)
-        self.encryption_combobox['values'] = ('WEP', 'WPA', 'Both')
-        self.encryption_combobox.current(1)
+        self.encryption_combobox['values'] = self.encryption_types
+        self.encryption_combobox.current(0)
         self.encryption_combobox.bind("<<ComboboxSelected>>", self.print_parameters)
         self.encryption_combobox.pack(side=LEFT)
 
@@ -64,8 +73,8 @@ class View:
         self.networks_treeview["columns"] = ("bssid_col", "channel_col", "encryption_col", "power_col", "wps_col", "clients_col")
         self.networks_treeview.column("bssid_col", width=150)
         self.networks_treeview.column("channel_col", width=60)
-        self.networks_treeview.column("encryption_col", width=60)
-        self.networks_treeview.column("power_col", width=60)
+        self.networks_treeview.column("encryption_col", width=70)
+        self.networks_treeview.column("power_col", width=70)
         self.networks_treeview.column("wps_col", width=60)
         self.networks_treeview.column("clients_col", width=60)
 
@@ -83,7 +92,7 @@ class View:
         self.networks_treeview.config(yscrollcommand=self.scrollBar.set)
 
         # BUTTON - SELECT A NETWORK
-        self.button_select = Button(self.networks_labelframe, text='Print', command=self.select_network)
+        self.button_select = ttk.Button(self.networks_labelframe, text='Attack', command=self.select_network)
         self.button_select.pack(side=BOTTOM)
 
         # FOCUS IN...
@@ -118,7 +127,7 @@ class View:
             self.networks_old = networks
             self.networks_treeview.delete(*self.networks_treeview.get_children())
             for item in networks:
-                self.networks_treeview.insert("", END, text=item[0], values=(item[1], item[4], item[6], item[9], "yes", "client"))
+                self.networks_treeview.insert("", END, text=item[13], values=(item[1], item[4], item[6], item[9] + " dB", "yes", "client"))
                 self.networks_treeview.update()
 
     def send_notify(self, operation, value):
