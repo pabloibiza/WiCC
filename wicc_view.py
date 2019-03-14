@@ -20,7 +20,6 @@ class View:
     interfaces = ""
     networks = ""
     interfaces_old = []
-    interfaces_list = []
     networks_old = []
     encryption_types = ('All', 'WEP', 'WPA')
 
@@ -70,7 +69,8 @@ class View:
 
         # TREEVIEW - NETWORKS
         self.networks_treeview = ttk.Treeview(self.networks_labelframe)
-        self.networks_treeview["columns"] = ("bssid_col", "channel_col", "encryption_col", "power_col", "wps_col", "clients_col")
+        self.networks_treeview["columns"] = ("id","bssid_col", "channel_col", "encryption_col", "power_col", "wps_col", "clients_col")
+        self.networks_treeview.column("id", width=60)
         self.networks_treeview.column("bssid_col", width=150)
         self.networks_treeview.column("channel_col", width=60)
         self.networks_treeview.column("encryption_col", width=70)
@@ -78,6 +78,7 @@ class View:
         self.networks_treeview.column("wps_col", width=60)
         self.networks_treeview.column("clients_col", width=60)
 
+        self.networks_treeview.heading("id", text="ID")
         self.networks_treeview.heading("bssid_col", text="BSSID")
         self.networks_treeview.heading("channel_col", text="CH")
         self.networks_treeview.heading("encryption_col", text="ENC")
@@ -112,22 +113,23 @@ class View:
     # Sends the selected network id to Control
     def select_network(self):
         current_item = self.networks_treeview.focus()
-        self.send_notify(Operation.SELECT_NETWORK, self.networks_treeview.item(current_item)['text'])
+        network_id = self.networks_treeview.item(current_item)['vaules'][0]
+        self.send_notify(Operation.SELECT_NETWORK, network_id)
 
     def get_notify(self, interfaces, networks):
         if(self.interfaces_old != interfaces):
             self.interfaces_old = interfaces
-            self.interfaces_list = []
+            interfaces_list = []
             for item in interfaces:
                 self.interfaces_list.append(item[0])
-            self.interfaces_combobox['values'] = self.interfaces_list
+            self.interfaces_combobox['values'] = interfaces_list
             self.interfaces_combobox.update()
 
         if(self.networks_old != networks):
             self.networks_old = networks
             self.networks_treeview.delete(*self.networks_treeview.get_children())
             for item in networks:
-                self.networks_treeview.insert("", END, text=item[13], values=(item[1], item[4], item[6], item[9] + " dB", "yes", "client"))
+                self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6], item[9] + " dbi", "yes", "client"))
                 self.networks_treeview.update()
 
     def send_notify(self, operation, value):
