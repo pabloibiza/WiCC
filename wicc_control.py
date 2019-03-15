@@ -116,7 +116,7 @@ class Control:
         for w_interface in w_interfaces:
             print("Wireless interface: " + w_interface)
 
-            # command: iw wlan0 info
+            # command example: iw wlan0 info
             iw_output, iw_error = self.execute_command(['iw', w_interface, 'info'])
             iw_output = iw_output.decode("utf-8")
             iw_error = iw_error.decode("utf-8")
@@ -131,7 +131,6 @@ class Control:
                 self.selectedInterface = interfaces[0][0]
 
         self.set_interfaces(interfaces)
-                # self.model.add_interface(interface)
 
     @staticmethod
     def filter_interfaces(str_ifconfig):
@@ -195,13 +194,17 @@ class Control:
 
     def set_interfaces(self, interfaces):
         """
-        Using the model instance, sets the interfaces passed as parameter
+        Using the model instance, sets the interfaces passed as parameter. First checks if there are any new interfaces
         :param interfaces: list of instances of the object Interface
         :return: none
         """
-        for interface in interfaces:
-            self.model.add_interface(interface[0], interface[1], interface[2], interface[3], interface[4])
-        self.notify_view()
+        if not self.model.compare_interfaces(interfaces):
+            print("\tdifferent")
+            for interface in interfaces:
+                self.model.add_interface(interface[0], interface[1], interface[2], interface[3], interface[4])
+            self.notify_view()
+        else:
+            print("\tequals")
 
     def scan_networks(self):
         """
@@ -218,7 +221,7 @@ class Control:
         # change wireless interface name to the parameter one
 
         print("start airodump ...")
-        command = ['airodump-ng', 'wlan0', '--write', tempfile, '--output-format', 'csv']
+        command = ['airodump-ng', self.selectedInterface, '--write', tempfile, '--output-format', 'csv']
         thread = threading.Thread(target=self.execute_command, args=(command,))
         thread.start()
         thread.join(1)
@@ -238,7 +241,6 @@ class Control:
         tempfile = "/tmp/WiCC/net_scan"
         #networks = self.filter_networks(tempfile)
         print("----set networks---")
-
 
         tempfile += '-01.csv'
         networks = []
@@ -294,6 +296,7 @@ class Control:
         """
         if operation == Operation.SELECT_INTERFACE:
             self.selectedInterface = value
+            print("Updated selected interface: " + str(value))
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
 

@@ -74,11 +74,11 @@ class Model:
             essid = ""
             handshake = False
             password = ""
+            clients = 0
 
             cont = 0
 
             for pair in network:
-
                 if cont == 0:
                     bssid = pair
                 elif cont == 1:
@@ -120,10 +120,23 @@ class Model:
                 print("bssid and break")
             else:
                 list_networks.append(Network(id, bssid, first_seen, last_seen, channel, speed, privacy, cipher,
-                                             authentication, power, beacons, ivs, lan_ip, essid, handshake, password))
+                                             authentication, power, beacons, ivs, lan_ip, essid, handshake,
+                                             password, clients))
                 print("Model: added network " + bssid + " " + essid)
                 id += 1
         self.networks = list_networks
+
+    def compare_interfaces(self, interfaces):
+        """
+        Compares a given list of interfaces with the local ones. Checks the names.
+        :param interfaces: List of parameters of interfaces
+        :return: boolean depending on whether both lists are equivalent
+        """
+        for interface in interfaces:
+            for local_interface in self.interfaces:
+                if str(interface[0]) == str(local_interface.get_name()):
+                    return True
+        return False
 
     def get_parameters(self):
         """

@@ -25,8 +25,10 @@ class Network:
     essid = ""
     handshake = False
     password = ""
+    clients = 0
 
-    def __init__(self, id, bssid, first_seen, last_seen, channel, speed, privacy, cipher, authentication, power, beacons, ivs, lan_ip, essid, handshake, password):
+    def __init__(self, id, bssid, first_seen, last_seen, channel, speed, privacy, cipher, authentication, power,
+                 beacons, ivs, lan_ip, essid, handshake, password, clients):
         """
         Constructor for the Network class
         :param id: string. Id of the network
@@ -45,6 +47,7 @@ class Network:
         :param essid: string. Name of the network (in case it has one)
         :param handshake: boolean. Boolean if a handshake has been captured in the network
         :param password: boolean. Boolean if the password has been cracked for the network
+        :param clients: number of connected clients on the network
         """
         self.id = id
         self.bssid = bssid
@@ -62,6 +65,7 @@ class Network:
         self.essid = essid
         self.handshake = handshake
         self.password = password
+        self.clients = clients
 
     def __str__(self):
         """
@@ -85,6 +89,7 @@ class Network:
         output.__add__(" ESSID: " + self.essid)
         output.__add__(" Handshake: " + self.handshake)
         output.__add__(" Password: " + self.password)
+        output.__add__(" Clients: " + self.clients)
         return output
 
     def get_list(self):
@@ -109,6 +114,7 @@ class Network:
         list.append(self.essid)
         list.append(self.handshake)
         list.append(self.password)
+        list.append(self.clients)
         return list
 
     # TO DO getters and setters

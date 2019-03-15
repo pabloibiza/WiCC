@@ -113,16 +113,16 @@ class View:
     # Sends the selected network id to Control
     def select_network(self):
         current_item = self.networks_treeview.focus()
-        network_id = self.networks_treeview.item(current_item)['vaules'][0]
+        network_id = self.networks_treeview.item(current_item)['values'][0]
         self.send_notify(Operation.SELECT_NETWORK, network_id)
 
     def get_notify(self, interfaces, networks):
         if(self.interfaces_old != interfaces):
             self.interfaces_old = interfaces
-            interfaces_list = []
+            self.interfaces_list = []
             for item in interfaces:
                 self.interfaces_list.append(item[0])
-            self.interfaces_combobox['values'] = interfaces_list
+            self.interfaces_combobox['values'] = self.interfaces_list
             self.interfaces_combobox.update()
 
         if(self.networks_old != networks):
