@@ -57,6 +57,7 @@ if __name__ == '__main__':
                 print("**************************************************\n****************start filtering"
                       "*******************\n**************************************************")
                 control.filter_networks()
+            print("\nStart attack...\n")
             sys.exit(0)
         else:
             control.scan_interfaces()

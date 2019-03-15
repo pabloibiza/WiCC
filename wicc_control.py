@@ -299,4 +299,5 @@ class Control:
             print("Updated selected interface: " + str(value))
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
+            print("\n\tAttack network: " + str(value) + "\n")
 
