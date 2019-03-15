@@ -104,7 +104,6 @@ class View:
     # Prints current paramers selected in both combo boxes (interface and encryption)
     def print_parameters(self, event):
         selected_parameters = (self.interfaceVar.get(), self.encryptionVar.get())
-        print(selected_parameters)
 
     # Sends the selected interface to control
     def select_interface(self):

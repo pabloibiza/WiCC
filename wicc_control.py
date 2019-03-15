@@ -103,8 +103,6 @@ class Control:
         if_output, if_error = self.execute_command("ifconfig")
         if_output = if_output.decode("utf-8")
         if_error = if_error.decode("utf-8")
-        print("Interfaces:\noutput: "+str(if_output))
-        print("error: "+str(if_error))
 
         if if_error is not None:
             w_interfaces = self.filter_interfaces(if_output)
@@ -114,19 +112,15 @@ class Control:
         # iw info
         interfaces = []
         for w_interface in w_interfaces:
-            print("Wireless interface: " + w_interface)
 
             # command example: iw wlan0 info
             iw_output, iw_error = self.execute_command(['iw', w_interface, 'info'])
             iw_output = iw_output.decode("utf-8")
             iw_error = iw_error.decode("utf-8")
-            print("\n\nWireless interfaces\noutput: " + str(iw_output))
-            print("error: " + str(iw_error))
 
             iw_error = iw_error.split(':')
             # if there is no error, it is a wireless interface
             if iw_error[0] != "command failed":
-                print("W if: " + iw_output)
                 interfaces.append(self.filter_w_interface(iw_output))
                 self.selectedInterface = interfaces[0][0]
 
@@ -146,7 +140,6 @@ class Control:
             if line[:1] != " " and line[:1] != "":
                 info = line.split(":")
                 name = info[0]
-                print("Name: " + name)
                 names_interfaces.append(name)
         return names_interfaces
 
@@ -159,36 +152,24 @@ class Control:
         """
         # Interface: name address type power channel
         interface = ["", "", "", 0, 0]
-        print("str_iw_info: " + str_iw_info)
         str_iw_info = str_iw_info.split("\n")
-        print("str_iw_info: " + str_iw_info[0])
         for lines in str_iw_info:
-            print("LINES: " + lines)
             # if last line
             if lines == "":
-                print("none")
                 break
 
             # reads the data from each line
             line = lines.split()
             if line[0] == "Interface":
                 interface[0] = line[1]
-                print("name set")
             elif line[0] == "addr":
                 interface[1] = line[1]
-                print("addr set")
             elif line[0] == "type":
                 interface[2] = line[1]
-                print("type set")
             elif line[0] == "txpower":
                 interface[3] = line[1]
-                print("power set")
             elif line[0] == "channel":
                 interface[4] = line[1]
-                print("channel set")
-        print("******Interfaces:")
-        for i in interface:
-            print(i)
 
         return interface
 
@@ -199,12 +180,9 @@ class Control:
         :return: none
         """
         if not self.model.compare_interfaces(interfaces):
-            print("\tdifferent")
             for interface in interfaces:
                 self.model.add_interface(interface[0], interface[1], interface[2], interface[3], interface[4])
             self.notify_view()
-        else:
-            print("\tequals")
 
     def scan_networks(self):
         """
@@ -213,22 +191,17 @@ class Control:
         This file is then passed to the method filter_networks
         :return: none
         """
-        print("**********************\n\tScan networks\n")
         tempfile = "/tmp/WiCC/net_scan"
         self.execute_command(['rm', '-r', '/tmp/WiCC'])
         out, err = self.execute_command(['mkdir', '/tmp/WiCC'])
-        print(err)
+
         # change wireless interface name to the parameter one
 
-        print("start airodump ...")
         command = ['airodump-ng', self.selectedInterface, '--write', tempfile, '--output-format', 'csv']
         thread = threading.Thread(target=self.execute_command, args=(command,))
         thread.start()
         thread.join(1)
         # out, err = self.execute_command(['timeout', '1', 'airodump-ng', 'wlan0'])
-        print("finish airodump\n*********************\nstart network filtering")
-        # print(out)
-        # print(err)
         networks = ""  # get from command
         # self.set_networks(networks)
 
@@ -240,15 +213,12 @@ class Control:
         """
         tempfile = "/tmp/WiCC/net_scan"
         #networks = self.filter_networks(tempfile)
-        print("----set networks---")
 
         tempfile += '-01.csv'
         networks = []
         first_empty_line = False
         with open(tempfile, newline='') as csvfile:
-            print("csv open")
             csv_reader = csv.reader(csvfile, delimiter=',')
-            print(csv_reader)
             for row in csv_reader:
                 networks.append(row)
         self.set_networks(networks)
@@ -296,8 +266,6 @@ class Control:
         """
         if operation == Operation.SELECT_INTERFACE:
             self.selectedInterface = value
-            print("Updated selected interface: " + str(value))
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
-            print("\n\tAttack network: " + str(value) + "\n")
 

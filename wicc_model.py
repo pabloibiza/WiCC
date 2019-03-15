@@ -44,7 +44,6 @@ class Model:
         if not self.interfaces.__contains__(interface):
             self.interfaces.append(interface)
         #self.interfaces.add_object(interface)
-        print("Added interface " + interface.get_name())
 
     def set_networks(self, networks):
         """
@@ -112,17 +111,12 @@ class Model:
 
             if bssid == '':
                 if first_time_empty:
-                    print("break")
                     break
                 first_time_empty = True
-                print("first time true")
-            elif bssid == 'BSSID':
-                print("bssid and break")
-            else:
+            elif bssid != 'BSSID':
                 list_networks.append(Network(id, bssid, first_seen, last_seen, channel, speed, privacy, cipher,
                                              authentication, power, beacons, ivs, lan_ip, essid, handshake,
                                              password, clients))
-                print("Model: added network " + bssid + " " + essid)
                 id += 1
         self.networks = list_networks
 
@@ -151,9 +145,4 @@ class Model:
         for object in self.networks:
             list_networks.append(object.get_list())
 
-        #return self.interfaces.get_list(), self.networks.get_list()
-        print("XXX list interfaces XXX")
-        print(list_interfaces)
-        print("XXX list networks XXX")
-        print(list_networks)
         return list_interfaces, list_networks
