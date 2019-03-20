@@ -13,7 +13,7 @@ from wicc_enc_type import EncryptionType
 class WEP(EncryptionType):
 
     def __init__(self, network):
-        super().__init__(self. network)
+        super().__init__(self, network)
 
     def crack_network(self):
         return 0

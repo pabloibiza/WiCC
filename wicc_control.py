@@ -28,18 +28,20 @@ class Control:
     selectedInterface = ""
     selectedNetwork = ""
     operations = ""
+    headless = False
 
     def __init__(self):
         self.model = ""
         self.model = Model()
         self.view = View(self)
 
-    def start_view(self):
+    def start_view(self, headless):
         """
         Start the view windows
         :return:
         """
-        self.view.build_window()
+        self.view.build_window(headless)
+        self.headless = headless
 
     @staticmethod
     def execute_command(command):
@@ -138,7 +140,9 @@ class Control:
 
         for line in interfaces:
             if line[:1] != " " and line[:1] != "":
-                info = line.split(":")
+                info = line.split(" ")
+                info = info[0].split(":")
+
                 name = info[0]
                 names_interfaces.append(name)
         return names_interfaces
@@ -202,8 +206,6 @@ class Control:
         thread.start()
         thread.join(1)
         # out, err = self.execute_command(['timeout', '1', 'airodump-ng', 'wlan0'])
-        networks = ""  # get from command
-        # self.set_networks(networks)
 
     def filter_networks(self):
         """
@@ -220,7 +222,17 @@ class Control:
         with open(tempfile, newline='') as csvfile:
             csv_reader = csv.reader(csvfile, delimiter=',')
             for row in csv_reader:
-                networks.append(row)
+
+                if row is '[]':
+                    print('*')
+
+
+                if row is '[]' and not first_empty_line:
+                    first_empty_line = True
+                    print('*')
+                else:
+                    networks.append(row)
+                print(row)
         self.set_networks(networks)
 
     def set_networks(self, networks):
@@ -254,8 +266,9 @@ class Control:
         Send notify to update the view with the list of interfaces and networks
         :return:
         """
-        interfaces, networks = self.model.get_parameters()
-        self.view.get_notify(interfaces, networks)
+        if not self.headless:
+            interfaces, networks = self.model.get_parameters()
+            self.view.get_notify(interfaces, networks)
 
     def get_notify(self, operation, value):
         """

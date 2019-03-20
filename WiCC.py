@@ -39,7 +39,20 @@ if __name__ == '__main__':
 
     print("\n\tStarting WiCC\n")
 
-    view_thread = threading.Thread(target=control.start_view)
+    headless = False
+    args = sys.argv[1:]
+    for arg in args:
+        if arg == '-h':
+            headless = True
+        elif arg == '--help':
+            print("Use option -h to run the program headless")
+        else:
+            print("Use option --help to view the help")
+
+    if headless:
+        view_thread = threading.Thread(target=control.start_view, args=(True,))
+    else:
+        view_thread = threading.Thread(target=control.start_view, args=(False,))
     view_thread.start()
     view_thread.join(1)
     while not exit:

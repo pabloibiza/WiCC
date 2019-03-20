@@ -26,7 +26,7 @@ class View:
     def __init__(self, control):
         self.control = control
 
-    def build_window(self):
+    def build_window(self, headless=False):
         self.root = Tk()
         self.root.geometry('820x260')
         self.root.resizable(width=True, height=True)
@@ -98,6 +98,11 @@ class View:
 
         # FOCUS IN...
         self.search_button.focus_set()
+
+        if headless:
+            print("View destroyed, running headless")
+            return
+            self.root.destroy()
 
         self.root.mainloop()
 
