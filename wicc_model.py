@@ -9,11 +9,13 @@
 
 from wicc_interface import Interface
 from wicc_network import Network
+from wicc_client import Client
 
 
 class Model:
     interfaces = []
     networks = []
+    clients = []
 
     def __init__(self):
         """
@@ -44,7 +46,6 @@ class Model:
         if not self.interfaces.__contains__(interface):
             self.interfaces.append(interface)
         #self.interfaces.add_object(interface)
-        print("Added interface " + interface.get_name())
 
     def set_networks(self, networks):
         """
@@ -74,11 +75,11 @@ class Model:
             essid = ""
             handshake = False
             password = ""
+            clients = 0
 
             cont = 0
 
             for pair in network:
-
                 if cont == 0:
                     bssid = pair
                 elif cont == 1:
@@ -112,18 +113,79 @@ class Model:
 
             if bssid == '':
                 if first_time_empty:
-                    print("break")
                     break
                 first_time_empty = True
-                print("first time true")
-            elif bssid == 'BSSID':
-                print("bssid and break")
-            else:
+            elif bssid != 'BSSID':
                 list_networks.append(Network(id, bssid, first_seen, last_seen, channel, speed, privacy, cipher,
-                                             authentication, power, beacons, ivs, lan_ip, essid, handshake, password))
-                print("Model: added network " + bssid + " " + essid)
+                                             authentication, power, beacons, ivs, lan_ip, essid, handshake,
+                                             password, clients))
                 id += 1
         self.networks = list_networks
+
+    def set_clients(self, clients):
+        """
+        Given a list of parameters of clients, filters them and creates and store those clients
+        :param clients: lists of lists of parameters of clients
+        :return:
+        """
+        list_clients = []
+        id = 1
+        for client in clients:
+            station_MAC = ""
+            first_seen = ""
+            last_seen = ""
+            power = 0
+            packets = 0
+            bssid = ""
+            probed_bssids = ""
+
+            cont = 0
+            for pair in client:
+                if cont == 0:
+                    station_MAC = pair
+                elif cont == 1:
+                    first_seen = pair
+                elif cont == 2:
+                    last_seen = pair
+                elif cont == 3:
+                    power = pair
+                elif cont == 4:
+                    packets = pair
+                elif cont == 5:
+                    bssid = pair
+                    if bssid != ' (not associated) ':
+                        self.add_client_network(bssid[1:])
+                elif cont == 6:
+                    probed_bssids = pair
+                cont += 1
+
+            list_clients.append(Client(id, station_MAC, first_seen, last_seen, power, packets, bssid, probed_bssids))
+            id += 1
+
+        self.clients = list_clients
+
+    def add_client_network(self, bssid):
+        """
+        Add a client to the specified network. Searchs for the network and calls the method to add one client.
+        :param bssid: bssid of the network
+        :return:
+        """
+        for network in self.networks:
+            if network.bssid == bssid:
+                network.add_client()
+                return
+
+    def compare_interfaces(self, interfaces):
+        """
+        Compares a given list of interfaces with the local ones. Checks the names.
+        :param interfaces: List of parameters of interfaces
+        :return: boolean depending on whether both lists are equivalent
+        """
+        for interface in interfaces:
+            for local_interface in self.interfaces:
+                if str(interface[0]) == str(local_interface.get_name()):
+                    return True
+        return False
 
     def get_parameters(self):
         """
@@ -138,9 +200,4 @@ class Model:
         for object in self.networks:
             list_networks.append(object.get_list())
 
-        #return self.interfaces.get_list(), self.networks.get_list()
-        print("XXX list interfaces XXX")
-        print(list_interfaces)
-        print("XXX list networks XXX")
-        print(list_networks)
         return list_interfaces, list_networks

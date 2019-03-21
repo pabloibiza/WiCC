@@ -37,27 +37,38 @@ if __name__ == '__main__':
 
     exit = False
 
-    view_thread = threading.Thread(target=control.start_view)
+    print("\n\tStarting WiCC\n")
+
+    headless = False
+    args = sys.argv[1:]
+    for arg in args:
+        if arg == '-h':
+            headless = True
+        elif arg == '--help':
+            print("*** Use option -h to run the program headless\n")
+        else:
+            print("*** Use option --help to view the help\n")
+
+    if headless:
+        view_thread = threading.Thread(target=control.start_view, args=(True,))
+    else:
+        view_thread = threading.Thread(target=control.start_view, args=(False,))
     view_thread.start()
     view_thread.join(1)
-
-    print("finished executing view")
-
     while not exit:
         if control.has_selected_interface():
+            print("Selected interface: " + control.selectedInterface)
             control.scan_networks()
-            # Process(target=control.scan_networks()).start()
-            # scan_process.start()
-            # scan_process.join()
-            print("scanning networks")
-            print("filtering networks")
+            print("Start scanning available networks...")
             time.sleep(3)
-            while not control.selectedNetwork != "":
+            while control.selectedNetwork == "":
                 time.sleep(1)
-                print("**************************************************\n****************start filtering"
-                      "*******************\n**************************************************")
+                print("\t... Scanning networks ...")
                 control.filter_networks()
+            print("Selected network: " + str(control.selectedNetwork))
+            print("\nStarting attack...\n")
             sys.exit(0)
         else:
+            print("Scanning interfaces")
             control.scan_interfaces()
         time.sleep(1)

@@ -6,9 +6,19 @@
     Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
+from subprocess import Popen, PIPE
 
 
-class Operation:
-    SELECT_INTERFACE = "Select interface"
-    SELECT_NETWORK = "Select network"
-    ATTACK_NETWORK = "Attack network"
+class EncryptionType:
+
+    def __init__(self, network):
+        self.target_network = network
+
+    def scan_network(self):
+        command = ['']
+        process = Popen(command, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+        return 0
+
+    def crack_network(self):
+        return 0

@@ -20,14 +20,14 @@ class View:
     interfaces = ""
     networks = ""
     interfaces_old = []
-    interfaces_list = []
+
     networks_old = []
     encryption_types = ('All', 'WEP', 'WPA')
 
     def __init__(self, control):
         self.control = control
 
-    def build_window(self):
+    def build_window(self, headless=False):
         self.root = Tk()
         self.root.geometry('820x260')
         self.root.resizable(width=True, height=True)
@@ -52,7 +52,7 @@ class View:
         self.interfaces_combobox.bind("<<ComboboxSelected>>", self.print_parameters)
         self.interfaces_combobox.pack(side=LEFT)
 
-        # LABEL - INTERFACES
+        # LABEL - ENCRYPTIONS
         self.label_encryptions = ttk.Label(self.analysis_labelframe, text="Encryption: ")
         self.label_encryptions.pack(side=LEFT)
 
@@ -70,7 +70,8 @@ class View:
 
         # TREEVIEW - NETWORKS
         self.networks_treeview = ttk.Treeview(self.networks_labelframe)
-        self.networks_treeview["columns"] = ("bssid_col", "channel_col", "encryption_col", "power_col", "wps_col", "clients_col")
+        self.networks_treeview["columns"] = ("id","bssid_col", "channel_col", "encryption_col", "power_col", "wps_col", "clients_col")
+        self.networks_treeview.column("id", width=60)
         self.networks_treeview.column("bssid_col", width=150)
         self.networks_treeview.column("channel_col", width=60)
         self.networks_treeview.column("encryption_col", width=70)
@@ -78,6 +79,8 @@ class View:
         self.networks_treeview.column("wps_col", width=60)
         self.networks_treeview.column("clients_col", width=60)
 
+
+        self.networks_treeview.heading("id", text="ID")
         self.networks_treeview.heading("bssid_col", text="BSSID")
         self.networks_treeview.heading("channel_col", text="CH")
         self.networks_treeview.heading("encryption_col", text="ENC")
@@ -98,36 +101,37 @@ class View:
         # FOCUS IN...
         self.search_button.focus_set()
 
-        self.root.mainloop()
+        if not headless:
+            self.root.mainloop()
 
     # Prints current paramers selected in both combo boxes (interface and encryption)
     def print_parameters(self, event):
         selected_parameters = (self.interfaceVar.get(), self.encryptionVar.get())
-        print(selected_parameters)
 
     # Sends the selected interface to control
     def select_interface(self):
-        self.send_notify(Operation.SELECT_INTERFACE, self.encryptionVar.get())
+        self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
 
     # Sends the selected network id to Control
     def select_network(self):
         current_item = self.networks_treeview.focus()
-        self.send_notify(Operation.SELECT_NETWORK, self.networks_treeview.item(current_item)['text'])
+        network_id = self.networks_treeview.item(current_item)['values'][0]
+        self.send_notify(Operation.SELECT_NETWORK, network_id)
 
     def get_notify(self, interfaces, networks):
         if(self.interfaces_old != interfaces):
             self.interfaces_old = interfaces
-            self.interfaces_list = []
+            interfaces_list = []
             for item in interfaces:
-                self.interfaces_list.append(item[0])
-            self.interfaces_combobox['values'] = self.interfaces_list
+                interfaces_list.append(item[0])
+            self.interfaces_combobox['values'] = interfaces_list
             self.interfaces_combobox.update()
 
         if(self.networks_old != networks):
             self.networks_old = networks
             self.networks_treeview.delete(*self.networks_treeview.get_children())
             for item in networks:
-                self.networks_treeview.insert("", END, text=item[13], values=(item[1], item[4], item[6], item[9] + " dB", "yes", "client"))
+                self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6], item[9] + " dbi", "yes", item[16]))
                 self.networks_treeview.update()
 
     def send_notify(self, operation, value):

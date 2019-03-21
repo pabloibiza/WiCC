@@ -7,8 +7,13 @@
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
 
+from wicc_enc_type import EncryptionType
 
-class Operation:
-    SELECT_INTERFACE = "Select interface"
-    SELECT_NETWORK = "Select network"
-    ATTACK_NETWORK = "Attack network"
+
+class WEP(EncryptionType):
+
+    def __init__(self, network):
+        super().__init__(self, network)
+
+    def crack_network(self):
+        return 0
