@@ -20,6 +20,7 @@ class View:
     interfaces = ""
     networks = ""
     interfaces_old = []
+
     networks_old = []
     encryption_types = ('All', 'WEP', 'WPA')
 
@@ -77,6 +78,7 @@ class View:
         self.networks_treeview.column("power_col", width=70)
         self.networks_treeview.column("wps_col", width=60)
         self.networks_treeview.column("clients_col", width=60)
+
 
         self.networks_treeview.heading("id", text="ID")
         self.networks_treeview.heading("bssid_col", text="BSSID")

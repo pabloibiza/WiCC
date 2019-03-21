@@ -189,6 +189,7 @@ class Control:
                 self.model.add_interface(interface[0], interface[1], interface[2], interface[3], interface[4])
             self.notify_view()
 
+
     def scan_networks(self):
         """
         Scan all the networks with airodump-ng. Executes the scan concurrently in a thread. Writes the output of the
