@@ -124,4 +124,13 @@ class Network:
         """
         self.clients += 1
 
+    def get_bssid(self):
+        return self.bssid
+
+    def get_channel(self):
+        return self.channel
+
+    def get_encryption(self):
+        return self.privacy
+
     # TO DO getters and setters

@@ -12,8 +12,9 @@ import os, sys
 from wicc_operations import Operation
 from wicc_model import Model
 from wicc_view import View
-from wicc_interface import Interface
-from wicc_network import  Network
+from wicc_enc_type import EncryptionType
+from wicc_wpa import WPA
+from wicc_wep import WEP
 import time
 
 import csv
@@ -125,7 +126,6 @@ class Control:
             # if there is no error, it is a wireless interface
             if iw_error[0] != "command failed":
                 interfaces.append(self.filter_w_interface(iw_output))
-                self.selectedInterface = interfaces[0][0]
 
         self.set_interfaces(interfaces)
 
@@ -295,3 +295,11 @@ class Control:
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
 
+    def attack_network(self):
+        network_encryption = self.selectedNetwork.get_encryption()
+        if network_encryption == 'WEP':
+            wep_attack = WEP(self.selectedNetwork, self.selectedInterface)
+            wep_attack.scan_network()
+            password = wep_attack.crack_network()
+        else:
+            return

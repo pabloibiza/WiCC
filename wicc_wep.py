@@ -11,9 +11,32 @@ from wicc_enc_type import EncryptionType
 
 
 class WEP(EncryptionType):
+    def __init__(self, network, interface):
+        super().__init__(self, network, interface)
 
-    def __init__(self, network):
-        super().__init__(self, network)
+    def scan_network(self):
+        super().scan_network()
+        valid_handshake = False
+
+        pyrit_cmd = ['pyrit', '-r', '/tmp/WiCC/net_attack-01.cap.bak', 'analyse']
+
+        while not valid_handshake:
+            pyrit_out, err = super().execute_command(pyrit_cmd)
+            valid_handshake = self.filter_pyrit_out(pyrit_out)
+
+    def filter_pyrit_out(self, output):
+        line_num = 0
+        for line in output:
+            parameter = line.split(' ')
+
+            for pair in parameter:
+                if pair == self.target_network.get_bssid():
+                    print('asd')
+
+            line_num += 1
+
+        return 0
 
     def crack_network(self):
-        return 0
+        password = ""
+        return password
