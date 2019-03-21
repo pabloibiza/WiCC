@@ -51,7 +51,7 @@ class View:
         self.interfaces_combobox.bind("<<ComboboxSelected>>", self.print_parameters)
         self.interfaces_combobox.pack(side=LEFT)
 
-        # LABEL - INTERFACES
+        # LABEL - ENCRYPTIONS
         self.label_encryptions = ttk.Label(self.analysis_labelframe, text="Encryption: ")
         self.label_encryptions.pack(side=LEFT)
 
@@ -108,7 +108,7 @@ class View:
 
     # Sends the selected interface to control
     def select_interface(self):
-        self.send_notify(Operation.SELECT_INTERFACE, self.encryptionVar.get())
+        self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
 
     # Sends the selected network id to Control
     def select_network(self):
@@ -119,10 +119,10 @@ class View:
     def get_notify(self, interfaces, networks):
         if(self.interfaces_old != interfaces):
             self.interfaces_old = interfaces
-            self.interfaces_list = []
+            interfaces_list = []
             for item in interfaces:
-                self.interfaces_list.append(item[0])
-            self.interfaces_combobox['values'] = self.interfaces_list
+                interfaces_list.append(item[0])
+            self.interfaces_combobox['values'] = interfaces_list
             self.interfaces_combobox.update()
 
         if(self.networks_old != networks):
