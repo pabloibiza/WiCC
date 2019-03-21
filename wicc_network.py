@@ -117,4 +117,11 @@ class Network:
         list.append(self.clients)
         return list
 
+    def add_client(self):
+        """
+        Sum 1 to the number of connected clients on the network
+        :return:
+        """
+        self.clients += 1
+
     # TO DO getters and setters

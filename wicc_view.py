@@ -99,12 +99,8 @@ class View:
         # FOCUS IN...
         self.search_button.focus_set()
 
-        if headless:
-            print("View destroyed, running headless")
-            return
-            self.root.destroy()
-
-        self.root.mainloop()
+        if not headless:
+            self.root.mainloop()
 
     # Prints current paramers selected in both combo boxes (interface and encryption)
     def print_parameters(self, event):
@@ -133,7 +129,7 @@ class View:
             self.networks_old = networks
             self.networks_treeview.delete(*self.networks_treeview.get_children())
             for item in networks:
-                self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6], item[9] + " dbi", "yes", "client"))
+                self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6], item[9] + " dbi", "yes", item[16]))
                 self.networks_treeview.update()
 
     def send_notify(self, operation, value):

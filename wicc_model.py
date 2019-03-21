@@ -9,11 +9,13 @@
 
 from wicc_interface import Interface
 from wicc_network import Network
+from wicc_client import Client
 
 
 class Model:
     interfaces = []
     networks = []
+    clients = []
 
     def __init__(self):
         """
@@ -119,6 +121,59 @@ class Model:
                                              password, clients))
                 id += 1
         self.networks = list_networks
+
+    def set_clients(self, clients):
+        """
+        Given a list of parameters of clients, filters them and creates and store those clients
+        :param clients: lists of lists of parameters of clients
+        :return:
+        """
+        list_clients = []
+        id = 1
+        for client in clients:
+            station_MAC = ""
+            first_seen = ""
+            last_seen = ""
+            power = 0
+            packets = 0
+            bssid = ""
+            probed_bssids = ""
+
+            cont = 0
+            for pair in client:
+                if cont == 0:
+                    station_MAC = pair
+                elif cont == 1:
+                    first_seen = pair
+                elif cont == 2:
+                    last_seen = pair
+                elif cont == 3:
+                    power = pair
+                elif cont == 4:
+                    packets = pair
+                elif cont == 5:
+                    bssid = pair
+                    if bssid != ' (not associated) ':
+                        self.add_client_network(bssid[1:])
+                elif cont == 6:
+                    probed_bssids = pair
+                cont += 1
+
+            list_clients.append(Client(id, station_MAC, first_seen, last_seen, power, packets, bssid, probed_bssids))
+            id += 1
+
+        self.clients = list_clients
+
+    def add_client_network(self, bssid):
+        """
+        Add a client to the specified network. Searchs for the network and calls the method to add one client.
+        :param bssid: bssid of the network
+        :return:
+        """
+        for network in self.networks:
+            if network.bssid == bssid:
+                network.add_client()
+                return
 
     def compare_interfaces(self, interfaces):
         """

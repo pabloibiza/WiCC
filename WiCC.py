@@ -45,9 +45,9 @@ if __name__ == '__main__':
         if arg == '-h':
             headless = True
         elif arg == '--help':
-            print("Use option -h to run the program headless")
+            print("*** Use option -h to run the program headless\n")
         else:
-            print("Use option --help to view the help")
+            print("*** Use option --help to view the help\n")
 
     if headless:
         view_thread = threading.Thread(target=control.start_view, args=(True,))

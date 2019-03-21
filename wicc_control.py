@@ -38,6 +38,7 @@ class Control:
     def start_view(self, headless):
         """
         Start the view windows
+        :param headless: indicates whether the program will run headless
         :return:
         """
         self.view.build_window(headless)
@@ -218,22 +219,25 @@ class Control:
 
         tempfile += '-01.csv'
         networks = []
+        clients = []
         first_empty_line = False
+        second_empty_line = False
         with open(tempfile, newline='') as csvfile:
             csv_reader = csv.reader(csvfile, delimiter=',')
             for row in csv_reader:
 
-                if row is '[]':
-                    print('*')
-
-
-                if row is '[]' and not first_empty_line:
+                if row == [] and not first_empty_line:
                     first_empty_line = True
-                    print('*')
+                elif row == [] and not second_empty_line:
+                    second_empty_line = True
+                elif second_empty_line:
+                    clients.append(row)
                 else:
                     networks.append(row)
-                print(row)
+
         self.set_networks(networks)
+        self.set_clients(clients)
+        self.notify_view()
 
     def set_networks(self, networks):
         """
@@ -245,7 +249,14 @@ class Control:
         #    for pair in network:
 
         self.model.set_networks(networks)
-        self.notify_view()
+
+    def set_clients(self, clients):
+        """
+        Given a list of clients, tells the model to store them
+        :param clients: list of parameters of clients
+        :return:
+        """
+        self.model.set_clients(clients)
 
     def has_selected_interface(self):
         """
@@ -267,6 +278,7 @@ class Control:
         :return:
         """
         if not self.headless:
+            # if the program is not running headless, we notify the view
             interfaces, networks = self.model.get_parameters()
             self.view.get_notify(interfaces, networks)
 
