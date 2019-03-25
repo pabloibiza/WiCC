@@ -20,7 +20,6 @@ class View:
     interfaces = ""
     networks = ""
     interfaces_old = []
-
     networks_old = []
     encryption_types = ('All', 'WEP', 'WPA')
 
@@ -29,56 +28,71 @@ class View:
 
     def build_window(self, headless=False):
         self.root = Tk()
-        self.root.geometry('820x260')
+        #self.root.protocol("WM_DELETE_WINDOW", self.kill_application())
+        self.root.geometry('815x360')
         self.root.resizable(width=True, height=True)
         self.root.title('WiCC - Wifi Cracking Camp')
 
         # LABEL FRAME - ANALYSIS OPTIONS
-        self.analysis_labelframe = LabelFrame(self.root, text="Analysis Options")
-        self.analysis_labelframe.pack(fill="both", expand="no")
+        self.labelframe_analysis = LabelFrame(self.root, text="Analysis Options")
+        self.labelframe_analysis.pack(fill="both", expand="yes")
 
         # LABEL FRAME - AVAILABLE NETWORKS
-        self.networks_labelframe = LabelFrame(self.root, text="Available Networks")
-        self.networks_labelframe.pack(fill="both", expand="no")
+        self.labelframe_networks = LabelFrame(self.root, text="Available Networks")
+        self.labelframe_networks.pack(fill="both", expand="yes")
+
+        # LABEL FRAME - START STOP
+        self.labelframe_start_stop = LabelFrame(self.root, text="Start/Stop")
+        self.labelframe_start_stop.pack(fill="both", expand="yes")
 
         #LABEL - INTERFACES
-        self.label_interfaces = ttk.Label(self.analysis_labelframe, text="Interface: ")
-        self.label_interfaces.pack(side=LEFT)
+        self.label_interfaces = ttk.Label(self.labelframe_analysis, text="Interface: ")
+        self.label_interfaces.grid(column=0, row=0)
 
         # COMBO BOX - NETWORK INTERFACES
         self.interfaceVar = StringVar()
-        self.interfaces_combobox = ttk.Combobox(self.analysis_labelframe, textvariable=self.interfaceVar)
+        self.interfaces_combobox = ttk.Combobox(self.labelframe_analysis, textvariable=self.interfaceVar)
         self.interfaces_combobox['values'] = self.interfaces
-        self.interfaces_combobox.bind("<<ComboboxSelected>>", self.print_parameters)
-        self.interfaces_combobox.pack(side=LEFT)
+        self.interfaces_combobox.bind("<<ComboboxSelected>>")
+        self.interfaces_combobox.grid(column=1, row=0)
+        self.null_label1 = Message(self.labelframe_analysis, text="")
+        self.null_label1.grid(column=2, row=0)
 
         # LABEL - ENCRYPTIONS
-        self.label_encryptions = ttk.Label(self.analysis_labelframe, text="Encryption: ")
-        self.label_encryptions.pack(side=LEFT)
+        self.label_encryptions = ttk.Label(self.labelframe_analysis, text="Encryption: ")
+        self.label_encryptions.grid(column=3, row=0)
 
         # COMBO BOX - ENCRYPTOION
         self.encryptionVar = StringVar()
-        self.encryption_combobox = ttk.Combobox(self.analysis_labelframe, textvariable=self.encryptionVar)
+        self.encryption_combobox = ttk.Combobox(self.labelframe_analysis, textvariable=self.encryptionVar)
         self.encryption_combobox['values'] = self.encryption_types
         self.encryption_combobox.current(0)
-        self.encryption_combobox.bind("<<ComboboxSelected>>", self.print_parameters)
-        self.encryption_combobox.pack(side=LEFT)
+        self.encryption_combobox.bind("<<ComboboxSelected>>")
+        self.encryption_combobox.grid(column=4, row=0)
+        self.null_label2 = Message(self.labelframe_analysis, text="")
+        self.null_label2.grid(column=5, row=0)
 
-        # BUTTON - SEARCH
-        self.search_button = ttk.Button(self.analysis_labelframe, text='Search', command=self.select_interface)
-        self.search_button.pack(side=RIGHT)
+        # CHECKBUTTON - WPS
+        wps_status = IntVar()
+        self.wps_checkbox = ttk.Checkbutton(self.labelframe_analysis, text="Only WPS", variable=wps_status)
+        self.wps_checkbox.grid(column=6, row=0)
+        self.null_label3 = Message(self.labelframe_analysis, text="")
+        self.null_label3.grid(column=7, row=0)
+
+        # BUTTON - START SCAN
+        self.button_start_scan = ttk.Button(self.labelframe_analysis, text='Start scan', command=self.start_scan)
+        self.button_start_scan.grid(column=8, row=0)
 
         # TREEVIEW - NETWORKS
-        self.networks_treeview = ttk.Treeview(self.networks_labelframe)
+        self.networks_treeview = ttk.Treeview(self.labelframe_networks)
         self.networks_treeview["columns"] = ("id","bssid_col", "channel_col", "encryption_col", "power_col", "wps_col", "clients_col")
         self.networks_treeview.column("id", width=60)
         self.networks_treeview.column("bssid_col", width=150)
         self.networks_treeview.column("channel_col", width=60)
-        self.networks_treeview.column("encryption_col", width=70)
+        self.networks_treeview.column("encryption_col", width=85)
         self.networks_treeview.column("power_col", width=70)
         self.networks_treeview.column("wps_col", width=60)
         self.networks_treeview.column("clients_col", width=60)
-
 
         self.networks_treeview.heading("id", text="ID")
         self.networks_treeview.heading("bssid_col", text="BSSID")
@@ -87,36 +101,46 @@ class View:
         self.networks_treeview.heading("power_col", text="PWR")
         self.networks_treeview.heading("wps_col", text="WPS")
         self.networks_treeview.heading("clients_col", text="CLNTS")
-        self.networks_treeview.pack(side=LEFT, fill=Y)
 
-        self.scrollBar = Scrollbar(self.networks_labelframe)
+        self.scrollBar = Scrollbar(self.labelframe_networks)
         self.scrollBar.pack(side=RIGHT, fill=Y)
         self.scrollBar.config(command=self.networks_treeview.yview)
         self.networks_treeview.config(yscrollcommand=self.scrollBar.set)
 
-        # BUTTON - SELECT A NETWORK
-        self.button_select = ttk.Button(self.networks_labelframe, text='Attack', command=self.select_network)
-        self.button_select.pack(side=BOTTOM)
+        self.networks_treeview.pack()
 
-        # FOCUS IN...
-        self.search_button.focus_set()
+        # BUTTON - ATTACK
+        self.button_select = ttk.Button(self.labelframe_start_stop, text='Attack', command=self.select_network)
+        self.button_select.grid(column=0, row=0)
+        self.null_label3 = Message(self.labelframe_start_stop, text="")
+        self.null_label3.grid(column=1, row=0)
+
+        # BUTTON - STOP SCAN
+        self.button_stop_scan = ttk.Button(self.labelframe_start_stop, text='Stop scan', command=self.stop_scan)
+        self.button_stop_scan.grid(column=2, row=0)
+
+        # FOCUS IN
+        self.button_start_scan.focus_set()
 
         if not headless:
             self.root.mainloop()
 
-    # Prints current paramers selected in both combo boxes (interface and encryption)
-    def print_parameters(self, event):
-        selected_parameters = (self.interfaceVar.get(), self.encryptionVar.get())
-
     # Sends the selected interface to control
-    def select_interface(self):
+    def start_scan(self):
         self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
+
+    # Sends a stop scanning order to control
+    def stop_scan(self):
+        self.send_notify(Operation.STOP_SCAN, "")
 
     # Sends the selected network id to Control
     def select_network(self):
         current_item = self.networks_treeview.focus()
         network_id = self.networks_treeview.item(current_item)['values'][0]
         self.send_notify(Operation.SELECT_NETWORK, network_id)
+
+    def kill_application(self):
+        self.send_notify(Operation.STOP_RUNNING, "")
 
     def get_notify(self, interfaces, networks):
         if(self.interfaces_old != interfaces):
