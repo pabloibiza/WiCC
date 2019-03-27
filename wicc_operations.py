@@ -14,3 +14,4 @@ class Operation:
     ATTACK_NETWORK = "Attack network"
     STOP_SCAN = "Stop scan"
     STOP_RUNNING = "Stop running"
+    RANDOMIZE_MAC = "Randomize mac"
