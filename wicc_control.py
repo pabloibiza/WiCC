@@ -97,10 +97,11 @@ class Control:
 
         return software, some_missing
 
-    def scan_interfaces(self):
+    def scan_interfaces(self, auto_select):
         """
         Scans all network interfaces. After filtering them (method filter_interfaces,
         scans available wireless interfaces. Finally calls the method filter_w_interface
+        :param auto_select: whether the interface should be selected automatically
         :return: none
         """
         # ifconfig
@@ -126,6 +127,8 @@ class Control:
             # if there is no error, it is a wireless interface
             if iw_error[0] != "command failed":
                 interfaces.append(self.filter_w_interface(iw_output))
+                if auto_select:
+                    self.selectedInterface = self.filter_w_interface(iw_output)[0]
 
         self.set_interfaces(interfaces)
 
