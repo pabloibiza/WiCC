@@ -12,3 +12,6 @@ class Operation:
     SELECT_INTERFACE = "Select interface"
     SELECT_NETWORK = "Select network"
     ATTACK_NETWORK = "Attack network"
+    STOP_SCAN = "Stop scan"
+    STOP_RUNNING = "Stop running"
+    RANDOMIZE_MAC = "Randomize mac"

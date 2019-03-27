@@ -15,6 +15,7 @@ from wicc_view import View
 from wicc_interface import Interface
 from wicc_network import  Network
 import time
+import sys
 
 import csv
 
@@ -294,4 +295,8 @@ class Control:
             self.selectedInterface = value
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
+        elif operation == Operation.STOP_SCAN:
+            pass
+        elif operation == Operation.STOP_RUNNING:
+            sys.exit()
 
