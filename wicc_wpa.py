@@ -167,7 +167,7 @@ class WPA(EncryptionType):
 
         return 0
 
-#test_network = Network('VM1234','90:5C:44:24:46:C3', // DEBIG :: just for testing
+#test_network = Network('VM1234','90:5C:44:24:46:C3', // DEBUG :: just for testing
 #'08/12/2019','08/12/2019',11,5,'WPA2','CCMP','PSK',
 #3,236,556,'192.168.0.1','VM1234',False,False,3)
 
