@@ -133,4 +133,7 @@ class Network:
     def get_encryption(self):
         return self.privacy
 
+    def get_id(self):
+        return self.id
+
     # TO DO getters and setters

@@ -294,12 +294,19 @@ class Control:
             self.selectedInterface = value
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
+            self.attack_network()
+        elif operation == Operation.ATTACK_NETWORK:
+            self.attack_network()
 
     def attack_network(self):
-        network_encryption = self.selectedNetwork.get_encryption()
+        network = self.model.search_network(self.selectedNetwork)
+        network_encryption = network.get_encryption()
         if network_encryption == 'WEP':
-            wep_attack = WEP(self.selectedNetwork, self.selectedInterface)
+            wep_attack = WEP(network, self.selectedInterface)
             wep_attack.scan_network()
-            password = wep_attack.crack_network()
-        else:
-            return
+            # password = wep_attack.crack_network()
+        elif network_encryption[:4] == " WPA":
+            wpa_attack = WPA(network, self.selectedInterface, "")
+            wpa_attack.scan_network()
+            # password = wpa_attack.crack_network()
+

@@ -8,6 +8,7 @@
 """
 
 from wicc_enc_type import EncryptionType
+from time import sleep
 
 
 class WEP(EncryptionType):
@@ -19,24 +20,28 @@ class WEP(EncryptionType):
         valid_handshake = False
 
         pyrit_cmd = ['pyrit', '-r', '/tmp/WiCC/net_attack-01.cap.bak', 'analyse']
+        de_auth_cmd = ['aireplay-ng', '-0', '1', '--ignore-negative-one', '-a', self.bssid, '-D', self.interface]
 
+        second_iterator = 0 # when 15, de-auth's clients on the network
         while not valid_handshake:
             pyrit_out, err = super().execute_command(pyrit_cmd)
             valid_handshake = self.filter_pyrit_out(pyrit_out)
+            if not valid_handshake:
+                sleep(1)
+                second_iterator += 1
+                if second_iterator == 15:
+                    super().execute_command(de_auth_cmd)
+                    second_iterator = 0
 
-    def filter_pyrit_out(self, output):
-        line_num = 0
+    @staticmethod
+    def filter_pyrit_out(output):
         for line in output:
-            parameter = line.split(' ')
-
-            for pair in parameter:
-                if pair == self.target_network.get_bssid():
-                    print('asd')
-
-            line_num += 1
-
-        return 0
+            if line == 'No valid EAOPL-handshake + ESSID detected.':
+                return False
+        return True
 
     def crack_network(self):
+        aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap.bak', '-b', self.bssid]
+        crack_out, crack_err = super().execute_command()
         password = ""
         return password

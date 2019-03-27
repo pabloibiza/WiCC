@@ -201,3 +201,9 @@ class Model:
             list_networks.append(object.get_list())
 
         return list_interfaces, list_networks
+
+    def search_network(self, network_id):
+        for network in self.networks:
+            if network.get_id() == network_id:
+                return network
+        return None
