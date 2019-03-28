@@ -31,7 +31,7 @@ class View:
 
     def build_window(self, headless=False):
         self.root = Tk()
-        #self.root.protocol("WM_DELETE_WINDOW", self.kill_application())
+        # self.root.protocol("WM_DELETE_WINDOW", self.kill_application())
         self.root.geometry('815x420')
         self.root.resizable(width=True, height=True)
         self.root.title('WiCC - Wifi Cracking Camp')
@@ -52,7 +52,7 @@ class View:
         self.labelframe_start_stop = LabelFrame(self.root, text="Start/Stop")
         self.labelframe_start_stop.pack(fill="both", expand="yes")
 
-        #LABEL - INTERFACES
+        # LABEL - INTERFACES
         self.null_label0 = Message(self.labelframe_analysis, text="")
         self.null_label0.grid(column=0, row=0)
         self.label_interfaces = ttk.Label(self.labelframe_analysis, text="Interface: ")
@@ -115,19 +115,22 @@ class View:
 
         # CHECKBOX - CLIENTS
         self.clients_status = BooleanVar()
-        self.clients_checkbox = ttk.Checkbutton(self.labelframe_more_options, text="Only clients", variable=self.clients_status)
+        self.clients_checkbox = ttk.Checkbutton(self.labelframe_more_options, text="Only clients",
+                                                variable=self.clients_status)
         self.clients_checkbox.grid(column=4, row=0)
         self.null_label7 = Message(self.labelframe_more_options, text="")
         self.null_label7.grid(column=5, row=0)
 
         # BUTTON - RAMNDOMIZE MAC
-        self.button_randomize_mac = ttk.Button(self.labelframe_more_options, text="Randomize MAC", command=self.randomize_mac)
+        self.button_randomize_mac = ttk.Button(self.labelframe_more_options, text="Randomize MAC",
+                                               command=self.randomize_mac)
         self.button_randomize_mac.grid(column=6, row=0)
         self.null_label8 = Message(self.labelframe_more_options, text="")
         self.null_label8.grid(column=7, row=0)
 
         # BUTTON - CUSTOM WORDLIST
-        self.custom_wordlist_path = ttk.Button(self.labelframe_more_options, text="Select wordlist", command=self.select_custom_wordlist)
+        self.custom_wordlist_path = ttk.Button(self.labelframe_more_options, text="Select wordlist",
+                                               command=self.select_custom_wordlist)
         self.custom_wordlist_path.grid(column=8, row=0)
 
         # BUTTON - GENERATE WORDLIST
@@ -138,7 +141,8 @@ class View:
 
         # TREEVIEW - NETWORKS
         self.networks_treeview = ttk.Treeview(self.labelframe_networks)
-        self.networks_treeview["columns"] = ("id","bssid_col", "channel_col", "encryption_col", "power_col", "wps_col", "clients_col")
+        self.networks_treeview["columns"] = ("id", "bssid_col", "channel_col", "encryption_col", "power_col", "wps_col",
+                                             "clients_col")
         self.networks_treeview.column("id", width=60)
         self.networks_treeview.column("bssid_col", width=150)
         self.networks_treeview.column("channel_col", width=60)
@@ -196,9 +200,10 @@ class View:
 
     # Sends an order to randomize the interface MAC address
     def randomize_mac(self):
-        currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac + "\n\nAre you sure you want to change it? ")
+        currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac +
+                                               "\n\nAre you sure you want to change it? ")
         print(currentmac_alert)
-        if(currentmac_alert == True):
+        if (currentmac_alert == True):
             self.send_notify(Operation.RANDOMIZE_MAC, "")
             new_mac_alert = messagebox.showinfo("", "You new MAC is: " + self.new_mac)
             print(new_mac_alert)
@@ -208,7 +213,7 @@ class View:
     # Shows a window to select a custom worlist to use. Then sends the path to control.
     def select_custom_wordlist(self):
         select_window = filedialog.askopenfilename(parent=self.root, initialdir='/home/$USER', title='Choose file',
-                                                       filetypes=[('Text files', '.txt'), ("All files", "*.*")])
+                                                   filetypes=[('Text files', '.txt'), ("All files", "*.*")])
         if select_window:
             try:
                 self.send_notify(Operation.SELECT_CUSTOM_WORDLIST, select_window)
@@ -220,17 +225,17 @@ class View:
     ######################(MUST CHANGE WPS ITEM[INDEX]#################################
     def filters(self, network_list):
         new_network_list = network_list
-        if(self.wps_status.get() == True):
+        if (self.wps_status.get() == True):
             print("WPS FILTER ENABLED")
         #    for item in new_network_list:
         #        if(item[9] == "no"):
         #            new_network_list.remove(item)
-        if(self.clients_status.get() == True):
+        if (self.clients_status.get() == True):
             print("CLIENTS FILTER ENABLED")
             for item in new_network_list:
-                if(item[16] == "0"):
+                if (item[16] == "0"):
                     new_network_list.remove(item)
-        if(self.channelVar.get() in self.channels):
+        if (self.channelVar.get() in self.channels):
             print("CHANNELS FILTER ENABLED")
             for item in new_network_list:
                 if (item[4] != self.channelVar):
@@ -238,7 +243,7 @@ class View:
         return new_network_list
 
     def get_notify(self, interfaces, networks):
-        if(self.interfaces_old != interfaces):
+        if (self.interfaces_old != interfaces):
             self.interfaces_old = interfaces
             interfaces_list = []
             for item in interfaces:
@@ -246,12 +251,13 @@ class View:
             self.interfaces_combobox['values'] = interfaces_list
             self.interfaces_combobox.update()
 
-        if(self.networks_old != networks):
+        if (self.networks_old != networks):
             self.networks_old = networks
             self.networks_treeview.delete(*self.networks_treeview.get_children())
-            #filtered_list = self.filters(networks)
+            # filtered_list = self.filters(networks)
             for item in networks:
-                self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6], item[9] + " dbi", "yes", item[16]))
+                self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6],
+                                                                              item[9] + " dbi", "yes", item[16]))
                 self.networks_treeview.update()
 
     def send_notify(self, operation, value):
