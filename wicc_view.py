@@ -31,8 +31,8 @@ class View:
 
     def build_window(self, headless=False):
         self.root = Tk()
-        # self.root.protocol("WM_DELETE_WINDOW", self.kill_application())
-        self.root.geometry('815x420')
+        self.root.protocol("WM_DELETE_WINDOW", self.kill_application)
+        self.root.geometry('830x420')
         self.root.resizable(width=True, height=True)
         self.root.title('WiCC - Wifi Cracking Camp')
 
@@ -180,6 +180,7 @@ class View:
         if not headless:
             self.root.mainloop()
 
+
     # Sends the selected interface to control
     def start_scan(self):
         self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
@@ -197,6 +198,7 @@ class View:
     # Sends and order to kill all processes when X is clicked
     def kill_application(self):
         self.send_notify(Operation.STOP_RUNNING, "")
+        self.root.destroy()
 
     # Sends an order to randomize the interface MAC address
     def randomize_mac(self):
@@ -254,11 +256,18 @@ class View:
         if (self.networks_old != networks):
             self.networks_old = networks
             self.networks_treeview.delete(*self.networks_treeview.get_children())
-            # filtered_list = self.filters(networks)
             for item in networks:
                 self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6],
                                                                               item[9] + " dbi", "yes", item[16]))
                 self.networks_treeview.update()
+
+    def show_warning_notification(self, message):
+        warning_notification = messagebox.showwarning("Warning", message)
+        print(warning_notification)
+
+    def show_info_notification(self, message):
+        info_notification = messagebox.showinfo("Info", message)
+        print(info_notification)
 
     def send_notify(self, operation, value):
         self.control.get_notify(operation, value)
