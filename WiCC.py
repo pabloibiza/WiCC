@@ -40,14 +40,21 @@ if __name__ == '__main__':
     print("\n\tStarting WiCC\n")
 
     headless = False
+    auto_select = False # auto-select the network interface
     args = sys.argv[1:]
     for arg in args:
         if arg == '-h':
             headless = True
+            print("*** Running program headless\n")
+        elif arg == '-a':
+            auto_select = True
+            print("*** Auto-select network interface\n")
         elif arg == '--help':
-            print("*** Use option -h to run the program headless\n")
+            print("*** Use option -h to run the program headless")
+            print("*** Use option -a to auto-select the first available network interface\n")
         else:
-            print("*** Use option --help to view the help\n")
+            print("*** Unrecognized option " + arg)
+            print("*** Use option --help to view the help. Only for debugging purposes\n")
 
     if headless:
         view_thread = threading.Thread(target=control.start_view, args=(True,))
@@ -70,5 +77,5 @@ if __name__ == '__main__':
             sys.exit(0)
         else:
             print("Scanning interfaces")
-            control.scan_interfaces()
+            control.scan_interfaces(auto_select)
         time.sleep(1)

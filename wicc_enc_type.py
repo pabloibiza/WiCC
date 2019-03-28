@@ -11,14 +11,29 @@ from subprocess import Popen, PIPE
 
 class EncryptionType:
 
-    def __init__(self, network):
+    def __init__(self, network, interface):
         self.target_network = network
+        self.interface = interface
+        self.bssid = network.get_bssid()
+        self.channel = self.target_network.get_channel()
+
+    @staticmethod
+    def execute_command(command):
+        process = Popen(command, stdout=PIPE, stderr=PIPE)
+        return process.communicate()
 
     def scan_network(self):
-        command = ['']
-        process = Popen(command, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = process.communicate()
-        return 0
+        write_directory = '/tmp/WiCC'
+        self.execute_command(['rm', '-r', write_directory])
+        self.execute_command(['mkdir', write_directory])
+
+        airmon_start_cmd = ['airmon-ng', 'start', self.bssid, self.channel]
+        airmon_check_cmd = ['airmon-ng', 'check', 'kill']
+        airodump_scan_cmd = ['airodump-ng', self.interface, '--bssid', self.bssid, '--write', write_directory +
+                             'net_attack', '--channel', self.channel]
+        self.execute_command(airmon_start_cmd)
+        self.execute_command(airmon_check_cmd)
+        self.execute_command(airodump_scan_cmd)
 
     def crack_network(self):
         return 0
