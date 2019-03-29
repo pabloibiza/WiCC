@@ -65,7 +65,7 @@ class Control:
         """
         # check installed software
         # ifconfig, aircrack-ng, pyrit, cowpatty
-        software = [False, False, False, False]
+        software = [False, False, False]
         some_missing = False
         # ifconfig
         out, err = self.execute_command(['which', 'ifconfig'])
@@ -90,14 +90,6 @@ class Control:
         else:
             some_missing = True
 
-        # cowpatty
-        out, err = self.execute_command(['which', 'cowpatty'])
-
-        if int.from_bytes(out, byteorder="big") != 0:
-            software[3] = True
-        else:
-            some_missing = True
-
         return software, some_missing
 
     def check_monitor_mode(self):
@@ -116,9 +108,10 @@ class Control:
                 if word == 'monitor':
                     self.allows_monitor = True
                     return
-        self.view.show_warning_notification("The selected interface doesn't support monitor mode, "
-                                            "which is highly recommended.\nYou can run the program anyways but "
-                                            "may be missing some functionalities")
+        self.view.show_info_notification("The selected interface doesn't support monitor mode, "
+                                         "which is highly recommended."
+                                         "\nYou can run the program anyways but "
+                                         "may be missing some functionalities")
 
     def scan_interfaces(self, auto_select):
         """
@@ -277,9 +270,19 @@ class Control:
             self.set_clients(clients)
             self.notify_view()
         except:
-            self.view.show_warning_notification("Error while accessing temporary dump files.\n"
-                                                "Try to restart the wireless card.\n\n"
-                                                "Close this window and the program")
+            # This exception is usually caused by the wireless interface already running in monitor mode.
+            # Therefore, a probable fix is to stop the card to run in monitor mode with: airmon-ng stop
+            out, err = self.execute_command(['airmon-ng', 'stop', self.selectedInterface])
+            exception_msg = "Error while accessing temporary dump files"
+            if err == b'':
+                # if there is no error when resetting the wireless card
+                exception_msg += "\n\nThe error should be fixed automatically. " \
+                                 "Please close this window and restart the program"
+            else:
+                # if there is an error when resetting the wireless card. The users must solve this by themselves.
+                exception_msg += "\n\nThe error couldn't be fixed automatically. Please reconnect or reconfigure " \
+                                 "your wireless card. Make sure it's not running in monitor mode"
+            self.view.show_warning_notification(exception_msg)
             sys.exit(1)
 
     def set_networks(self, networks):
