@@ -29,8 +29,6 @@ if __name__ == '__main__':
                     print("\t***Missing aircrack-ng")
                 elif i == 2:
                     print("\t***Missing pyrit")
-                elif i == 3:
-                    print("\t***Missing cowpatty")
 
         print("\n")
         sys.exit(1)
@@ -82,5 +80,9 @@ if __name__ == '__main__':
         else:
             print("Scanning interfaces")
             control.scan_interfaces(auto_select)
-        time.sleep(1)
+            time.sleep(1)
+            if not control.has_selected_interface():
+                control.view.show_info_notification("No wireless interfaces found."
+                                                    "\n\nPlease connect a wireless card.")
+
     view_thread.join(0)
