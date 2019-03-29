@@ -207,7 +207,11 @@ class Control:
 
         # change wireless interface name to the parameter one
 
-        command = ['airodump-ng', self.selectedInterface, '--write', tempfile, '--output-format', 'csv']
+        airmon_cmd = ['airmon-ng', 'start', self.selectedInterface]
+        interface = self.selectedInterface + 'mon'
+        self.execute_command(airmon_cmd)
+
+        command = ['airodump-ng', interface, '--write', tempfile, '--output-format', 'csv']
         thread = threading.Thread(target=self.execute_command, args=(command,))
         thread.start()
         thread.join(1)
@@ -302,10 +306,28 @@ class Control:
         elif operation == Operation.ATTACK_NETWORK:
             self.attack_network()
         elif operation == Operation.STOP_SCAN:
-            pass
+            self.stop_scan()
         elif operation == Operation.STOP_RUNNING:
             self.view.reaper_calls()
             sys.exit(0)
+
+    def stop_scan(self):
+        pgrep_cmd = ['pgrep', 'airodump-ng']
+        pgrep_out, pgrep_err = self.execute_command(pgrep_cmd)
+
+        pgrep_out = pgrep_out.decode('utf-8')
+
+        pids = pgrep_out.split('\n')
+        for pid in pids:
+            self.execute_command(['kill', '-9', pid])  # kills all processes related with airodump
+
+        airmon_cmd = ['airmon-ng', 'stop', self.selectedInterface + 'mon']  # stop card to be in monitor mode
+        ifconf_up_cmd = ['ifconfig', self.selectedInterface, 'up']  # sets the wireless interface up again
+        net_man_cmd = ['NetworkManager']  # restarts NetworkManager
+
+        self.execute_command(airmon_cmd)
+        self.execute_command(ifconf_up_cmd)
+        self.execute_command(net_man_cmd)
 
     def attack_network(self):
         network = self.model.search_network(self.selectedNetwork)
@@ -315,7 +337,7 @@ class Control:
             wep_attack.scan_network()
             # password = wep_attack.crack_network()
         elif network_encryption[:4] == " WPA":
-            wpa_attack = WPA(network, self.selectedInterface, "")
-            wpa_attack.scan_network()
-            # password = wpa_attack.crack_network()
+            wpa_attack = WPA(network, "rockyou.txt")
+            #wpa_attack.scan_network()
+            password = wpa_attack.crack_network()
 
