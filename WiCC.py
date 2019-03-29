@@ -39,8 +39,8 @@ if __name__ == '__main__':
 
     print("\n\tStarting WiCC\n")
 
-    headless = False
-    auto_select = False # auto-select the network interface
+    headless = False  # run the program without the front-end
+    auto_select = False  # auto-select the network interface
     args = sys.argv[1:]
     for arg in args:
         if arg == '-h':
@@ -68,10 +68,14 @@ if __name__ == '__main__':
             control.scan_networks()
             print("Start scanning available networks...")
             time.sleep(3)
-            while control.selectedNetwork == "":
+            while control.selectedNetwork == "" and control.running_scan():
                 time.sleep(1)
                 print("\t... Scanning networks ...")
                 control.filter_networks()
+            print("\n * Network scanning stopped * \n")
+            while not control.selectedNetwork:
+                # waits until a network is selected
+                pass
             print("Selected network: " + str(control.selectedNetwork))
             print("\nStarting attack...\n")
             sys.exit(0)

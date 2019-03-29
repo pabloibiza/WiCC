@@ -31,6 +31,8 @@ class Control:
     selectedNetwork = ""
     operations = ""
     headless = False
+    allows_monitor = False  # to know if the wireless interface allows monitor mode
+    scan_stopped = False  # to know if the network scan is running
 
     def __init__(self):
         self.model = ""
@@ -97,6 +99,26 @@ class Control:
             some_missing = True
 
         return software, some_missing
+
+    def check_monitor_mode(self):
+        """
+        Checks if the selected interface supports monitor mode
+        :return: whether the selected interface supports monitor mode
+        """
+        iw_cmd = ['iw', 'list']
+        iw_out, iw_err = self.execute_command(iw_cmd)
+
+        iw_out = iw_out.decode('utf-8')
+        lines = iw_out.split('\n')
+        for line in lines:
+            words = line.split(' ')
+            for word in words:
+                if word == 'monitor':
+                    self.allows_monitor = True
+                    return
+        self.view.show_warning_notification("The selected interface doesn't support monitor mode, "
+                                            "which is highly recommended.\nYou can run the program anyways but "
+                                            "may be missing some functionalities")
 
     def scan_interfaces(self, auto_select):
         """
@@ -201,15 +223,21 @@ class Control:
         This file is then passed to the method filter_networks
         :return: none
         """
+
+        self.check_monitor_mode()
+
         tempfile = "/tmp/WiCC/net_scan"
         self.execute_command(['rm', '-r', '/tmp/WiCC'])
         out, err = self.execute_command(['mkdir', '/tmp/WiCC'])
 
         # change wireless interface name to the parameter one
 
-        airmon_cmd = ['airmon-ng', 'start', self.selectedInterface]
-        interface = self.selectedInterface + 'mon'
-        self.execute_command(airmon_cmd)
+        if self.allows_monitor:
+            airmon_cmd = ['airmon-ng', 'start', self.selectedInterface]
+            interface = self.selectedInterface + 'mon'
+            self.execute_command(airmon_cmd)
+        else:
+            interface = self.selectedInterface
 
         command = ['airodump-ng', interface, '--write', tempfile, '--output-format', 'csv']
         thread = threading.Thread(target=self.execute_command, args=(command,))
@@ -231,22 +259,28 @@ class Control:
         clients = []
         first_empty_line = False
         second_empty_line = False
-        with open(tempfile, newline='') as csvfile:
-            csv_reader = csv.reader(csvfile, delimiter=',')
-            for row in csv_reader:
+        try:
+            with open(tempfile, newline='') as csvfile:
+                csv_reader = csv.reader(csvfile, delimiter=',')
+                for row in csv_reader:
 
-                if row == [] and not first_empty_line:
-                    first_empty_line = True
-                elif row == [] and not second_empty_line:
-                    second_empty_line = True
-                elif second_empty_line:
-                    clients.append(row)
-                else:
-                    networks.append(row)
+                    if row == [] and not first_empty_line:
+                        first_empty_line = True
+                    elif row == [] and not second_empty_line:
+                        second_empty_line = True
+                    elif second_empty_line:
+                        clients.append(row)
+                    else:
+                        networks.append(row)
 
-        self.set_networks(networks)
-        self.set_clients(clients)
-        self.notify_view()
+            self.set_networks(networks)
+            self.set_clients(clients)
+            self.notify_view()
+        except:
+            self.view.show_warning_notification("Error while accessing temporary dump files.\n"
+                                                "Try to restart the wireless card.\n\n"
+                                                "Close this window and the program")
+            sys.exit(1)
 
     def set_networks(self, networks):
         """
@@ -302,8 +336,11 @@ class Control:
             self.selectedInterface = value
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
+            self.stop_scan()
             self.attack_network()
         elif operation == Operation.ATTACK_NETWORK:
+            # USELESS right now
+            self.stop_scan()
             self.attack_network()
         elif operation == Operation.STOP_SCAN:
             self.stop_scan()
@@ -317,17 +354,19 @@ class Control:
 
         pgrep_out = pgrep_out.decode('utf-8')
 
-        pids = pgrep_out.split('\n')
-        for pid in pids:
-            self.execute_command(['kill', '-9', pid])  # kills all processes related with airodump
+        if pgrep_out != "":
+            pids = pgrep_out.split('\n')
+            for pid in pids:
+                self.execute_command(['kill', '-9', pid])  # kills all processes related with airodump
+            self.scan_stopped = True
+            if self.allows_monitor:
+                airmon_cmd = ['airmon-ng', 'stop', self.selectedInterface + 'mon']  # stop card to be in monitor mode
+                ifconf_up_cmd = ['ifconfig', self.selectedInterface, 'up']  # sets the wireless interface up again
+                net_man_cmd = ['NetworkManager']  # restarts NetworkManager
 
-        airmon_cmd = ['airmon-ng', 'stop', self.selectedInterface + 'mon']  # stop card to be in monitor mode
-        ifconf_up_cmd = ['ifconfig', self.selectedInterface, 'up']  # sets the wireless interface up again
-        net_man_cmd = ['NetworkManager']  # restarts NetworkManager
-
-        self.execute_command(airmon_cmd)
-        self.execute_command(ifconf_up_cmd)
-        self.execute_command(net_man_cmd)
+                self.execute_command(airmon_cmd)
+                self.execute_command(ifconf_up_cmd)
+                self.execute_command(net_man_cmd)
 
     def attack_network(self):
         network = self.model.search_network(self.selectedNetwork)
@@ -341,3 +380,5 @@ class Control:
             #wpa_attack.scan_network()
             password = wpa_attack.crack_network()
 
+    def running_scan(self):
+        return not self.scan_stopped
