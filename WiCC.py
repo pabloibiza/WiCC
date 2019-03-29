@@ -79,3 +79,4 @@ if __name__ == '__main__':
             print("Scanning interfaces")
             control.scan_interfaces(auto_select)
         time.sleep(1)
+    view_thread.join(0)
