@@ -273,10 +273,11 @@ class Control:
             # This exception is usually caused by the wireless interface already running in monitor mode.
             # Therefore, a probable fix is to stop the card to run in monitor mode with: airmon-ng stop
             out, err = self.execute_command(['airmon-ng', 'stop', self.selectedInterface])
+            self.execute_command(['NetworkManager'])
             exception_msg = "Error while accessing temporary dump files"
             if err == b'':
                 # if there is no error when resetting the wireless card
-                exception_msg += "\n\nThe error should be fixed automatically. " \
+                exception_msg += "\n\nThe error may be fixed automatically. " \
                                  "Please close this window and restart the program"
             else:
                 # if there is an error when resetting the wireless card. The users must solve this by themselves.
@@ -371,13 +372,21 @@ class Control:
                 self.execute_command(ifconf_up_cmd)
                 self.execute_command(net_man_cmd)
 
+    def get_interfaces(self):
+        return self.model.get_interfaces()
+
     def attack_network(self):
         network = self.model.search_network(self.selectedNetwork)
         network_encryption = network.get_encryption()
-        if network_encryption == 'WEP':
+        time.sleep(0.01)
+        if network_encryption == ' WEP':
+            print("wep attack")
             wep_attack = WEP(network, self.selectedInterface)
             wep_attack.scan_network()
-            # password = wep_attack.crack_network()
+            password = wep_attack.crack_network()
+            print("Password (?): " + password)
+            self.stop_scan()
+            # wep_attack.finish_attack()
         elif network_encryption[:4] == " WPA":
             wpa_attack = WPA(network, "rockyou.txt")
             #wpa_attack.scan_network()

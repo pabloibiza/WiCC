@@ -207,3 +207,6 @@ class Model:
             if network.get_id() == network_id:
                 return network
         return None
+
+    def get_interfaces(self):
+        return self.interfaces

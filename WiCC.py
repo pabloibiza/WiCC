@@ -76,12 +76,12 @@ if __name__ == '__main__':
                 pass
             print("Selected network: " + str(control.selectedNetwork))
             print("\nStarting attack...\n")
-            sys.exit(0)
+            break
         else:
             print("Scanning interfaces")
             control.scan_interfaces(auto_select)
             time.sleep(1)
-            if not control.has_selected_interface():
+            if control.get_interfaces() == "":
                 control.view.show_info_notification("No wireless interfaces found."
                                                     "\n\nPlease connect a wireless card.")
 
