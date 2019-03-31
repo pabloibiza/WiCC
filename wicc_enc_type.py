@@ -8,7 +8,7 @@
 """
 from subprocess import Popen, PIPE
 import threading
-import sys
+
 
 class EncryptionType:
 
@@ -20,10 +20,22 @@ class EncryptionType:
 
     @staticmethod
     def execute_command(command):
+        """
+        Generic method to execute a command using pipes
+        :param command: list of words of the command to execute
+        :return: output and error of the command execution
+
+        :Author: Miguel Yanes Fernández
+        """
         process = Popen(command, stdout=PIPE, stderr=PIPE)
         return process.communicate()
 
     def scan_network(self, write_directory):
+        """
+
+        :param write_directory:
+        :return:
+        """
         self.execute_command(['rm', '-r', write_directory])
         self.execute_command(['mkdir', write_directory])
 
@@ -36,6 +48,3 @@ class EncryptionType:
         thread = threading.Thread(target=self.execute_command, args=(airodump_scan_cmd,))
         thread.start()
         thread.join(1)
-
-    def crack_network(self):
-        return 0

@@ -66,17 +66,38 @@ if __name__ == '__main__':
             control.scan_networks()
             print("Start scanning available networks...")
             time.sleep(3)
-            while control.selectedNetwork == "" and control.running_scan():
+            while not control.selectedNetwork and control.running_scan():
                 time.sleep(1)
                 print("\t... Scanning networks ...")
-                control.filter_networks()
+                if not control.filter_networks():
+                    time.sleep(1)
+                    control.stop_scan()
+                    time.sleep(1)
+                    print(" * An error ocurred, please, re-select the interface")
+                    control.selectedInterface = ""
+                    control.model.interfaces = []
+                    while not control.has_selected_interface():
+                        control.scan_interfaces(auto_select)
+                        print("Scanning interfaces")
+                        time.sleep(1)
+                    print("Selected interface: " + control.selectedInterface)
+                    control.scan_networks()
+                    print("Start scanning available networks...")
+                    time.sleep(3)
             print("\n * Network scanning stopped * \n")
+            print(control.selectedNetwork)
+            print(control.running_scan())
             while not control.selectedNetwork:
                 # waits until a network is selected
-                pass
+                time.sleep(1)
             print("Selected network: " + str(control.selectedNetwork))
             print("\nStarting attack...\n")
-            break
+
+            while not control.cracking_completed:
+                print("\t... Cracking network ...")
+                time.sleep(1)
+
+            print("Cracking process finished.")
         else:
             print("Scanning interfaces")
             control.scan_interfaces(auto_select)

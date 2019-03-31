@@ -16,3 +16,4 @@ class Operation:
     STOP_RUNNING = "Stop running"
     RANDOMIZE_MAC = "Randomize mac"
     SELECT_CUSTOM_WORDLIST = "Select custom wordlist"
+    SCAN_OPTIONS = "Scan Options"

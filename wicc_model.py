@@ -47,13 +47,17 @@ class Model:
             self.interfaces.append(interface)
         #self.interfaces.add_object(interface)
 
-    def set_networks(self, networks):
+    def set_networks(self, networks, scan_options):
         """
         Creates the new networks based on the list of parameters recevied
         :param networks: list of lists of network parameters
         :return:
         """
         list_networks = []
+        encryption = scan_options[0]
+        wps = scan_options[1]
+        channel = scan_options[2]
+        with_clients = scan_options[3]
 
         first_time_empty = False
         id = 1
