@@ -127,6 +127,9 @@ class Network:
     def get_bssid(self):
         return self.bssid
 
+    def get_essid(self):
+        return self.essid
+
     def get_channel(self):
         return self.channel
 

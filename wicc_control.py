@@ -3,8 +3,9 @@
 """
     WiCC (Wireless Cracking Camp)
     GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
-    Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
-    Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
 """
 
 
@@ -33,6 +34,10 @@ class Control:
     headless = False
     allows_monitor = False  # to know if the wireless interface allows monitor mode
     scan_stopped = False  # to know if the network scan is running
+    cracking_completed = False  # to know if the network cracking process has finished or not
+
+    # values for the scan options. If empty, they don't apply
+    scan_options = ["", "", "", False]  # [encryption, wps, channel, with_clients]
 
     def __init__(self):
         self.model = ""
@@ -44,6 +49,8 @@ class Control:
         Start the view windows
         :param headless: indicates whether the program will run headless
         :return:
+
+        :Author: Miguel Yanes Fernández
         """
         self.view.build_window(headless)
         self.headless = headless
@@ -54,6 +61,8 @@ class Control:
         Static method to execute a defined command.
         :param command: parameters for the command. Should be divided into an array. EX: ['ls, '-l']
         :return: returns both stdout and stderr from the command execution
+
+        :Author: Miguel Yanes Fernández
         """
         process = Popen(command, stdout=PIPE, stderr=PIPE)
         return process.communicate()
@@ -62,6 +71,8 @@ class Control:
         """
         Check whether the required software is installed or not.
         :return: list of software (array of booleans), and a boolean to say if any is missing
+
+        :Author: Miguel Yanes Fernández
         """
         # check installed software
         # ifconfig, aircrack-ng, pyrit, cowpatty
@@ -96,6 +107,8 @@ class Control:
         """
         Checks if the selected interface supports monitor mode
         :return: whether the selected interface supports monitor mode
+
+        :Author: Miguel Yanes Fernández
         """
         iw_cmd = ['iw', 'list']
         iw_out, iw_err = self.execute_command(iw_cmd)
@@ -119,6 +132,8 @@ class Control:
         scans available wireless interfaces. Finally calls the method filter_w_interface
         :param auto_select: whether the interface should be selected automatically
         :return: none
+
+        :Author: Miguel Yanes Fernández
         """
         # ifconfig
         if_output, if_error = self.execute_command("ifconfig")
@@ -154,6 +169,8 @@ class Control:
         Filters the input for all network interfaces
         :param str_ifconfig: string taken from the command execution stdout
         :return: array of names of all network interfaces
+
+        :Author: Miguel Yanes Fernández
         """
         interfaces = str_ifconfig.split('\n')
         names_interfaces = []
@@ -173,6 +190,8 @@ class Control:
         Filters the input for a single wireless interface. First checks if the interface is wireless
         :param str_iw_info: stdout for the command to see the wireless interfaces
         :return: array with the Interface parameters
+
+        :Author: Miguel Yanes Fernández
         """
         # Interface: name address type power channel
         interface = ["", "", "", 0, 0]
@@ -202,12 +221,13 @@ class Control:
         Using the model instance, sets the interfaces passed as parameter. First checks if there are any new interfaces
         :param interfaces: list of instances of the object Interface
         :return: none
+
+        :Author: Miguel Yanes Fernández
         """
         if not self.model.compare_interfaces(interfaces):
             for interface in interfaces:
                 self.model.add_interface(interface[0], interface[1], interface[2], interface[3], interface[4])
             self.notify_view()
-
 
     def scan_networks(self):
         """
@@ -215,9 +235,13 @@ class Control:
         command to the file /tmp/WiCC/net_scan-01.csv
         This file is then passed to the method filter_networks
         :return: none
+
+        :Author: Miguel Yanes Fernández
         """
 
         self.check_monitor_mode()
+
+        self.scan_stopped = False
 
         tempfile = "/tmp/WiCC/net_scan"
         self.execute_command(['rm', '-r', '/tmp/WiCC'])
@@ -241,8 +265,12 @@ class Control:
     def filter_networks(self):
         """
         Filters the input from the csv file (open the file and reads it)
+        Checks for a exception when reading the file. If there is an exception, tries to fix the problem and
+        notifies the user with a warning popup
         :param tempfile: directory for the csv file of the network scan
         :return: none
+
+        :Author: Miguel Yanes Fernández
         """
         tempfile = "/tmp/WiCC/net_scan"
         #networks = self.filter_networks(tempfile)
@@ -269,6 +297,7 @@ class Control:
             self.set_networks(networks)
             self.set_clients(clients)
             self.notify_view()
+            return True
         except:
             # This exception is usually caused by the wireless interface already running in monitor mode.
             # Therefore, a probable fix is to stop the card to run in monitor mode with: airmon-ng stop
@@ -278,30 +307,36 @@ class Control:
             if err == b'':
                 # if there is no error when resetting the wireless card
                 exception_msg += "\n\nThe error may be fixed automatically. " \
-                                 "Please close this window and restart the program"
+                                 "Please close this window and re-select the network interface." \
+                                 "\n\nIf this error persists, close the program and re-plug your wireless card"
             else:
                 # if there is an error when resetting the wireless card. The users must solve this by themselves.
                 exception_msg += "\n\nThe error couldn't be fixed automatically. Please reconnect or reconfigure " \
                                  "your wireless card. Make sure it's not running in monitor mode"
             self.view.show_warning_notification(exception_msg)
-            sys.exit(1)
+            return False
+            #sys.exit(1)
 
     def set_networks(self, networks):
         """
         Using the model instance, sets the new scanned networks (all of them, overwriting the old ones)
         :param networks: list of instances of objects from the class Network
         :return: none
+
+        :Author: Miguel Yanes Fernández
         """
         #for network in networks:
         #    for pair in network:
 
-        self.model.set_networks(networks)
+        self.model.set_networks(networks, self.scan_options)
 
     def set_clients(self, clients):
         """
         Given a list of clients, tells the model to store them
         :param clients: list of parameters of clients
         :return:
+
+        :Author: Miguel Yanes Fernández
         """
         self.model.set_clients(clients)
 
@@ -309,6 +344,8 @@ class Control:
         """
         Method to check if there is a selected wireless interface
         :return: true or false whether the selected interface exists or is null
+
+        :Author: Miguel Yanes Fernández
         """
         return self.selectedInterface != ""
 
@@ -316,6 +353,8 @@ class Control:
         """
         Method to check if there is a selected network to attack
         :return:  true or false whether the selected network exists or is null
+
+        :Author: Miguel Yanes Fernández
         """
         return self.selectedNetwork != ""
 
@@ -323,6 +362,8 @@ class Control:
         """
         Send notify to update the view with the list of interfaces and networks
         :return:
+
+        :Author: Miguel Yanes Fernández
         """
         if not self.headless:
             # if the program is not running headless, we notify the view
@@ -335,6 +376,8 @@ class Control:
         :param operation: type of operation (from the enumeration class Operation)
         :param value: value applied to that operation
         :return:
+
+        :Author: Miguel Yanes Fernández
         """
         if operation == Operation.SELECT_INTERFACE:
             self.selectedInterface = value
@@ -350,8 +393,22 @@ class Control:
             self.stop_scan()
         elif operation == Operation.STOP_RUNNING:
             sys.exit()
+        elif operation == Operation.SCAN_OPTIONS:
+            # values: [encryption, wps, channel, with_clients]
+            self.scan_options[0] = value[0]  # encryption
+            self.scan_options[1] = value[1]  # wps
+            self.scan_options[2] = value[2]  # channel
+            self.scan_options[3] = value[3]  # with_clients
+            return
 
     def stop_scan(self):
+        """
+        Series of commands to be executed to stop the scan. Kills the process(es) realted with airodump, and then
+        resets the wireless interface.
+        :return:
+
+        :Author: Miguel Yanes Fernández
+        """
         pgrep_cmd = ['pgrep', 'airodump-ng']
         pgrep_out, pgrep_err = self.execute_command(pgrep_cmd)
 
@@ -361,7 +418,6 @@ class Control:
             pids = pgrep_out.split('\n')
             for pid in pids:
                 self.execute_command(['kill', '-9', pid])  # kills all processes related with airodump
-            self.scan_stopped = True
             if self.allows_monitor:
                 airmon_cmd = ['airmon-ng', 'stop', self.selectedInterface + 'mon']  # stop card to be in monitor mode
                 ifconf_up_cmd = ['ifconfig', self.selectedInterface, 'up']  # sets the wireless interface up again
@@ -370,26 +426,68 @@ class Control:
                 self.execute_command(airmon_cmd)
                 self.execute_command(ifconf_up_cmd)
                 self.execute_command(net_man_cmd)
+        self.scan_stopped = True
 
     def get_interfaces(self):
+        """
+        Return the list of interfaces from Model
+        :return: list of interfaces
+
+        :Author: Miguel Yanes Fernández
+        """
         return self.model.get_interfaces()
 
+    def show_info_notification(self, message):
+        self.view.show_info_notification(message)
+
     def attack_network(self):
+        """
+        Method to start the attack depending on the type of selected network.
+        :return:
+
+        :Author: Miguel Yanes Fernández
+        """
         network = self.model.search_network(self.selectedNetwork)
-        network_encryption = network.get_encryption()
-        time.sleep(0.01)
-        if network_encryption == ' WEP':
-            print("wep attack")
-            wep_attack = WEP(network, self.selectedInterface)
-            wep_attack.scan_network()
-            password = wep_attack.crack_network()
-            print("Password (?): " + password)
+        password = ""
+        try:
+            network_encryption = network.get_encryption()
+            time.sleep(0.01)
+
+            self.show_info_notification("Starting attack on" + network_encryption + " network:" + "\n\nName: " +
+                                        network.get_essid() + "\nBSSID: " + network.get_bssid() +
+                                        "\n\nPlease wait up to a few minutes until the process is finished")
+
+            if network_encryption == " WEP":
+                print("wep attack")
+                wep_attack = WEP(network, self.selectedInterface)
+                wep_attack.scan_network()
+                password = wep_attack.crack_network()
+            elif network_encryption[:4] == " WPA":
+                #wpa_attack = WPA(network, "rockyou.txt")
+                #wpa_attack.scan_network()
+                #password = wpa_attack.crack_network()
+                pass
+
+            self.cracking_completed = True
             self.stop_scan()
-            # wep_attack.finish_attack()
-        elif network_encryption[:4] == " WPA":
-            wpa_attack = WPA(network, "rockyou.txt")
-            #wpa_attack.scan_network()
-            password = wpa_attack.crack_network()
+
+            if password != "":
+                self.view.show_info_notification("Cracking process finished\n\nPassword: " + password +
+                                                 "\n\nYou can now restart the scanning process")
+            else:
+                self.view.show_info_notification("Cracking process finished\n\nNo password retrieved"
+                                                 "\n\nYou can restart the scanning process")
+            self.selectedNetwork = ""
+        except Exception:
+            self.view.show_info_notification("Please select a valid target network")
+            self.selectedNetwork = ""
+            print(Exception)
 
     def running_scan(self):
+        """
+        Method to know if there is a scan running
+        :return: value of global variable scan_stopped, used to know if there is a scan running
+
+        :Author: Miguel Yanes Fernández
+        """
         return not self.scan_stopped

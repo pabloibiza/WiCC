@@ -19,12 +19,30 @@ class Client:
         self.probed_bssids = probed_bssids
 
     def get_bssid(self):
+        """
+        Getter for the bssid parameter
+        :return: bssid of the client
+
+        :Author: Miguel Yanes Fernández
+        """
         return self.bssid
 
     def get_mac(self):
+        """
+        Getter fro the MAC parameter
+        :return: station mac of the client
+
+        :Author: Miguel Yanes Fernández
+        """
         return self.station_MAC
 
     def get_list(self):
+        """
+        Create and return a list of parameters
+        :return: list of all class parameters
+
+        :Author: Miguel Yanes Fernández
+        """
         list = []
         list.append(self.client_id)
         list.append(self.station_MAC)
