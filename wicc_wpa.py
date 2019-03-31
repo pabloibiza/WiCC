@@ -16,9 +16,38 @@ import csv
 
 
 class WPA(EncryptionType):
+
+    def __init__(self, network, interface, wordlist):
+        EncryptionType.__init__(self, network, interface)
+        self.wordlist = wordlist
+
+    def crack_network(self):
+        aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap', '-w', self.wordlist]
+        aircrack_out, aircrack_err = self.execute_command(aircrack_cmd)
+        aircrack_out = aircrack_out.decode('utf-8')
+        password = self.filter_aircrack(aircrack_out)
+        return password
+
+    @staticmethod
+    def filter_aircrack(output):
+        words = output.split(" ")
+        next_1 = False
+        next_2 = False
+        for word in words:
+            if word[:6] == "FOUND!":
+                next_1 = True
+            elif next_1:
+                if not next_2:
+                    next_2 = True
+                else:
+                    return word
+        return ""
+#--------------------------------------------------------------------------------------
+
+class WPA_adam(EncryptionType):
     
-    def __init__(self, network, wordlist):
-        super().__init__(network)
+    def __init__(self, network, wordlist, interface):
+        super().__init__(network, interface)
         self.wordlist = wordlist
 
     def execute_command(self,command):

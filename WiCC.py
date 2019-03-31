@@ -75,6 +75,7 @@ if __name__ == '__main__':
                     time.sleep(1)
                     print(" * An error ocurred, please, re-select the interface")
                     control.selectedInterface = ""
+                    control.last_selectedInterface = ""
                     control.model.interfaces = []
                     while not control.has_selected_interface():
                         control.scan_interfaces(auto_select)

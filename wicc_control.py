@@ -29,9 +29,11 @@ class Control:
     model = ""
     view = ""
     selectedInterface = ""
+    last_selectedInterface = ""
     selectedNetwork = ""
     operations = ""
     headless = False
+    auto_select = False
     allows_monitor = False  # to know if the wireless interface allows monitor mode
     scan_stopped = False  # to know if the network scan is running
     cracking_completed = False  # to know if the network cracking process has finished or not
@@ -160,7 +162,10 @@ class Control:
                 interfaces.append(self.filter_w_interface(iw_output))
                 if auto_select:
                     self.selectedInterface = self.filter_w_interface(iw_output)[0]
-
+                    self.last_selectedInterface = self.selectedInterface
+                    self.auto_select = auto_select
+                elif self.last_selectedInterface != "":
+                    self.selectedInterface = self.last_selectedInterface
         self.set_interfaces(interfaces)
 
     @staticmethod
@@ -303,6 +308,8 @@ class Control:
             # Therefore, a probable fix is to stop the card to run in monitor mode with: airmon-ng stop
             out, err = self.execute_command(['airmon-ng', 'stop', self.selectedInterface])
             self.execute_command(['NetworkManager'])
+            if self.auto_select:
+                return False
             exception_msg = "Error while accessing temporary dump files"
             if err == b'':
                 # if there is no error when resetting the wireless card
@@ -453,6 +460,12 @@ class Control:
             network_encryption = network.get_encryption()
             time.sleep(0.01)
 
+            if network_encryption == " OPN":
+                self.show_info_notification("The selected network is open. No password required to connect")
+                self.cracking_completed = True
+                self.stop_scan()
+                return
+
             self.show_info_notification("Starting attack on" + network_encryption + " network:" + "\n\nName: " +
                                         network.get_essid() + "\nBSSID: " + network.get_bssid() +
                                         "\n\nPlease wait up to a few minutes until the process is finished")
@@ -460,13 +473,20 @@ class Control:
             if network_encryption == " WEP":
                 print("wep attack")
                 wep_attack = WEP(network, self.selectedInterface)
-                wep_attack.scan_network()
+                print("instance created")
+                wep_attack.scan_network('/tmp/WiCC/')
+                print("scan finished")
                 password = wep_attack.crack_network()
+                print("cracking finised")
             elif network_encryption[:4] == " WPA":
-                #wpa_attack = WPA(network, "rockyou.txt")
-                #wpa_attack.scan_network()
-                #password = wpa_attack.crack_network()
-                pass
+                print("create wpa instance")
+                wpa_attack = WPA(network, self.selectedInterface, '/usr/share/wordlists/rockyou.txt')
+                print("start scanning")
+                wpa_attack.scan_network('/tmp/WiCC/')
+                print("start cracking")
+                password = wpa_attack.crack_network()
+                print("finished cracking")
+                #pass
 
             self.cracking_completed = True
             self.stop_scan()
