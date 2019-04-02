@@ -139,4 +139,7 @@ class Network:
     def get_id(self):
         return self.id
 
+    def get_clients(self):
+        return self.clients
+
     # TO DO getters and setters

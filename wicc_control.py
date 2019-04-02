@@ -34,6 +34,7 @@ class Control:
     allows_monitor = False  # to know if the wireless interface allows monitor mode
     scan_stopped = False  # to know if the network scan is running
     running_stopped = False  # to know if the program is running (or if the view has been closed)
+    scan_filter_parameters = ["", ""]
 
     def __init__(self):
         self.model = ""
@@ -234,6 +235,12 @@ class Control:
             interface = self.selectedInterface
 
         command = ['airodump-ng', interface, '--write', tempfile, '--output-format', 'csv']
+        if(self.scan_filter_parameters[0] != ""):
+            command.append('--encrypt')
+            command.append(self.scan_filter_parameters[0])
+        if(self.scan_filter_parameters[1] != ""):
+            command.append('--channel')
+            command.append(self.scan_filter_parameters[1])
         thread = threading.Thread(target=self.execute_command, args=(command,))
         thread.start()
         thread.join(1)
@@ -354,6 +361,19 @@ class Control:
             self.view.reaper_calls()
             self.running_stopped = True
             # sys.exit(0)
+        elif operation == Operation.SCAN_OPTIONS:
+            self.apply_filters(value)
+
+    def apply_filters(self, value):
+        """
+        Sets the parameters to start scanning using filters
+        :param filters_status: array containing the status of each filter
+        :return: none
+        :author: Pablo Sanz
+        """
+        self.scan_filter_parameters[0] = value[0]
+        self.scan_filter_parameters[1] = value[3]
+        self.model.get_filters(value[1], value[2])
 
     def stop_scan(self):
         pgrep_cmd = ['pgrep', 'airodump-ng']

@@ -22,7 +22,7 @@ class View:
     interfaces_old = []
     networks_old = []
     encryption_types = ('All', 'WEP', 'WPA')
-    channels = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14')
+    channels = ('ALL', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14')
     current_mac = "0A:1B:2C:3D:4E:5F"
     new_mac = "5F:4E:3D:2C:1B:0A"
 
@@ -109,6 +109,7 @@ class View:
         self.channels_combobox = ttk.Combobox(self.labelframe_more_options, textvariable=self.channelVar)
         self.channels_combobox['values'] = self.channels
         self.channels_combobox.bind("<<ComboboxSelected>>")
+        self.channels_combobox.current(0)
         self.channels_combobox.grid(column=2, row=0)
         self.null_label6 = Message(self.labelframe_more_options, text="")
         self.null_label6.grid(column=3, row=0, sticky=W)
@@ -182,6 +183,7 @@ class View:
 
     # Sends the selected interface to control
     def start_scan(self):
+        self.send_notify(Operation.SCAN_OPTIONS, self.filters_status)
         self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
 
     # Sends a stop scanning order to control
@@ -226,25 +228,27 @@ class View:
                 return
 
     # Filters networks
-    ######################(MUST CHANGE WPS ITEM[INDEX]#################################
-    def filters(self, network_list):
-        new_network_list = network_list
+    """
+    [0]ENCRYPTION (string)
+    [1]WPS (boolean)
+    [2]CLIENTS (boolean)
+    [3]CHANNEL (string)
+    """
+    def filters_status(self):
+        filters_status = ["", False, False, ""]
+        if (self.encryptionVar.get() != "ALL"):
+            print("ENCRYPTION FILTER ENABLED")
+            filters_status[0] = self.encryptionVar.get()
         if (self.wps_status.get() == True):
             print("WPS FILTER ENABLED")
-        #    for item in new_network_list:
-        #        if(item[9] == "no"):
-        #            new_network_list.remove(item)
+            filters_status[1] = True
         if (self.clients_status.get() == True):
             print("CLIENTS FILTER ENABLED")
-            for item in new_network_list:
-                if (item[16] == "0"):
-                    new_network_list.remove(item)
-        if (self.channelVar.get() in self.channels):
+            filters_status[2] = True
+        if (self.channelVar.get() != "ALL"):
             print("CHANNELS FILTER ENABLED")
-            for item in new_network_list:
-                if (item[4] != self.channelVar):
-                    new_network_list.remove(item)
-        return new_network_list
+            filters_status[3] = self.channelVar.get()
+        return filters_status
 
     def get_notify(self, interfaces, networks):
         if (self.interfaces_old != interfaces):
