@@ -21,7 +21,7 @@ class View:
     networks = ""
     interfaces_old = []
     networks_old = []
-    encryption_types = ('All', 'WEP', 'WPA')
+    encryption_types = ('ALL', 'WEP', 'WPA')
     channels = ('ALL', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14')
     current_mac = "0A:1B:2C:3D:4E:5F"
     new_mac = "5F:4E:3D:2C:1B:0A"
@@ -183,7 +183,7 @@ class View:
 
     # Sends the selected interface to control
     def start_scan(self):
-        self.send_notify(Operation.SCAN_OPTIONS, self.filters_status)
+        self.send_notify(Operation.SCAN_OPTIONS, self.apply_filters())
         self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
 
     # Sends a stop scanning order to control
@@ -234,8 +234,8 @@ class View:
     [2]CLIENTS (boolean)
     [3]CHANNEL (string)
     """
-    def filters_status(self):
-        filters_status = ["", False, False, ""]
+    def apply_filters(self):
+        filters_status = ["ALL", False, False, "ALL"]
         if (self.encryptionVar.get() != "ALL"):
             print("ENCRYPTION FILTER ENABLED")
             filters_status[0] = self.encryptionVar.get()
@@ -267,12 +267,15 @@ class View:
                                                                               item[9] + " dbi", "yes", item[16]))
                 self.networks_treeview.update()
 
-    def show_warning_notification(self, title, message):
-        warning_notification = messagebox.showwarning(title, message)
+    ##########################################
+    # SET NOTIFICATIONS TITLES AS PARAMETERS #
+    ##########################################
+    def show_warning_notification(self, message):
+        warning_notification = messagebox.showwarning("Warning", message)
         print(warning_notification)
 
-    def show_info_notification(self, title, message):
-        info_notification = messagebox.showinfo(title, message)
+    def show_info_notification(self, message):
+        info_notification = messagebox.showinfo("Info", message)
         print(info_notification)
 
     def send_notify(self, operation, value):

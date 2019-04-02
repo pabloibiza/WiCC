@@ -48,17 +48,13 @@ class Model:
             self.interfaces.append(interface)
         #self.interfaces.add_object(interface)
 
-    def set_networks(self, networks, scan_options):
+    def set_networks(self, networks):
         """
         Creates the new networks based on the list of parameters recevied
         :param networks: list of lists of network parameters
         :return:
         """
         list_networks = []
-        encryption = scan_options[0]
-        wps = scan_options[1]
-        channel = scan_options[2]
-        with_clients = scan_options[3]
 
         first_time_empty = False
         id = 1
@@ -223,5 +219,5 @@ class Model:
         return self.interfaces
 
     def get_filters(self, wps_filter_status, clients_filter_status):
-        self.network_filters.append(wps_filter_status)
-        self.network_filters.append(clients_filter_status)
+        self.network_filters[0] = wps_filter_status
+        self.network_filters[1] = clients_filter_status

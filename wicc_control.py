@@ -235,10 +235,10 @@ class Control:
             interface = self.selectedInterface
 
         command = ['airodump-ng', interface, '--write', tempfile, '--output-format', 'csv']
-        if(self.scan_filter_parameters[0] != ""):
+        if(self.scan_filter_parameters[0] != "ALL"):
             command.append('--encrypt')
             command.append(self.scan_filter_parameters[0])
-        if(self.scan_filter_parameters[1] != ""):
+        if(self.scan_filter_parameters[1] != "ALL"):
             command.append('--channel')
             command.append(self.scan_filter_parameters[1])
         thread = threading.Thread(target=self.execute_command, args=(command,))
@@ -277,6 +277,7 @@ class Control:
             self.set_networks(networks)
             self.set_clients(clients)
             self.notify_view()
+            return
         except:
             # This exception is usually caused by the wireless interface already running in monitor mode.
             # Therefore, a probable fix is to stop the card to run in monitor mode with: airmon-ng stop
