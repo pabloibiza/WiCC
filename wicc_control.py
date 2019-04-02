@@ -304,7 +304,8 @@ class Control:
         elif operation == Operation.STOP_SCAN:
             pass
         elif operation == Operation.STOP_RUNNING:
-            sys.exit()
+            self.view.reaper_calls()
+            sys.exit(0)
 
     def attack_network(self):
         network = self.model.search_network(self.selectedNetwork)

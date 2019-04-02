@@ -31,7 +31,7 @@ class View:
 
     def build_window(self, headless=False):
         self.root = Tk()
-        self.root.protocol("WM_DELETE_WINDOW", self.kill_application)
+        self.root.protocol("WM_DELETE_WINDOW", self.notify_kill)
         self.root.geometry('830x420')
         self.root.resizable(width=True, height=True)
         self.root.title('WiCC - Wifi Cracking Camp')
@@ -180,7 +180,6 @@ class View:
         if not headless:
             self.root.mainloop()
 
-
     # Sends the selected interface to control
     def start_scan(self):
         self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
@@ -196,8 +195,11 @@ class View:
         self.send_notify(Operation.SELECT_NETWORK, network_id)
 
     # Sends and order to kill all processes when X is clicked
-    def kill_application(self):
+    def notify_kill(self):
         self.send_notify(Operation.STOP_RUNNING, "")
+
+    # Receives a notification to kill view
+    def reaper_calls(self):
         self.root.destroy()
 
     # Sends an order to randomize the interface MAC address
@@ -212,7 +214,7 @@ class View:
         else:
             pass
 
-    # Shows a window to select a custom worlist to use. Then sends the path to control.
+    # Shows a window to select a custom wordlist to use. Then sends the path to control.
     def select_custom_wordlist(self):
         select_window = filedialog.askopenfilename(parent=self.root, initialdir='/home/$USER', title='Choose file',
                                                    filetypes=[('Text files', '.txt'), ("All files", "*.*")])
@@ -261,12 +263,12 @@ class View:
                                                                               item[9] + " dbi", "yes", item[16]))
                 self.networks_treeview.update()
 
-    def show_warning_notification(self, message):
-        warning_notification = messagebox.showwarning("Warning", message)
+    def show_warning_notification(self, title, message):
+        warning_notification = messagebox.showwarning(title, message)
         print(warning_notification)
 
-    def show_info_notification(self, message):
-        info_notification = messagebox.showinfo("Info", message)
+    def show_info_notification(self, title, message):
+        info_notification = messagebox.showinfo(title, message)
         print(info_notification)
 
     def send_notify(self, operation, value):
