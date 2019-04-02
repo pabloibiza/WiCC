@@ -17,6 +17,7 @@ class EncryptionType:
         self.target_network = network
         self.interface = interface
         self.bssid = network.get_bssid()
+        self.essid = network.get_essid()
         self.channel = str(int(self.target_network.get_channel()))
 
     @staticmethod
@@ -49,29 +50,7 @@ class EncryptionType:
         thread.start()
         thread.join(1)
 
-        time.sleep(4)
-
-        write_directory += 'net_attack-01.cap'
-        valid_handshake = False
-
-        out, err = self.execute_command(['ls', '/tmp/WiCC/'])
-
-        pyrit_cmd = ['pyrit', '-r', write_directory, 'analyze']
-        de_auth_cmd = ['aireplay-ng', '-0', '1', '--ignore-negative-one', '-a', self.bssid, '-D', self.interface + 'mon']
-
-        second_iterator = 5  # when 15, de-auth's clients on the network
-        while not valid_handshake:
-            pyrit_out, err = self.execute_command(pyrit_cmd)
-            valid_handshake = self.filter_pyrit_out(pyrit_out)
-            if not valid_handshake:
-                time.sleep(1)
-                second_iterator += 1
-                if second_iterator == 10:
-                    out, err = self.execute_command(de_auth_cmd)
-                    second_iterator = 0
-            else:
-                break
-
+        time.sleep(4)  # check if necessary
 
     @staticmethod
     def filter_pyrit_out(output):

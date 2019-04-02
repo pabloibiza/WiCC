@@ -399,7 +399,8 @@ class Control:
         elif operation == Operation.STOP_SCAN:
             self.stop_scan()
         elif operation == Operation.STOP_RUNNING:
-            sys.exit()
+            self.stop_scan()
+            sys.exit(0)
         elif operation == Operation.SCAN_OPTIONS:
             # values: [encryption, wps, channel, with_clients]
             self.scan_options[0] = value[0]  # encryption
@@ -456,52 +457,53 @@ class Control:
         """
         network = self.model.search_network(self.selectedNetwork)
         password = ""
-        try:
-            network_encryption = network.get_encryption()
-            time.sleep(0.01)
+        #try:
+        network_encryption = network.get_encryption()
+        time.sleep(0.01)
 
-            if network_encryption == " OPN":
-                self.show_info_notification("The selected network is open. No password required to connect")
-                self.cracking_completed = True
-                self.stop_scan()
-                return
-
-            self.show_info_notification("Starting attack on" + network_encryption + " network:" + "\n\nName: " +
-                                        network.get_essid() + "\nBSSID: " + network.get_bssid() +
-                                        "\n\nPlease wait up to a few minutes until the process is finished")
-
-            if network_encryption == " WEP":
-                print("wep attack")
-                wep_attack = WEP(network, self.selectedInterface)
-                print("instance created")
-                wep_attack.scan_network('/tmp/WiCC/')
-                print("scan finished")
-                password = wep_attack.crack_network()
-                print("cracking finised")
-            elif network_encryption[:4] == " WPA":
-                print("create wpa instance")
-                wpa_attack = WPA(network, self.selectedInterface, '/usr/share/wordlists/rockyou.txt')
-                print("start scanning")
-                wpa_attack.scan_network('/tmp/WiCC/')
-                print("start cracking")
-                password = wpa_attack.crack_network()
-                print("finished cracking")
-                #pass
-
+        if network_encryption == " OPN":
+            self.show_info_notification("The selected network is open. No password required to connect")
             self.cracking_completed = True
             self.stop_scan()
+            return
 
-            if password != "":
-                self.view.show_info_notification("Cracking process finished\n\nPassword: " + password +
-                                                 "\n\nYou can now restart the scanning process")
-            else:
-                self.view.show_info_notification("Cracking process finished\n\nNo password retrieved"
-                                                 "\n\nYou can restart the scanning process")
-            self.selectedNetwork = ""
-        except Exception:
-            self.view.show_info_notification("Please select a valid target network")
-            self.selectedNetwork = ""
-            print(Exception)
+        self.show_info_notification("Starting attack on" + network_encryption + " network:" + "\n\nName: " +
+                                    network.get_essid() + "\nBSSID: " + network.get_bssid() +
+                                    "\n\nPlease wait up to a few minutes until the process is finished")
+
+        if network_encryption == " WEP":
+            print("wep attack")
+            wep_attack = WEP(network, self.selectedInterface)
+            print("instance created")
+            wep_attack.scan_network('/tmp/WiCC/')
+            print("scan finished")
+            password = wep_attack.crack_network()
+            print("cracking finised")
+        elif network_encryption[:4] == " WPA":
+            print("create wpa instance")
+            wpa_attack = WPA(network, self.selectedInterface, '/usr/share/wordlists/rockyou.txt')
+            print("start scanning")
+            wpa_attack.scan_network('/tmp/WiCC/')
+            print("start cracking")
+            self.show_info_notification("Handshake captured.\n\nStarting password cracking with the given wordlist")
+            password = wpa_attack.crack_network()
+            print("finished cracking")
+            #pass
+
+        self.cracking_completed = True
+        self.stop_scan()
+
+        if password != "":
+            self.view.show_info_notification("Cracking process finished\n\nPassword: " + password +
+                                             "\n\nYou can now restart the scanning process")
+        else:
+            self.view.show_info_notification("Cracking process finished\n\nNo password retrieved"
+                                             "\n\nYou can restart the scanning process")
+        self.selectedNetwork = ""
+        #except Exception:
+        #    self.view.show_info_notification("Please select a valid target network")
+        #    self.selectedNetwork = ""
+        #    print(Exception)
 
     def running_scan(self):
         """
