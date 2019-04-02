@@ -94,11 +94,17 @@ if __name__ == '__main__':
             print("Selected network: " + str(control.selectedNetwork))
             print("\nStarting attack...\n")
 
-            while not control.cracking_completed:
+            while not control.cracking_completed and not control.is_cracking_network():
                 print("\t... Cracking network ...")
                 time.sleep(1)
 
+            while control.is_cracking_network():
+                print("\t... Cracking password ...")
+                # print(control.check_cracking_status())
+                time.sleep(1)
+
             print("Cracking process finished.")
+            sys.exit(0)
         else:
             print("Scanning interfaces")
             control.scan_interfaces(auto_select)

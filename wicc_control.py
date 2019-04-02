@@ -37,9 +37,12 @@ class Control:
     allows_monitor = False  # to know if the wireless interface allows monitor mode
     scan_stopped = False  # to know if the network scan is running
     cracking_completed = False  # to know if the network cracking process has finished or not
+    selected_wordlist = "/usr/share/wordlists/rockyou.txt"
+    cracking_network = False
+    net_attack = ""
 
     # values for the scan options. If empty, they don't apply
-    scan_options = ["", "", "", False]  # [encryption, wps, channel, with_clients]
+    scan_options = [False, False, False, False]  # [encryption, wps, channel, with_clients]
 
     def __init__(self):
         self.model = ""
@@ -402,11 +405,9 @@ class Control:
             self.stop_scan()
             sys.exit(0)
         elif operation == Operation.SCAN_OPTIONS:
-            # values: [encryption, wps, channel, with_clients]
-            self.scan_options[0] = value[0]  # encryption
-            self.scan_options[1] = value[1]  # wps
-            self.scan_options[2] = value[2]  # channel
-            self.scan_options[3] = value[3]  # with_clients
+            return
+        elif operation == Operation.SELECT_CUSTOM_WORDLIST:
+            self.selected_wordlist = value
             return
 
     def stop_scan(self):
@@ -473,21 +474,23 @@ class Control:
 
         if network_encryption == " WEP":
             print("wep attack")
-            wep_attack = WEP(network, self.selectedInterface)
+            self.net_attack = WEP(network, self.selectedInterface)
             print("instance created")
-            wep_attack.scan_network('/tmp/WiCC/')
+            self.net_attack.scan_network('/tmp/WiCC/')
             print("scan finished")
-            password = wep_attack.crack_network()
+            password = self.net_attack.crack_network()
             print("cracking finised")
         elif network_encryption[:4] == " WPA":
             print("create wpa instance")
-            wpa_attack = WPA(network, self.selectedInterface, '/usr/share/wordlists/rockyou.txt')
+            self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist)
             print("start scanning")
-            wpa_attack.scan_network('/tmp/WiCC/')
+            self.net_attack.scan_network('/tmp/WiCC/')
             print("start cracking")
             self.show_info_notification("Handshake captured.\n\nStarting password cracking with the given wordlist")
-            password = wpa_attack.crack_network()
+            self.cracking_network = True
+            password = self.net_attack.crack_network()
             print("finished cracking")
+            self.cracking_network = False
             #pass
 
         self.cracking_completed = True
@@ -513,3 +516,9 @@ class Control:
         :Author: Miguel Yanes Fernández
         """
         return not self.scan_stopped
+
+    def is_cracking_network(self):
+        return self.cracking_network
+
+    def check_cracking_status(self):
+        return self.net_attack.check_cracking_status('/tmp/WiCC/aircrack-out')
