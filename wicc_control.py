@@ -33,6 +33,7 @@ class Control:
     headless = False
     allows_monitor = False  # to know if the wireless interface allows monitor mode
     scan_stopped = False  # to know if the network scan is running
+    running_stopped = False  # to know if the program is running (or if the view has been closed)
 
     def __init__(self):
         self.model = ""
@@ -324,7 +325,7 @@ class Control:
         Send notify to update the view with the list of interfaces and networks
         :return:
         """
-        if not self.headless:
+        if not self.headless and not self.run_stopped():
             # if the program is not running headless, we notify the view
             interfaces, networks = self.model.get_parameters()
             self.view.get_notify(interfaces, networks)
@@ -349,8 +350,10 @@ class Control:
         elif operation == Operation.STOP_SCAN:
             self.stop_scan()
         elif operation == Operation.STOP_RUNNING:
+            self.stop_scan()
             self.view.reaper_calls()
-            sys.exit(0)
+            self.running_stopped = True
+            # sys.exit(0)
 
     def stop_scan(self):
         pgrep_cmd = ['pgrep', 'airodump-ng']
@@ -394,3 +397,6 @@ class Control:
 
     def running_scan(self):
         return not self.scan_stopped
+
+    def run_stopped(self):
+        return self.running_stopped

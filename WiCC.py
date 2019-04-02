@@ -60,13 +60,13 @@ if __name__ == '__main__':
         view_thread = threading.Thread(target=control.start_view, args=(False,))
     view_thread.start()
     view_thread.join(1)
-    while not exit:
+    while not exit and not control.run_stopped():
         if control.has_selected_interface():
             print("Selected interface: " + control.selectedInterface)
             control.scan_networks()
             print("Start scanning available networks...")
             time.sleep(3)
-            while not control.selectedNetwork and control.running_scan():
+            while not control.selectedNetwork and control.running_scan() and not control.run_stopped():
                 time.sleep(1)
                 print("\t... Scanning networks ...")
                 if not control.filter_networks():
@@ -76,7 +76,7 @@ if __name__ == '__main__':
                     print(" * An error ocurred, please, re-select the interface")
                     control.selectedInterface = ""
                     control.model.interfaces = []
-                    while not control.has_selected_interface():
+                    while not control.has_selected_interface() and not control.run_stopped():
                         control.scan_interfaces(auto_select)
                         print("Scanning interfaces")
                         time.sleep(1)
@@ -87,13 +87,13 @@ if __name__ == '__main__':
             print("\n * Network scanning stopped * \n")
             print(control.selectedNetwork)
             print(control.running_scan())
-            while not control.selectedNetwork:
+            while not control.selectedNetwork and not control.run_stopped():
                 # waits until a network is selected
                 time.sleep(1)
             print("Selected network: " + str(control.selectedNetwork))
             print("\nStarting attack...\n")
 
-            while not control.cracking_completed:
+            while not control.cracking_completed and not control.run_stopped():
                 print("\t... Cracking network ...")
                 time.sleep(1)
 
