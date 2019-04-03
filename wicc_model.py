@@ -154,26 +154,26 @@ class Model:
                     packets = pair
                 elif cont == 5:
                     bssid = pair
-                    if bssid != ' (not associated) ':
-                        self.add_client_network(bssid[1:])
                 elif cont == 6:
                     probed_bssids = pair
                 cont += 1
-
-            list_clients.append(Client(id, station_MAC, first_seen, last_seen, power, packets, bssid, probed_bssids))
-            id += 1
+            if bssid != ' (not associated) ':
+                client = Client(id, station_MAC, first_seen, last_seen, power, packets, bssid, probed_bssids)
+                list_clients.append(client)
+                self.add_client_network(bssid, client)
+                id += 1
 
         self.clients = list_clients
 
-    def add_client_network(self, bssid):
+    def add_client_network(self, bssid, client):
         """
         Add a client to the specified network. Searchs for the network and calls the method to add one client.
         :param bssid: bssid of the network
         :return:
         """
         for network in self.networks:
-            if network.bssid == bssid:
-                network.add_client()
+            if network.get_bssid() == bssid[1:]:
+                network.add_client(client)
                 return
 
     def compare_interfaces(self, interfaces):
@@ -217,6 +217,13 @@ class Model:
 
     def get_interfaces(self):
         return self.interfaces
+
+    def get_mac(self, interface_name):
+        for interface in self.interfaces:
+            if interface.get_name() == interface_name:
+                address = interface.get_address()
+                print("Interface " + interface_name + ", address " + address)
+                return interface.get_address()
 
     def get_filters(self, wps_filter_status, clients_filter_status):
         self.network_filters[0] = wps_filter_status

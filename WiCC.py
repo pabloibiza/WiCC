@@ -5,7 +5,28 @@ import time
 import threading
 
 
+verbose_level = 0
+
+
+def show_message(message):
+    """
+    Method to print a message if the verbose level is higher or equal to 1
+    :param message: message to pring
+    :return: none
+
+    :Author: Miguel Yanes Fernández
+    """
+    if verbose_level >= 1:
+        print(message)
+
+
 if __name__ == '__main__':
+    """
+    Main
+    
+    :Author: Miguel Yanes Fernández
+    """
+
     # check root privilege
     if os.getuid() != 0:
         print("\n\tError: script must be executed as root\n")
@@ -42,17 +63,39 @@ if __name__ == '__main__':
     args = sys.argv[1:]
     for arg in args:
         if arg == '-h':
-            headless = True
-            print("*** Running program headless\n")
+            if not headless:
+                headless = True
+                print(" *** Running program headless\n")
         elif arg == '-a':
-            auto_select = True
-            print("*** Auto-select network interface\n")
+            if not auto_select:
+                auto_select = True
+                print(" *** Auto-select network interface\n")
+        elif '-v' in arg:
+            if verbose_level > 0:
+                if arg == '-v':
+                    control.set_verbose_level(1)
+                    verbose_level = 1
+                    print("*** Verbose level set to " + str(verbose_level) + "\n")
+                elif arg == '-vv':
+                    control.set_verbose_level(2)
+                    verbose_level = 2
+                    print("*** Verbose level set to " + str(verbose_level) + "\n")
+                elif arg == '-vvv':
+                    control.set_verbose_level(3)
+                    verbose_level = 3
+                    print("*** Verbose level set to " + str(verbose_level) + "\n")
         elif arg == '--help':
-            print("*** Use option -h to run the program headless")
-            print("*** Use option -a to auto-select the first available network interface\n")
+            print(" ***  -h to run the program headless")
+            print(" ***  -a to auto-select the first available network interface")
+            print(" ***  -v to select the verbose level for the program")
+            print("\t-v   for level 1 (basic output)")
+            print("\t-vv  for level 2 (advanced output)")
+            print("\t-vvv for level 3 (advanced output and executed commands)\n")
+            sys.exit(0)
         else:
             print("*** Unrecognized option " + arg)
-            print("*** Use option --help to view the help. Only for debugging purposes\n")
+            print("*** Use option --help to view the help and finish execution. Only for debugging purposes\n")
+            break
 
     if headless:
         view_thread = threading.Thread(target=control.start_view, args=(True,))
@@ -62,44 +105,49 @@ if __name__ == '__main__':
     view_thread.join(1)
     while not exit and not control.run_stopped():
         if control.has_selected_interface():
-            print("Selected interface: " + control.selectedInterface)
+            show_message("Selected interface: " + control.selectedInterface)
             control.scan_networks()
-            print("Start scanning available networks...")
+            show_message("Start scanning available networks...")
             time.sleep(3)
-            while not control.selectedNetwork and control.running_scan() and not control.run_stopped():
+            while not control.selectedNetwork and control.running_scan():
                 time.sleep(1)
-                print("\t... Scanning networks ...")
+                show_message("\t... Scanning networks ...")
                 if not control.filter_networks():
                     time.sleep(1)
                     control.stop_scan()
                     time.sleep(1)
-                    print(" * An error ocurred, please, re-select the interface")
+                    show_message(" * An error ocurred, please, re-select the interface")
                     control.selectedInterface = ""
+                    control.last_selectedInterface = ""
                     control.model.interfaces = []
-                    while not control.has_selected_interface() and not control.run_stopped():
+                    while not control.has_selected_interface():
                         control.scan_interfaces(auto_select)
-                        print("Scanning interfaces")
+                        show_message("Scanning interfaces")
                         time.sleep(1)
-                    print("Selected interface: " + control.selectedInterface)
+                    show_message("Selected interface: " + control.selectedInterface)
                     control.scan_networks()
-                    print("Start scanning available networks...")
+                    show_message("Start scanning available networks...")
                     time.sleep(3)
-            print("\n * Network scanning stopped * \n")
-            print(control.selectedNetwork)
-            print(control.running_scan())
-            while not control.selectedNetwork and not control.run_stopped():
+            show_message("\n * Network scanning stopped * \n")
+            while not control.selectedNetwork:
                 # waits until a network is selected
                 time.sleep(1)
-            print("Selected network: " + str(control.selectedNetwork))
-            print("\nStarting attack...\n")
+            show_message("Selected network: " + str(control.selectedNetwork))
+            show_message("\nStarting attack...\n")
 
-            while not control.cracking_completed and not control.run_stopped():
-                print("\t... Cracking network ...")
+            while not control.cracking_completed and not control.is_cracking_network():
+                show_message("\t... Cracking network ...")
                 time.sleep(1)
 
-            print("Cracking process finished.")
+            while control.is_cracking_network():
+                show_message("\t... Cracking password ...")
+                # print(control.check_cracking_status())
+                time.sleep(1)
+
+            show_message("Cracking process finished.")
+            sys.exit(0)
         else:
-            print("Scanning interfaces")
+            show_message("Scanning interfaces")
             control.scan_interfaces(auto_select)
             time.sleep(1)
             if control.get_interfaces() == "":

