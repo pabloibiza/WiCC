@@ -41,9 +41,6 @@ class Control:
     cracking_network = False
     net_attack = ""
 
-    # values for the scan options. If empty, they don't apply
-    scan_options = [False, False, False, False]  # [encryption, wps, channel, with_clients]
-
     def __init__(self):
         self.model = ""
         self.model = Model()
@@ -338,7 +335,7 @@ class Control:
         #for network in networks:
         #    for pair in network:
 
-        self.model.set_networks(networks, self.scan_options)
+        self.model.set_networks(networks)
 
     def set_clients(self, clients):
         """
@@ -473,8 +470,11 @@ class Control:
                                     "\n\nPlease wait up to a few minutes until the process is finished")
 
         if network_encryption == " WEP":
+            print("spoofing client mac")
+            spoofed_mac = self.spoof_client_mac(self.selectedNetwork)
+            print("spoofed mac: " + spoofed_mac)
             print("wep attack")
-            self.net_attack = WEP(network, self.selectedInterface)
+            self.net_attack = WEP(network, self.selectedInterface, spoofed_mac)
             print("instance created")
             self.net_attack.scan_network('/tmp/WiCC/')
             print("scan finished")
@@ -519,6 +519,18 @@ class Control:
 
     def is_cracking_network(self):
         return self.cracking_network
+
+    def spoof_client_mac(self, id):
+        """
+        Method to spoof a network client's MAc
+        :param bssid: bssid of the target network
+        :return: spoofed client mac
+        """
+        network = self.model.search_network(id)
+        client = network.get_first_client()
+        client_mac = client.get_mac()
+        # macchanger with client mac
+        return client_mac
 
     def check_cracking_status(self):
         return self.net_attack.check_cracking_status('/tmp/WiCC/aircrack-out')

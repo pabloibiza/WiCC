@@ -47,17 +47,13 @@ class Model:
             self.interfaces.append(interface)
         #self.interfaces.add_object(interface)
 
-    def set_networks(self, networks, scan_options):
+    def set_networks(self, networks):
         """
         Creates the new networks based on the list of parameters recevied
         :param networks: list of lists of network parameters
         :return:
         """
         list_networks = []
-        encryption = scan_options[0]
-        wps = scan_options[1]
-        channel = scan_options[2]
-        with_clients = scan_options[3]
 
         first_time_empty = False
         id = 1
@@ -157,26 +153,26 @@ class Model:
                     packets = pair
                 elif cont == 5:
                     bssid = pair
-                    if bssid != ' (not associated) ':
-                        self.add_client_network(bssid[1:])
                 elif cont == 6:
                     probed_bssids = pair
                 cont += 1
-
-            list_clients.append(Client(id, station_MAC, first_seen, last_seen, power, packets, bssid, probed_bssids))
-            id += 1
+            if bssid != ' (not associated) ':
+                client = Client(id, station_MAC, first_seen, last_seen, power, packets, bssid, probed_bssids)
+                list_clients.append(client)
+                self.add_client_network(bssid, client)
+                id += 1
 
         self.clients = list_clients
 
-    def add_client_network(self, bssid):
+    def add_client_network(self, bssid, client):
         """
         Add a client to the specified network. Searchs for the network and calls the method to add one client.
         :param bssid: bssid of the network
         :return:
         """
         for network in self.networks:
-            if network.bssid == bssid:
-                network.add_client()
+            if network.get_bssid() == bssid[1:]:
+                network.add_client(client)
                 return
 
     def compare_interfaces(self, interfaces):
@@ -214,3 +210,10 @@ class Model:
 
     def get_interfaces(self):
         return self.interfaces
+
+    def get_mac(self, interface_name):
+        for interface in self.interfaces:
+            if interface.get_name() == interface_name:
+                address = interface.get_address()
+                print("Interface " + interface_name + ", address " + address)
+                return interface.get_address()

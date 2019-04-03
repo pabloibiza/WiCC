@@ -25,10 +25,12 @@ class Network:
     essid = ""
     handshake = False
     password = ""
-    clients = 0
+    num_clients = 0
+    clients = []
+
 
     def __init__(self, id, bssid, first_seen, last_seen, channel, speed, privacy, cipher, authentication, power,
-                 beacons, ivs, lan_ip, essid, handshake, password, clients):
+                 beacons, ivs, lan_ip, essid, handshake, password, num_clients):
         """
         Constructor for the Network class
         :param id: string. Id of the network
@@ -65,7 +67,8 @@ class Network:
         self.essid = essid
         self.handshake = handshake
         self.password = password
-        self.clients = clients
+        self.num_clients = num_clients
+        self.clients = []
 
     def __str__(self):
         """
@@ -114,15 +117,21 @@ class Network:
         list.append(self.essid)
         list.append(self.handshake)
         list.append(self.password)
+        list.append(self.num_clients)
         list.append(self.clients)
         return list
 
-    def add_client(self):
+    def add_client(self, client):
         """
         Sum 1 to the number of connected clients on the network
         :return:
         """
-        self.clients += 1
+        self.clients.append(client)
+        self.num_clients += 1
+
+    def get_first_client(self):
+        if self.clients:
+            return self.clients[0]
 
     def get_bssid(self):
         return self.bssid
@@ -138,5 +147,8 @@ class Network:
 
     def get_id(self):
         return self.id
+
+    def get_clients(self):
+        return self.num_clients
 
     # TO DO getters and setters

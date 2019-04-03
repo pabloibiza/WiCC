@@ -71,6 +71,7 @@ class EncryptionType:
     @staticmethod
     def filter_cowpatty_out(output):
         output = output.decode('utf-8')
+        print(output)
         lines = output.split('\n')
         for line in lines:
             if line == 'End of pcap capture file, incomplete four-way handshake exchange.  ' \
@@ -79,6 +80,8 @@ class EncryptionType:
             elif 'mount crack' in line:
                 print("cowpatty handshake: " + line)
                 return True
+            else:
+                print(line)
         return False
 
     @staticmethod
