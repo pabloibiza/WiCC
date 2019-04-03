@@ -6,14 +6,14 @@
     Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
-
+import threading
 from tkinter import *
 from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
     Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
     HORIZONTAL, END, FALSE, IntVar, StringVar, messagebox, filedialog
 
 from wicc_operations import Operation
-
+from wicc_view_mac import ViewMac
 
 class View:
     control = ""
@@ -23,8 +23,7 @@ class View:
     networks_old = []
     encryption_types = ('ALL', 'WEP', 'WPA')
     channels = ('ALL', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14')
-    current_mac = "0A:1B:2C:3D:4E:5F"
-    new_mac = "5F:4E:3D:2C:1B:0A"
+    mac_spoofing_status = False
 
     def __init__(self, control):
         self.control = control
@@ -122,10 +121,9 @@ class View:
         self.null_label7 = Message(self.labelframe_more_options, text="")
         self.null_label7.grid(column=5, row=0)
 
-        # BUTTON - RAMNDOMIZE MAC
-        self.button_randomize_mac = ttk.Button(self.labelframe_more_options, text="Randomize MAC",
-                                               command=self.randomize_mac)
-        self.button_randomize_mac.grid(column=6, row=0)
+        # BUTTON - CHANGE MAC
+        self.button_mac_menu= ttk.Button(self.labelframe_more_options, text="MAC menu", command=self.mac_menu)
+        self.button_mac_menu.grid(column=6, row=0)
         self.null_label8 = Message(self.labelframe_more_options, text="")
         self.null_label8.grid(column=7, row=0)
 
@@ -204,17 +202,6 @@ class View:
     def reaper_calls(self):
         self.root.destroy()
 
-    # Sends an order to randomize the interface MAC address
-    def randomize_mac(self):
-        currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac +
-                                               "\n\nAre you sure you want to change it? ")
-        print(currentmac_alert)
-        if (currentmac_alert == True):
-            self.send_notify(Operation.RANDOMIZE_MAC, "")
-            new_mac_alert = messagebox.showinfo("", "You new MAC is: " + self.new_mac)
-            print(new_mac_alert)
-        else:
-            pass
 
     # Shows a window to select a custom wordlist to use. Then sends the path to control.
     def select_custom_wordlist(self):
@@ -226,6 +213,47 @@ class View:
             except:
                 messagebox.showerror("Open Source File", "Failed to read file \n'%s'" % select_window)
                 return
+
+    # Sends an order to randomize the interface MAC address
+    def randomize_mac(self):
+        if (self.interfaceVar.get() != ""):
+            currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
+                                                   + "\n\nAre you sure you want to change it? ")
+            if (currentmac_alert == True):
+                self.send_notify(Operation.RANDOMIZE_MAC, self.interfaceVar.get())
+                new_mac_alert = messagebox.showinfo("", "Your new MAC is: " + self.current_mac())
+        else:
+            self.show_warning_notification("No interface selected. Close the window and select one")
+
+    def customize_mac(self, new_mac):
+        if (self.interfaceVar.get() != ""):
+            currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
+                                                   + "\n\nAre you sure you want to change it for\n" +
+                                                   new_mac + " ?")
+            if (currentmac_alert == True):
+                self.send_notify(Operation.CUSTOMIZE_MAC, (self.interfaceVar.get(), new_mac))
+                new_mac_alert = messagebox.showinfo("", "Your new MAC is: " + self.current_mac())
+        else:
+            self.show_warning_notification("No interface selected. Close the window and select one")
+
+    def restore_mac(self):
+        if (self.interfaceVar.get() != ""):
+            currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
+                                                   + "\n\nAre you sure you want to restore original?")
+            if (currentmac_alert == True):
+                self.send_notify(Operation.RESTORE_MAC, self.interfaceVar.get())
+                new_mac_alert = messagebox.showinfo("", "Your new MAC is: " + self.current_mac())
+        else:
+            self.show_warning_notification("No interface selected. Close the window and select one")
+
+    def spoofing_mac(self, status):
+        if (self.interfaceVar.get() != ""):
+                self.send_notify(Operation.SPOOF_MAC, status)
+        else:
+            self.show_warning_notification("No interface selected. Close the window and select one")
+
+    def mac_menu(self):
+        mac_menu = ViewMac(self)
 
     # Filters networks
     """
@@ -267,6 +295,28 @@ class View:
                                                                               item[9] + " dbi", "yes", item[16]))
                 self.networks_treeview.update()
 
+    def current_mac(self):
+        return str(self.control.mac_checker(self.interfaceVar.get()))
+
+    def get_notify_mac(self, operation, value):
+        if(operation == 0):     #custom MAC
+            print("CUSTIMIZE MAC OPERATION")
+            self.customize_mac(value)
+        elif(operation == 1):    #random MAC
+            print("RANDOMIZE MAC OPERATION")
+            self.randomize_mac()
+        elif(operation == 2):   #restore MAC
+            print("RESTORE MAC OPERATION")
+            self.restore_mac()
+        elif(operation == 3):   #MAC spoofing
+            print("MAC SPOOFING OPERATION: " + str(self.mac_spoofing_status))
+            self.mac_spoofing_status = value
+            self.spoofing_mac(value)
+
+    def get_spoofing_status(self):
+        return self.mac_spoofing_status
+
+
     ##########################################
     # SET NOTIFICATIONS TITLES AS PARAMETERS #
     ##########################################
@@ -281,3 +331,4 @@ class View:
     def send_notify(self, operation, value):
         self.control.get_notify(operation, value)
         return
+

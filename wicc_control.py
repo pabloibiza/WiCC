@@ -7,7 +7,6 @@
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
 
-
 import os, sys
 from wicc_operations import Operation
 from wicc_model import Model
@@ -210,7 +209,6 @@ class Control:
                 self.model.add_interface(interface[0], interface[1], interface[2], interface[3], interface[4])
             self.notify_view()
 
-
     def scan_networks(self):
         """
         Scan all the networks with airodump-ng. Executes the scan concurrently in a thread. Writes the output of the
@@ -235,10 +233,10 @@ class Control:
             interface = self.selectedInterface
 
         command = ['airodump-ng', interface, '--write', tempfile, '--output-format', 'csv']
-        if(self.scan_filter_parameters[0] != "ALL"):
+        if (self.scan_filter_parameters[0] != "ALL"):
             command.append('--encrypt')
             command.append(self.scan_filter_parameters[0])
-        if(self.scan_filter_parameters[1] != "ALL"):
+        if (self.scan_filter_parameters[1] != "ALL"):
             command.append('--channel')
             command.append(self.scan_filter_parameters[1])
         thread = threading.Thread(target=self.execute_command, args=(command,))
@@ -253,7 +251,7 @@ class Control:
         :return: none
         """
         tempfile = "/tmp/WiCC/net_scan"
-        #networks = self.filter_networks(tempfile)
+        # networks = self.filter_networks(tempfile)
 
         tempfile += '-01.csv'
         networks = []
@@ -301,7 +299,7 @@ class Control:
         :param networks: list of instances of objects from the class Network
         :return: none
         """
-        #for network in networks:
+        # for network in networks:
         #    for pair in network:
 
         self.model.set_networks(networks)
@@ -364,11 +362,23 @@ class Control:
             # sys.exit(0)
         elif operation == Operation.SCAN_OPTIONS:
             self.apply_filters(value)
+        elif operation == Operation.CUSTOMIZE_MAC:
+            self.customize_mac(value)
+        elif operation == Operation.RANDOMIZE_MAC:
+            self.randomize_mac(value)
+        elif operation == Operation.RESTORE_MAC:
+            self.restore_mac(value)
+        elif operation == Operation.SPOOF_MAC:
+            pass
+        elif operation == Operation.CHECK_MAC:
+            self.mac_checker(value)
 
     def apply_filters(self, value):
         """
-        Sets the parameters to start scanning using filters
-        :param filters_status: array containing the status of each filter
+        Sets the parameters channel and encryption to scan, and clients and wps for post-scanning filtering
+        scan_filter_parameters[0] = encryption
+        scan_filter_parameters[1] = channel
+        :param: value: array containing the parameters [encryption, wps, clients, channel]
         :return: none
         :author: Pablo Sanz
         """
@@ -413,7 +423,7 @@ class Control:
             # wep_attack.finish_attack()
         elif network_encryption[:4] == " WPA":
             wpa_attack = WPA(network, "rockyou.txt")
-            #wpa_attack.scan_network()
+            # wpa_attack.scan_network()
             password = wpa_attack.crack_network()
 
     def running_scan(self):
@@ -421,3 +431,44 @@ class Control:
 
     def run_stopped(self):
         return self.running_stopped
+
+    def randomize_mac(self, interface):
+        command1 = ['ifconfig', interface, 'down']
+        command2 = ['macchanger', '-r', interface]
+        command3 = ['ifconfig', interface, 'up']
+        self.execute_command(command1)
+        self.execute_command(command2)
+        self.execute_command(command3)
+
+    def customize_mac(self,values):
+        """
+        :param values: 0 - interface, 1 - mac address
+        :return:
+        """
+        print("###################################\n" + values[0] + values[1] + "##################################")
+        command1 = ['ifconfig', values[0], 'down']
+        command2 = ['macchanger', '-m', values[1], values[0]]
+        command3 = ['ifconfig', values[0], 'up']
+        self.execute_command(command1)
+        self.execute_command(command2)
+        self.execute_command(command3)
+
+    def restore_mac(self, interface):
+        command1 = ['ifconfig', interface, 'down']
+        command2 = ['macchanger', '-p', interface]
+        command3 = ['ifconfig', interface, 'up']
+        self.execute_command(command1)
+        self.execute_command(command2)
+        self.execute_command(command3)
+
+    def mac_checker(self, interface):
+        try:
+            command1 = ['macchanger', '-s', interface]
+            p = Popen(command1, stdout=PIPE, stderr=PIPE)
+            (output, err) = p.communicate()
+            output = output.decode("utf-8")
+            line = output.split(" ")[4]
+            return line
+        except:
+            self.view.show_warning_notification("Can't show current MAC adress")
+            return False
