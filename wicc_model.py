@@ -16,6 +16,7 @@ class Model:
     interfaces = []
     networks = []
     clients = []
+    network_filters = [False, False]
 
     def __init__(self):
         """
@@ -197,8 +198,14 @@ class Model:
         for object in self.interfaces:
             list_interfaces.append(object.get_list())
         list_networks = []
-        for object in self.networks:
-            list_networks.append(object.get_list())
+
+        if(self.network_filters[1]):
+            for network in self.networks:
+                if(network.get_clients() != 0):
+                    list_networks.append(object.get_list())
+        else:
+            for object in self.networks:
+                list_networks.append(object.get_list())
 
         return list_interfaces, list_networks
 
@@ -217,3 +224,10 @@ class Model:
                 address = interface.get_address()
                 print("Interface " + interface_name + ", address " + address)
                 return interface.get_address()
+
+    def get_filters(self, wps_filter_status, clients_filter_status):
+        """
+        :Author: Pablo
+        """
+        self.network_filters[0] = wps_filter_status
+        self.network_filters[1] = clients_filter_status

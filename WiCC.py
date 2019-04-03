@@ -103,7 +103,7 @@ if __name__ == '__main__':
         view_thread = threading.Thread(target=control.start_view, args=(False,))
     view_thread.start()
     view_thread.join(1)
-    while not exit:
+    while not exit and not control.run_stopped():
         if control.has_selected_interface():
             show_message("Selected interface: " + control.selectedInterface)
             control.scan_networks()
@@ -111,7 +111,7 @@ if __name__ == '__main__':
             time.sleep(3)
             while not control.selectedNetwork and control.running_scan():
                 time.sleep(1)
-                show_message("\t... Scanning networks ...")
+                print("\t... Scanning networks ...")
                 if not control.filter_networks():
                     time.sleep(1)
                     control.stop_scan()

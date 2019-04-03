@@ -6,14 +6,14 @@
     Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
-
+import threading
 from tkinter import *
 from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
     Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
     HORIZONTAL, END, FALSE, IntVar, StringVar, messagebox, filedialog
 
 from wicc_operations import Operation
-
+from wicc_view_mac import ViewMac
 
 class View:
     control = ""
@@ -21,17 +21,16 @@ class View:
     networks = ""
     interfaces_old = []
     networks_old = []
-    encryption_types = ('All', 'WEP', 'WPA')
-    channels = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14')
-    current_mac = "0A:1B:2C:3D:4E:5F"
-    new_mac = "5F:4E:3D:2C:1B:0A"
+    encryption_types = ('ALL', 'WEP', 'WPA')
+    channels = ('ALL', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14')
+    mac_spoofing_status = False
 
     def __init__(self, control):
         self.control = control
 
     def build_window(self, headless=False):
         self.root = Tk()
-        self.root.protocol("WM_DELETE_WINDOW", self.kill_application)
+        self.root.protocol("WM_DELETE_WINDOW", self.notify_kill)
         self.root.geometry('830x420')
         self.root.resizable(width=True, height=True)
         self.root.title('WiCC - Wifi Cracking Camp')
@@ -109,6 +108,7 @@ class View:
         self.channels_combobox = ttk.Combobox(self.labelframe_more_options, textvariable=self.channelVar)
         self.channels_combobox['values'] = self.channels
         self.channels_combobox.bind("<<ComboboxSelected>>")
+        self.channels_combobox.current(0)
         self.channels_combobox.grid(column=2, row=0)
         self.null_label6 = Message(self.labelframe_more_options, text="")
         self.null_label6.grid(column=3, row=0, sticky=W)
@@ -121,10 +121,9 @@ class View:
         self.null_label7 = Message(self.labelframe_more_options, text="")
         self.null_label7.grid(column=5, row=0)
 
-        # BUTTON - RAMNDOMIZE MAC
-        self.button_randomize_mac = ttk.Button(self.labelframe_more_options, text="Randomize MAC",
-                                               command=self.randomize_mac)
-        self.button_randomize_mac.grid(column=6, row=0)
+        # BUTTON - CHANGE MAC
+        self.button_mac_menu= ttk.Button(self.labelframe_more_options, text="MAC menu", command=self.mac_menu)
+        self.button_mac_menu.grid(column=6, row=0)
         self.null_label8 = Message(self.labelframe_more_options, text="")
         self.null_label8.grid(column=7, row=0)
 
@@ -180,9 +179,9 @@ class View:
         if not headless:
             self.root.mainloop()
 
-
     # Sends the selected interface to control
     def start_scan(self):
+        self.send_notify(Operation.SCAN_OPTIONS, self.apply_filters())
         self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
 
     # Sends a stop scanning order to control
@@ -196,23 +195,15 @@ class View:
         self.send_notify(Operation.SELECT_NETWORK, network_id)
 
     # Sends and order to kill all processes when X is clicked
-    def kill_application(self):
+    def notify_kill(self):
         self.send_notify(Operation.STOP_RUNNING, "")
+
+    # Receives a notification to kill view
+    def reaper_calls(self):
         self.root.destroy()
 
-    # Sends an order to randomize the interface MAC address
-    def randomize_mac(self):
-        currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac +
-                                               "\n\nAre you sure you want to change it? ")
-        print(currentmac_alert)
-        if (currentmac_alert == True):
-            self.send_notify(Operation.RANDOMIZE_MAC, "")
-            new_mac_alert = messagebox.showinfo("", "You new MAC is: " + self.new_mac)
-            print(new_mac_alert)
-        else:
-            pass
 
-    # Shows a window to select a custom worlist to use. Then sends the path to control.
+    # Shows a window to select a custom wordlist to use. Then sends the path to control.
     def select_custom_wordlist(self):
         select_window = filedialog.askopenfilename(parent=self.root, initialdir='/home/$USER', title='Choose file',
                                                    filetypes=[('Text files', '.txt'), ("All files", "*.*")])
@@ -223,26 +214,69 @@ class View:
                 messagebox.showerror("Open Source File", "Failed to read file \n'%s'" % select_window)
                 return
 
+    # Sends an order to randomize the interface MAC address
+    def randomize_mac(self):
+        if (self.interfaceVar.get() != ""):
+            currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
+                                                   + "\n\nAre you sure you want to change it? ")
+            if (currentmac_alert == True):
+                self.send_notify(Operation.RANDOMIZE_MAC, self.interfaceVar.get())
+                new_mac_alert = messagebox.showinfo("", "Your new MAC is: " + self.current_mac())
+        else:
+            self.show_warning_notification("No interface selected. Close the window and select one")
+
+    def customize_mac(self, new_mac):
+        if (self.interfaceVar.get() != ""):
+            currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
+                                                   + "\n\nAre you sure you want to change it for\n" +
+                                                   new_mac + " ?")
+            if (currentmac_alert == True):
+                self.send_notify(Operation.CUSTOMIZE_MAC, (self.interfaceVar.get(), new_mac))
+                new_mac_alert = messagebox.showinfo("", "Your new MAC is: " + self.current_mac())
+        else:
+            self.show_warning_notification("No interface selected. Close the window and select one")
+
+    def restore_mac(self):
+        if (self.interfaceVar.get() != ""):
+            currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
+                                                   + "\n\nAre you sure you want to restore original?")
+            if (currentmac_alert == True):
+                self.send_notify(Operation.RESTORE_MAC, self.interfaceVar.get())
+                new_mac_alert = messagebox.showinfo("", "Your new MAC is: " + self.current_mac())
+        else:
+            self.show_warning_notification("No interface selected. Close the window and select one")
+
+    def spoofing_mac(self, status):
+        if (self.interfaceVar.get() != ""):
+                self.send_notify(Operation.SPOOF_MAC, status)
+        else:
+            self.show_warning_notification("No interface selected. Close the window and select one")
+
+    def mac_menu(self):
+        mac_menu = ViewMac(self)
+
     # Filters networks
-    ######################(MUST CHANGE WPS ITEM[INDEX]#################################
-    def filters(self, network_list):
-        new_network_list = network_list
+    """
+    [0]ENCRYPTION (string)
+    [1]WPS (boolean)
+    [2]CLIENTS (boolean)
+    [3]CHANNEL (string)
+    """
+    def apply_filters(self):
+        filters_status = ["ALL", False, False, "ALL"]
+        if (self.encryptionVar.get() != "ALL"):
+            print("ENCRYPTION FILTER ENABLED")
+            filters_status[0] = self.encryptionVar.get()
         if (self.wps_status.get() == True):
             print("WPS FILTER ENABLED")
-        #    for item in new_network_list:
-        #        if(item[9] == "no"):
-        #            new_network_list.remove(item)
+            filters_status[1] = True
         if (self.clients_status.get() == True):
             print("CLIENTS FILTER ENABLED")
-            for item in new_network_list:
-                if (item[16] == "0"):
-                    new_network_list.remove(item)
-        if (self.channelVar.get() in self.channels):
+            filters_status[2] = True
+        if (self.channelVar.get() != "ALL"):
             print("CHANNELS FILTER ENABLED")
-            for item in new_network_list:
-                if (item[4] != self.channelVar):
-                    new_network_list.remove(item)
-        return new_network_list
+            filters_status[3] = self.channelVar.get()
+        return filters_status
 
     def get_notify(self, interfaces, networks):
         if (self.interfaces_old != interfaces):
@@ -261,6 +295,31 @@ class View:
                                                                               item[9] + " dbi", "yes", item[16]))
                 self.networks_treeview.update()
 
+    def current_mac(self):
+        return str(self.control.mac_checker(self.interfaceVar.get()))
+
+    def get_notify_mac(self, operation, value):
+        if(operation == 0):     #custom MAC
+            print("CUSTIMIZE MAC OPERATION")
+            self.customize_mac(value)
+        elif(operation == 1):    #random MAC
+            print("RANDOMIZE MAC OPERATION")
+            self.randomize_mac()
+        elif(operation == 2):   #restore MAC
+            print("RESTORE MAC OPERATION")
+            self.restore_mac()
+        elif(operation == 3):   #MAC spoofing
+            print("MAC SPOOFING OPERATION: " + str(self.mac_spoofing_status))
+            self.mac_spoofing_status = value
+            self.spoofing_mac(value)
+
+    def get_spoofing_status(self):
+        return self.mac_spoofing_status
+
+
+    ##########################################
+    # SET NOTIFICATIONS TITLES AS PARAMETERS #
+    ##########################################
     def show_warning_notification(self, message):
         warning_notification = messagebox.showwarning("Warning", message)
         print(warning_notification)
@@ -272,3 +331,4 @@ class View:
     def send_notify(self, operation, value):
         self.control.get_notify(operation, value)
         return
+

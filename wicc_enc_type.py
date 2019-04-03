@@ -8,7 +8,6 @@
 """
 from subprocess import Popen, PIPE
 import threading
-import time
 
 
 class EncryptionType:

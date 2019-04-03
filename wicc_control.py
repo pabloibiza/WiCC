@@ -8,7 +8,6 @@
     at TU Dublin - Blanchardstown Campus
 """
 
-
 import os, sys
 from wicc_operations import Operation
 from wicc_model import Model
@@ -34,13 +33,15 @@ class Control:
     operations = ""
     headless = False
     auto_select = False
-    allows_monitor = False  # to know if the wireless interface allows monitor mode
     scan_stopped = False  # to know if the network scan is running
     cracking_completed = False  # to know if the network cracking process has finished or not
     selected_wordlist = "/usr/share/wordlists/rockyou.txt"
     cracking_network = False
     net_attack = ""
     verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
+    allows_monitor = False  # to know if the wireless interface allows monitor mode
+    running_stopped = False  # to know if the program is running (or if the view has been closed)
+    scan_filter_parameters = ["", ""]
 
     def __init__(self):
         self.model = ""
@@ -124,6 +125,27 @@ class Control:
         :return: whether the selected interface supports monitor mode
 
         :Author: Miguel Yanes Fernández
+        """
+        iw_cmd = ['iw', 'list']
+        iw_out, iw_err = self.execute_command(iw_cmd)
+
+        iw_out = iw_out.decode('utf-8')
+        lines = iw_out.split('\n')
+        for line in lines:
+            words = line.split(' ')
+            for word in words:
+                if word == 'monitor':
+                    self.allows_monitor = True
+                    return
+        self.view.show_info_notification("The selected interface doesn't support monitor mode, "
+                                         "which is highly recommended."
+                                         "\nYou can run the program anyways but "
+                                         "may be missing some functionalities")
+
+    def check_monitor_mode(self):
+        """
+        Checks if the selected interface supports monitor mode
+        :return: whether the selected interface supports monitor mode
         """
         iw_cmd = ['iw', 'list']
         iw_out, iw_err = self.execute_command(iw_cmd)
@@ -260,7 +282,7 @@ class Control:
         self.check_monitor_mode()
 
         self.scan_stopped = False
-
+  
         tempfile = "/tmp/WiCC/net_scan"
         self.execute_command(['rm', '-r', '/tmp/WiCC'])
         out, err = self.execute_command(['mkdir', '/tmp/WiCC'])
@@ -275,6 +297,12 @@ class Control:
             interface = self.selectedInterface
 
         command = ['airodump-ng', interface, '--write', tempfile, '--output-format', 'csv']
+        if (self.scan_filter_parameters[0] != "ALL"):
+            command.append('--encrypt')
+            command.append(self.scan_filter_parameters[0])
+        if (self.scan_filter_parameters[1] != "ALL"):
+            command.append('--channel')
+            command.append(self.scan_filter_parameters[1])
         thread = threading.Thread(target=self.execute_command, args=(command,))
         thread.start()
         thread.join(1)
@@ -291,7 +319,7 @@ class Control:
         :Author: Miguel Yanes Fernández
         """
         tempfile = "/tmp/WiCC/net_scan"
-        #networks = self.filter_networks(tempfile)
+        # networks = self.filter_networks(tempfile)
 
         tempfile += '-01.csv'
         networks = []
@@ -335,7 +363,6 @@ class Control:
                                  "your wireless card. Make sure it's not running in monitor mode"
             self.view.show_warning_notification(exception_msg)
             return False
-            #sys.exit(1)
 
     def set_networks(self, networks):
         """
@@ -345,7 +372,7 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        #for network in networks:
+        # for network in networks:
         #    for pair in network:
 
         self.model.set_networks(networks)
@@ -385,7 +412,7 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        if not self.headless:
+        if not self.headless and not self.run_stopped():
             # if the program is not running headless, we notify the view
             interfaces, networks = self.model.get_parameters()
             self.view.get_notify(interfaces, networks)
@@ -412,13 +439,38 @@ class Control:
         elif operation == Operation.STOP_SCAN:
             self.stop_scan()
         elif operation == Operation.STOP_RUNNING:
-            self.stop_scan()
-            sys.exit(0)
+            self.stop_scan()           
+            self.view.reaper_calls()
+            self.running_stopped = True
+            # sys.exit(0)
         elif operation == Operation.SCAN_OPTIONS:
-            return
+            self.apply_filters(value)
+        elif operation == Operation.CUSTOMIZE_MAC:
+            self.customize_mac(value)
+        elif operation == Operation.RANDOMIZE_MAC:
+            self.randomize_mac(value)
+        elif operation == Operation.RESTORE_MAC:
+            self.restore_mac(value)
+        elif operation == Operation.SPOOF_MAC:
+            pass
+        elif operation == Operation.CHECK_MAC:
+            self.mac_checker(value)
         elif operation == Operation.SELECT_CUSTOM_WORDLIST:
             self.selected_wordlist = value
             return
+
+    def apply_filters(self, value):
+        """
+        Sets the parameters channel and encryption to scan, and clients and wps for post-scanning filtering
+        scan_filter_parameters[0] = encryption
+        scan_filter_parameters[1] = channel
+        :param: value: array containing the parameters [encryption, wps, clients, channel]
+        :return: none
+        :author: Pablo Sanz
+        """
+        self.scan_filter_parameters[0] = value[0]
+        self.scan_filter_parameters[1] = value[3]
+        self.model.get_filters(value[1], value[2])
 
     def stop_scan(self):
         """
@@ -428,6 +480,7 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
+
         pgrep_cmd = ['pgrep', 'airodump-ng']
         pgrep_out, pgrep_err = self.execute_command(pgrep_cmd)
 
@@ -550,3 +603,59 @@ class Control:
 
     def check_cracking_status(self):
         return self.net_attack.check_cracking_status('/tmp/WiCC/aircrack-out')
+        if network_encryption == ' WEP':
+            print("wep attack")
+            wep_attack = WEP(network, self.selectedInterface)
+            wep_attack.scan_network()
+            password = wep_attack.crack_network()
+            print("Password (?): " + password)
+            self.stop_scan()
+            # wep_attack.finish_attack()
+        elif network_encryption[:4] == " WPA":
+            wpa_attack = WPA(network, "rockyou.txt")
+            # wpa_attack.scan_network()
+            password = wpa_attack.crack_network()
+
+    def run_stopped(self):
+        return self.running_stopped
+
+    def randomize_mac(self, interface):
+        command1 = ['ifconfig', interface, 'down']
+        command2 = ['macchanger', '-r', interface]
+        command3 = ['ifconfig', interface, 'up']
+        self.execute_command(command1)
+        self.execute_command(command2)
+        self.execute_command(command3)
+
+    def customize_mac(self,values):
+        """
+        :param values: 0 - interface, 1 - mac address
+        :return:
+        """
+        print("###################################\n" + values[0] + values[1] + "##################################")
+        command1 = ['ifconfig', values[0], 'down']
+        command2 = ['macchanger', '-m', values[1], values[0]]
+        command3 = ['ifconfig', values[0], 'up']
+        self.execute_command(command1)
+        self.execute_command(command2)
+        self.execute_command(command3)
+
+    def restore_mac(self, interface):
+        command1 = ['ifconfig', interface, 'down']
+        command2 = ['macchanger', '-p', interface]
+        command3 = ['ifconfig', interface, 'up']
+        self.execute_command(command1)
+        self.execute_command(command2)
+        self.execute_command(command3)
+
+    def mac_checker(self, interface):
+        try:
+            command1 = ['macchanger', '-s', interface]
+            p = Popen(command1, stdout=PIPE, stderr=PIPE)
+            (output, err) = p.communicate()
+            output = output.decode("utf-8")
+            line = output.split(" ")[4]
+            return line
+        except:
+            self.view.show_warning_notification("Can't show current MAC adress")
+            return False
