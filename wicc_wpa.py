@@ -18,11 +18,28 @@ import csv
 class WPA(EncryptionType):
 
     def __init__(self, network, interface, wordlist, verbose_level):
+        """
+        Constructor for the class WPA. Calls the parent's class consturctor
+        :param network: selected target network
+        :param interface: name of the wireless interface
+        :param wordlist: password wordlist directory
+        :param verbose_level: verbose level set by main
+
+        :Author: Miguel Yanes Fernández
+        """
         EncryptionType.__init__(self, network, interface, verbose_level)
         self.wordlist = wordlist
         self.pmk = ""
 
     def scan_network(self, write_directory):
+        """
+        Scans the target network (calls the parent method to scan the network) and every 6 attemtpts, de-auths all
+        clients on the network. Finishes once pyrit or cowpatty find a valid handshake
+        :param write_directory: directory to write the dump file
+        :return: none
+
+        :Author: Miguel Yanes Fernández
+        """
         super().scan_network(write_directory)
         self.show_message("scanned parent")
         valid_handshake = False
@@ -55,6 +72,12 @@ class WPA(EncryptionType):
         # 5' 15" cracking (4' 30" only on cracking)
 
     def kill_genpmk(self):
+        """
+        Method to kill the genpmk process. This method is meant to be runned once the handshake has been captured.
+        :return: none
+
+        :Author: Miguel Yanes Fernández
+        """
         pgrep_cmd = ['pgrep', 'genpmk']
         pgrep_out, pgrep_err = self.execute_command(pgrep_cmd)
 
@@ -67,6 +90,13 @@ class WPA(EncryptionType):
                 self.show_message("killed pid " + pid)
 
     def crack_network(self):
+        """
+        Cracks the dump file from the target network. First, if the pmk values have been pre-calculated, tries to crack
+        the handhsake with those values. If not, cracks the handshake with aircrack and the selected wordlist
+        :return: password of the cracked network ("" if no password was found)
+
+        :Author: Miguel Yanes Fernández
+        """
         if self.pmk != "":
             self.kill_genpmk()
             cowpatty_cmd = ['cowpatty', '-d', self.pmk, '-s', self.essid, '-r', '/tmp/WiCC/net_attack-01.cap']
@@ -86,6 +116,13 @@ class WPA(EncryptionType):
         return password
 
     def calculate_pmk(self, write_directory):
+        """
+        Executes a thread with the genpmk command to pre-calculate PMK values with the selected wordlist and network.
+        :param write_directory: directory to write the pmk values file
+        :return: none
+
+        :Author: Miguel Yanes Fernández
+        """
         self.pmk = write_directory + 'pmk'
         genpmk_cmd = ['genpmk', '-f', self.wordlist, '-d', write_directory + 'pmk', '-s', self.essid]
         genpmk_thread = threading.Thread(target=self.execute_command, args=(genpmk_cmd,))
@@ -94,6 +131,13 @@ class WPA(EncryptionType):
         self.show_message("calculating pmk...")
 
     def filter_cowpatty_psk(self, output):
+        """
+        Filter the output from cowpatty when analysing the pmk values
+        :param output: output of the cowpatty command
+        :return: psk value (if any)
+
+        :Author: Miguel Yanes Fernández
+        """
         for line in output:
             if line == 'Unable to identify the PSK from the dictionary file. Try expanding your':
                 self.show_message("No valid PSK")

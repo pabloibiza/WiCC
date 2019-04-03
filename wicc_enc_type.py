@@ -14,6 +14,14 @@ import time
 class EncryptionType:
 
     def __init__(self, network, interface, verbose_level):
+        """
+        Construction for the parent class EncryptionType.
+        :param network: target network
+        :param interface: selected wireless interface
+        :param verbose_level: verbose level set by main
+
+        :Author: Miguel Yanes Fernández
+        """
         self.target_network = network
         self.interface = interface
         self.bssid = network.get_bssid()
@@ -22,6 +30,13 @@ class EncryptionType:
         self.verbose_level = verbose_level
 
     def show_message(self, message):
+        """
+        Prints a message if the verbose level is equal or higher than 2
+        :param message: message to print
+        :return: none
+
+        :Author: Miguel Yanes Fernández
+        """
         if self.verbose_level >= 2:
             print(message)
 
@@ -44,9 +59,11 @@ class EncryptionType:
 
     def scan_network(self, write_directory):
         """
+        Scans the target network and writes the dump file in the selected directory
+        :param write_directory: directory to write the dump file
+        :return: none
 
-        :param write_directory:
-        :return:
+        :Author: Miguel Yanes Fernández
         """
         self.execute_command(['rm', '-r', write_directory])
         self.execute_command(['mkdir', write_directory])
@@ -60,9 +77,14 @@ class EncryptionType:
         thread.start()
         thread.join(1)
 
-        time.sleep(4)  # check if necessary
-
     def filter_pyrit_out(self, output):
+        """
+        Filters the output from the pyrit command. Checks if pyrit finds any valid handshake
+        :param output: output from the pyrit command
+        :return: boolean whether it found a handshake or not
+
+        :Author: Miguel Yanes Fernández
+        """
         output = output.decode('utf-8')
         lines = output.split('\n')
         for line in lines:
@@ -74,10 +96,24 @@ class EncryptionType:
         return False
 
     def check_cracking_status(self, file):
+        """
+        Checks the status of the password cracking process given a file with the output from aircrack
+        :param file: directory of the file with the aircrack output
+        :return: tbd
+
+        :Author: Miguel Yanes Fernández
+        """
         return ""
         #print(file.decode('utf-8'))
 
     def filter_cowpatty_out(self, output):
+        """
+        Filters the output from the cowpatty command to check if the dump file has any valid handshake
+        :param output: output from the cowpatty command
+        :return: boolean wether it found a valid handshake or not
+
+        :Author: Miguel Yanes Fernández
+        """
         output = output.decode('utf-8')
         lines = output.split('\n')
         for line in lines:
@@ -91,6 +127,13 @@ class EncryptionType:
 
     @staticmethod
     def filter_aircrack(output):
+        """
+        Filter the aircrack output to read the password (if any is found)
+        :param output: output from the aicrack command
+        :return: password (or "" if it wasn't found)
+
+        :Author: Miguel Yanes Fernández
+        """
         words = output.split(" ")
         next_1 = False
         next_2 = False

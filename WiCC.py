@@ -7,11 +7,26 @@ import threading
 
 verbose_level = 0
 
+
 def show_message(message):
+    """
+    Method to print a message if the verbose level is higher or equal to 1
+    :param message: message to pring
+    :return: none
+
+    :Author: Miguel Yanes Fernández
+    """
     if verbose_level >= 1:
         print(message)
 
+
 if __name__ == '__main__':
+    """
+    Main
+    
+    :Author: Miguel Yanes Fernández
+    """
+
     # check root privilege
     if os.getuid() != 0:
         print("\n\tError: script must be executed as root\n")
@@ -48,11 +63,27 @@ if __name__ == '__main__':
     args = sys.argv[1:]
     for arg in args:
         if arg == '-h':
-            headless = True
-            print(" *** Running program headless\n")
+            if not headless:
+                headless = True
+                print(" *** Running program headless\n")
         elif arg == '-a':
-            auto_select = True
-            print(" *** Auto-select network interface\n")
+            if not auto_select:
+                auto_select = True
+                print(" *** Auto-select network interface\n")
+        elif '-v' in arg:
+            if verbose_level > 0:
+                if arg == '-v':
+                    control.set_verbose_level(1)
+                    verbose_level = 1
+                    print("*** Verbose level set to " + str(verbose_level) + "\n")
+                elif arg == '-vv':
+                    control.set_verbose_level(2)
+                    verbose_level = 2
+                    print("*** Verbose level set to " + str(verbose_level) + "\n")
+                elif arg == '-vvv':
+                    control.set_verbose_level(3)
+                    verbose_level = 3
+                    print("*** Verbose level set to " + str(verbose_level) + "\n")
         elif arg == '--help':
             print(" ***  -h to run the program headless")
             print(" ***  -a to auto-select the first available network interface")
@@ -61,22 +92,10 @@ if __name__ == '__main__':
             print("\t-vv  for level 2 (advanced output)")
             print("\t-vvv for level 3 (advanced output and executed commands)\n")
             sys.exit(0)
-        elif '-v' in arg:
-            if arg == '-v':
-                control.set_verbose_level(1)
-                verbose_level = 1
-                print("*** Verbose level set to " + str(verbose_level) + "\n")
-            elif arg == '-vv':
-                control.set_verbose_level(2)
-                verbose_level = 2
-                print("*** Verbose level set to " + str(verbose_level) + "\n")
-            elif arg == '-vvv':
-                control.set_verbose_level(3)
-                verbose_level = 3
-                print("*** Verbose level set to " + str(verbose_level) + "\n")
         else:
             print("*** Unrecognized option " + arg)
             print("*** Use option --help to view the help and finish execution. Only for debugging purposes\n")
+            break
 
     if headless:
         view_thread = threading.Thread(target=control.start_view, args=(True,))
