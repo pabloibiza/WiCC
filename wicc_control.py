@@ -32,16 +32,17 @@ class Control:
     selectedNetwork = ""
     operations = ""
     headless = False
-    auto_select = False
+    allows_monitor = False  # to know if the wireless interface allows monitor mode
     scan_stopped = False  # to know if the network scan is running
+    running_stopped = False  # to know if the program is running (or if the view has been closed)
+    scan_filter_parameters = ["ALL", "ALL"]
+    auto_select = False
     cracking_completed = False  # to know if the network cracking process has finished or not
     selected_wordlist = "/usr/share/wordlists/rockyou.txt"
     cracking_network = False
     net_attack = ""
     verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
     allows_monitor = False  # to know if the wireless interface allows monitor mode
-    running_stopped = False  # to know if the program is running (or if the view has been closed)
-    scan_filter_parameters = ["", ""]
 
     def __init__(self):
         self.model = ""
@@ -125,27 +126,6 @@ class Control:
         :return: whether the selected interface supports monitor mode
 
         :Author: Miguel Yanes Fernández
-        """
-        iw_cmd = ['iw', 'list']
-        iw_out, iw_err = self.execute_command(iw_cmd)
-
-        iw_out = iw_out.decode('utf-8')
-        lines = iw_out.split('\n')
-        for line in lines:
-            words = line.split(' ')
-            for word in words:
-                if word == 'monitor':
-                    self.allows_monitor = True
-                    return
-        self.view.show_info_notification("The selected interface doesn't support monitor mode, "
-                                         "which is highly recommended."
-                                         "\nYou can run the program anyways but "
-                                         "may be missing some functionalities")
-
-    def check_monitor_mode(self):
-        """
-        Checks if the selected interface supports monitor mode
-        :return: whether the selected interface supports monitor mode
         """
         iw_cmd = ['iw', 'list']
         iw_out, iw_err = self.execute_command(iw_cmd)
@@ -282,7 +262,7 @@ class Control:
         self.check_monitor_mode()
 
         self.scan_stopped = False
-  
+
         tempfile = "/tmp/WiCC/net_scan"
         self.execute_command(['rm', '-r', '/tmp/WiCC'])
         out, err = self.execute_command(['mkdir', '/tmp/WiCC'])
@@ -363,6 +343,7 @@ class Control:
                                  "your wireless card. Make sure it's not running in monitor mode"
             self.view.show_warning_notification(exception_msg)
             return False
+            #sys.exit(1)
 
     def set_networks(self, networks):
         """
@@ -412,7 +393,7 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        if not self.headless and not self.run_stopped():
+        if not self.headless:
             # if the program is not running headless, we notify the view
             interfaces, networks = self.model.get_parameters()
             self.view.get_notify(interfaces, networks)
@@ -439,7 +420,7 @@ class Control:
         elif operation == Operation.STOP_SCAN:
             self.stop_scan()
         elif operation == Operation.STOP_RUNNING:
-            self.stop_scan()           
+            self.stop_scan()
             self.view.reaper_calls()
             self.running_stopped = True
             # sys.exit(0)
@@ -459,19 +440,6 @@ class Control:
             self.selected_wordlist = value
             return
 
-    def apply_filters(self, value):
-        """
-        Sets the parameters channel and encryption to scan, and clients and wps for post-scanning filtering
-        scan_filter_parameters[0] = encryption
-        scan_filter_parameters[1] = channel
-        :param: value: array containing the parameters [encryption, wps, clients, channel]
-        :return: none
-        :author: Pablo Sanz
-        """
-        self.scan_filter_parameters[0] = value[0]
-        self.scan_filter_parameters[1] = value[3]
-        self.model.get_filters(value[1], value[2])
-
     def stop_scan(self):
         """
         Series of commands to be executed to stop the scan. Kills the process(es) realted with airodump, and then
@@ -480,7 +448,6 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-
         pgrep_cmd = ['pgrep', 'airodump-ng']
         pgrep_out, pgrep_err = self.execute_command(pgrep_cmd)
 
@@ -511,6 +478,19 @@ class Control:
 
     def show_info_notification(self, message):
         self.view.show_info_notification(message)
+
+    def apply_filters(self, value):
+        """
+        Sets the parameters channel and encryption to scan, and clients and wps for post-scanning filtering
+        scan_filter_parameters[0] = encryption
+        scan_filter_parameters[1] = channel
+        :param: value: array containing the parameters [encryption, wps, clients, channel]
+        :return: none
+        :author: Pablo Sanz
+        """
+        self.scan_filter_parameters[0] = value[0]
+        self.scan_filter_parameters[1] = value[3]
+        self.model.get_filters(value[1], value[2])
 
     def attack_network(self):
         """
@@ -603,21 +583,6 @@ class Control:
 
     def check_cracking_status(self):
         return self.net_attack.check_cracking_status('/tmp/WiCC/aircrack-out')
-        if network_encryption == ' WEP':
-            print("wep attack")
-            wep_attack = WEP(network, self.selectedInterface)
-            wep_attack.scan_network()
-            password = wep_attack.crack_network()
-            print("Password (?): " + password)
-            self.stop_scan()
-            # wep_attack.finish_attack()
-        elif network_encryption[:4] == " WPA":
-            wpa_attack = WPA(network, "rockyou.txt")
-            # wpa_attack.scan_network()
-            password = wpa_attack.crack_network()
-
-    def run_stopped(self):
-        return self.running_stopped
 
     def randomize_mac(self, interface):
         command1 = ['ifconfig', interface, 'down']
