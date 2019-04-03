@@ -193,6 +193,8 @@ class Model:
         Creates a list of parameters for both interfaces and networks.
         Will be used by the view to print these parameters
         :return: list of parameters of all interfaces, list of parameters of all networks
+
+        :author: Miguel Yanes Fernández & Pablo Sanz Alguacil
         """
         list_interfaces = []
         for object in self.interfaces:
@@ -227,7 +229,12 @@ class Model:
 
     def get_filters(self, wps_filter_status, clients_filter_status):
         """
-        :Author: Pablo
+
+        :param wps_filter_status:
+        :param clients_filter_status:
+        :return:
+
+        :author: Pablo Sanz Alguacil
         """
         self.network_filters[0] = wps_filter_status
         self.network_filters[1] = clients_filter_status
