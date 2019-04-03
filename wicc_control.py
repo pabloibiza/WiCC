@@ -35,7 +35,7 @@ class Control:
     allows_monitor = False  # to know if the wireless interface allows monitor mode
     scan_stopped = False  # to know if the network scan is running
     running_stopped = False  # to know if the program is running (or if the view has been closed)
-    scan_filter_parameters = ["", ""]
+    scan_filter_parameters = ["ALL", "ALL"]
     auto_select = False
     cracking_completed = False  # to know if the network cracking process has finished or not
     selected_wordlist = "/usr/share/wordlists/rockyou.txt"
@@ -393,7 +393,7 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        if not self.headless and not self.run_stopped():
+        if not self.headless:
             # if the program is not running headless, we notify the view
             interfaces, networks = self.model.get_parameters()
             self.view.get_notify(interfaces, networks)

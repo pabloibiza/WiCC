@@ -202,7 +202,7 @@ class Model:
         if(self.network_filters[1]):
             for network in self.networks:
                 if(network.get_clients() != 0):
-                    list_networks.append(object.get_list())
+                    list_networks.append(network.get_list())
         else:
             for object in self.networks:
                 list_networks.append(object.get_list())

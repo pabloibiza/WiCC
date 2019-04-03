@@ -71,7 +71,7 @@ if __name__ == '__main__':
                 auto_select = True
                 print(" *** Auto-select network interface\n")
         elif '-v' in arg:
-            if verbose_level > 0:
+            if verbose_level == 0:
                 if arg == '-v':
                     control.set_verbose_level(1)
                     verbose_level = 1
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         view_thread = threading.Thread(target=control.start_view, args=(False,))
     view_thread.start()
     view_thread.join(1)
-    while not exit and not control.run_stopped():
+    while not exit:
         if control.has_selected_interface():
             show_message("Selected interface: " + control.selectedInterface)
             control.scan_networks()
