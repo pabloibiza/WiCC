@@ -17,14 +17,14 @@ import csv
 
 class WPA(EncryptionType):
 
-    def __init__(self, network, interface, wordlist):
-        EncryptionType.__init__(self, network, interface)
+    def __init__(self, network, interface, wordlist, verbose_level):
+        EncryptionType.__init__(self, network, interface, verbose_level)
         self.wordlist = wordlist
         self.pmk = ""
 
     def scan_network(self, write_directory):
         super().scan_network(write_directory)
-        print("scanned parent")
+        self.show_message("scanned parent")
         valid_handshake = False
 
         self.calculate_pmk(write_directory)
@@ -45,7 +45,7 @@ class WPA(EncryptionType):
                 time.sleep(1)
                 second_iterator += 1
                 if second_iterator == 6:
-                    print("de-authing . . .")
+                    self.show_message("de-authing . . .")
                     out, err = self.execute_command(de_auth_cmd)
                     second_iterator = 0
             else:
@@ -64,7 +64,7 @@ class WPA(EncryptionType):
             pids = pgrep_out.split('\n')
             for pid in pids:
                 self.execute_command(['kill', '-9', pid])  # kills all processes related with the process
-                print("killed pid " + pid)
+                self.show_message("killed pid " + pid)
 
     def crack_network(self):
         if self.pmk != "":
@@ -74,11 +74,10 @@ class WPA(EncryptionType):
             cowpatty_out = cowpatty_out.decode('utf-8').split("\n")
             password = self.filter_cowpatty_psk(cowpatty_out)
             if password != "":
-                print("password gathered from pmk")
+                self.show_message("password gathered from pmk")
                 return password
             else:
-                print("no password on pmk")
-                print(cowpatty_cmd)
+                self.show_message("no password on pmk")
 
         aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap', '-w', self.wordlist, '>', '/tmp/WiCC/aicrack-out']
         aircrack_out, aircrack_err = self.execute_command(aircrack_cmd)
@@ -92,21 +91,18 @@ class WPA(EncryptionType):
         genpmk_thread = threading.Thread(target=self.execute_command, args=(genpmk_cmd,))
         genpmk_thread.start()
         genpmk_thread.join(0)
-        print("calculating pmk...")
-        print(genpmk_cmd)
+        self.show_message("calculating pmk...")
 
     def filter_cowpatty_psk(self, output):
         for line in output:
             if line == 'Unable to identify the PSK from the dictionary file. Try expanding your':
-                print("No valid PSK")
+                self.show_message("No valid PSK")
                 return ""
             elif 'The PSK is' in line:
                 words = line.split(" ")
                 psk = words[3][1:-2]  # [1:-2] is to remove the " " surrounding the psk
-                print("Found PSK: " + psk)
+                self.show_message("Found PSK: " + psk)
                 return psk
-            else:
-                print(line)
         return ""
 
 #--------------------------------------------------------------------------------------

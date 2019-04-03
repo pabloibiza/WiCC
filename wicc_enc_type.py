@@ -13,22 +13,32 @@ import time
 
 class EncryptionType:
 
-    def __init__(self, network, interface):
+    def __init__(self, network, interface, verbose_level):
         self.target_network = network
         self.interface = interface
         self.bssid = network.get_bssid()
         self.essid = network.get_essid()[1:]  # [1:] is to remove an empty space before the name
         self.channel = str(int(self.target_network.get_channel()))
+        self.verbose_level = verbose_level
 
-    @staticmethod
-    def execute_command(command):
+    def show_message(self, message):
+        if self.verbose_level >= 2:
+            print(message)
+
+    def execute_command(self, command):
         """
-        Generic method to execute a command using pipes
-        :param command: list of words of the command to execute
-        :return: output and error of the command execution
+        Static method to execute a defined command.
+        :param command: parameters for the command. Should be divided into an array. EX: ['ls, '-l']
+        :return: returns both stdout and stderr from the command execution
 
         :Author: Miguel Yanes Fernández
         """
+        if self.verbose_level == 3:
+            output = "[Command]:  "
+            for word in command:
+                output += word + " "
+            self.show_message(output)
+
         process = Popen(command, stdout=PIPE, stderr=PIPE)
         return process.communicate()
 
@@ -52,15 +62,14 @@ class EncryptionType:
 
         time.sleep(4)  # check if necessary
 
-    @staticmethod
-    def filter_pyrit_out(output):
+    def filter_pyrit_out(self, output):
         output = output.decode('utf-8')
         lines = output.split('\n')
         for line in lines:
             if line == 'No valid EAOPL-handshake + ESSID detected.':
                 return False
             elif 'handshake(s)' in line:
-                print("pyrit handshake: " + line)
+                self.show_message("pyrit handshake: " + line)
                 return True
         return False
 
@@ -68,20 +77,16 @@ class EncryptionType:
         return ""
         #print(file.decode('utf-8'))
 
-    @staticmethod
-    def filter_cowpatty_out(output):
+    def filter_cowpatty_out(self, output):
         output = output.decode('utf-8')
-        print(output)
         lines = output.split('\n')
         for line in lines:
             if line == 'End of pcap capture file, incomplete four-way handshake exchange.  ' \
                        'Try using a different capture.':
                 return False
             elif 'mount crack' in line:
-                print("cowpatty handshake: " + line)
+                self.show_message("cowpatty handshake: " + line)
                 return True
-            else:
-                print(line)
         return False
 
     @staticmethod

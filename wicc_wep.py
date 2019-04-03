@@ -12,8 +12,8 @@ import time
 import threading
 
 class WEP(EncryptionType):
-    def __init__(self, network, interface, mac):
-        EncryptionType.__init__(self, network, interface)
+    def __init__(self, network, interface, mac, verbose_level):
+        EncryptionType.__init__(self, network, interface, verbose_level)
         # super().__init__(self, network, interface)
         self.mac = mac
 
@@ -31,12 +31,12 @@ class WEP(EncryptionType):
         arpreplay_thread.start()
         arpreplay_thread.join(0)
 
-        print("running aireplay thread on mac: " + self.mac)
+        self.show_message("running aireplay thread on mac: " + self.mac)
     def crack_network(self):
         aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap']
-        print("will execute aircrack")
+        self.show_message("will execute aircrack")
         crack_out, crack_err = super().execute_command(aircrack_cmd)
-        print("finished aircrack")
+        self.show_message("finished aircrack")
         # will need to filter the output from aircrack
         password = self.filter_aircrack(crack_out.decode('utf-8'))
         return password

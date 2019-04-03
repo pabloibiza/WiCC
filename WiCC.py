@@ -50,6 +50,12 @@ if __name__ == '__main__':
         elif arg == '--help':
             print("*** Use option -h to run the program headless")
             print("*** Use option -a to auto-select the first available network interface\n")
+        elif arg == '-vv':
+            control.set_verbose_level(2)
+            print("*** Verbose level set to 2\n")
+        elif arg == '-vvv':
+            control.set_verbose_level(3)
+            print("*** Verbose level set to 3\n")
         else:
             print("*** Unrecognized option " + arg)
             print("*** Use option --help to view the help. Only for debugging purposes\n")
@@ -86,8 +92,6 @@ if __name__ == '__main__':
                     print("Start scanning available networks...")
                     time.sleep(3)
             print("\n * Network scanning stopped * \n")
-            print(control.selectedNetwork)
-            print(control.running_scan())
             while not control.selectedNetwork:
                 # waits until a network is selected
                 time.sleep(1)

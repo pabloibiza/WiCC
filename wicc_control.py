@@ -40,6 +40,7 @@ class Control:
     selected_wordlist = "/usr/share/wordlists/rockyou.txt"
     cracking_network = False
     net_attack = ""
+    verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
 
     def __init__(self):
         self.model = ""
@@ -57,8 +58,7 @@ class Control:
         self.view.build_window(headless)
         self.headless = headless
 
-    @staticmethod
-    def execute_command(command):
+    def execute_command(self, command):
         """
         Static method to execute a defined command.
         :param command: parameters for the command. Should be divided into an array. EX: ['ls, '-l']
@@ -66,8 +66,21 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
+        if self.verbose_level == 3:
+            output = "[Command]:  "
+            for word in command:
+                output += word + " "
+            self.show_message(output)
+
         process = Popen(command, stdout=PIPE, stderr=PIPE)
         return process.communicate()
+
+    def show_message(self, message):
+        if self.verbose_level >= 2:
+            print(message)
+
+    def set_verbose_level(self, level):
+        self.verbose_level = level
 
     def check_software(self):
         """
@@ -470,26 +483,26 @@ class Control:
                                     "\n\nPlease wait up to a few minutes until the process is finished")
 
         if network_encryption == " WEP":
-            print("spoofing client mac")
+            self.show_message("Spoofing client mac")
             spoofed_mac = self.spoof_client_mac(self.selectedNetwork)
-            print("spoofed mac: " + spoofed_mac)
-            print("wep attack")
-            self.net_attack = WEP(network, self.selectedInterface, spoofed_mac)
-            print("instance created")
+            self.show_message("Spoofed mac: " + spoofed_mac)
+            self.show_message("WEP attack")
+            self.net_attack = WEP(network, self.selectedInterface, spoofed_mac, self.verbose_level)
+            self.show_message("instance created")
             self.net_attack.scan_network('/tmp/WiCC/')
-            print("scan finished")
+            self.show_message("scan finished")
             password = self.net_attack.crack_network()
-            print("cracking finised")
+            self.show_message("cracking finised")
         elif network_encryption[:4] == " WPA":
-            print("create wpa instance")
-            self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist)
-            print("start scanning")
+            self.show_message("create wpa instance")
+            self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist, self.verbose_level)
+            self.show_message("start scanning")
             self.net_attack.scan_network('/tmp/WiCC/')
-            print("start cracking")
+            self.show_message("start cracking")
             self.show_info_notification("Handshake captured.\n\nStarting password cracking with the given wordlist")
             self.cracking_network = True
             password = self.net_attack.crack_network()
-            print("finished cracking")
+            self.show_message("finished cracking")
             self.cracking_network = False
             #pass
 
@@ -527,10 +540,13 @@ class Control:
         :return: spoofed client mac
         """
         network = self.model.search_network(id)
-        client = network.get_first_client()
-        client_mac = client.get_mac()
-        # macchanger with client mac
-        return client_mac
+        if network.get_clients() != 0:
+            client = network.get_first_client()
+            client_mac = client.get_mac()
+            # macchanger with client mac
+            return client_mac
+        else:
+            return self.model.get_mac(self.selectedInterface)
 
     def check_cracking_status(self):
         return self.net_attack.check_cracking_status('/tmp/WiCC/aircrack-out')
