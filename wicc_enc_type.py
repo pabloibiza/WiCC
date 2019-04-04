@@ -13,7 +13,7 @@ import time
 
 class EncryptionType:
 
-    def __init__(self, network, interface, verbose_level):
+    def __init__(self, network, interface, verbose_level, silent_attack):
         """
         Construction for the parent class EncryptionType.
         :param network: target network
@@ -28,6 +28,7 @@ class EncryptionType:
         self.essid = network.get_essid()[1:]  # [1:] is to remove an empty space before the name
         self.channel = str(int(self.target_network.get_channel()))
         self.verbose_level = verbose_level
+        self.silent_attack = silent_attack
 
     def show_message(self, message):
         """
@@ -68,8 +69,9 @@ class EncryptionType:
         self.execute_command(['rm', '-r', write_directory])
         self.execute_command(['mkdir', write_directory])
         airmon_start_cmd = ['airmon-ng', 'start', self.interface, self.channel]
+        self.interface += 'mon'
         airmon_check_cmd = ['airmon-ng', 'check', 'kill']
-        airodump_scan_cmd = ['airodump-ng', self.interface + 'mon', '-a', '--bssid', self.bssid, '--write',
+        airodump_scan_cmd = ['airodump-ng', self.interface, '-a', '--bssid', self.bssid, '--write',
                              write_directory + 'net_attack', '--channel', self.channel, '--write-interval', '1']
         self.execute_command(airmon_start_cmd)
         self.execute_command(airmon_check_cmd)

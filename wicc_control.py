@@ -43,6 +43,8 @@ class Control:
     net_attack = ""
     verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
     allows_monitor = False  # to know if the wireless interface allows monitor mode
+    spoof_mac = False
+    silent_attack = True
 
     def __init__(self):
         self.model = ""
@@ -153,7 +155,7 @@ class Control:
         :Author: Miguel Yanes Fernández
         """
         # ifconfig
-        if_output, if_error = self.execute_command("ifconfig")
+        if_output, if_error = self.execute_command(['ifconfig'])
         if_output = if_output.decode("utf-8")
         if_error = if_error.decode("utf-8")
 
@@ -433,7 +435,7 @@ class Control:
         elif operation == Operation.RESTORE_MAC:
             self.restore_mac(value)
         elif operation == Operation.SPOOF_MAC:
-            pass
+            self.spoof_mac = value
         elif operation == Operation.CHECK_MAC:
             self.mac_checker(value)
         elif operation == Operation.SELECT_CUSTOM_WORDLIST:
@@ -516,19 +518,23 @@ class Control:
                                     "\n\nPlease wait up to a few minutes until the process is finished")
 
         if network_encryption == " WEP":
-            self.show_message("Spoofing client mac")
-            spoofed_mac = self.spoof_client_mac(self.selectedNetwork)
-            self.show_message("Spoofed mac: " + spoofed_mac)
+            if self.spoof_mac:
+                attacker_mac = self.spoof_client_mac(self.selectedNetwork)
+                self.show_message("Spoofed client MAC: " + attacker_mac)
+            else:
+                attacker_mac = self.mac_checker(self.selectedInterface)
+                self.show_message("Attacker's MAC: " + attacker_mac)
+
             self.show_message("WEP attack")
-            self.net_attack = WEP(network, self.selectedInterface, spoofed_mac, self.verbose_level)
-            self.show_message("instance created")
-            self.net_attack.scan_network('/tmp/WiCC/')
-            self.show_message("scan finished")
-            password = self.net_attack.crack_network()
-            self.show_message("cracking finised")
+            self.net_attack = WEP(network, self.selectedInterface, attacker_mac,
+                                  self.verbose_level, self.silent_attack)
+            self.show_message("Scanning network")
+            password = self.net_attack.scan_network('/tmp/WiCC/')
+            self.show_message("Cracking finised")
         elif network_encryption[:4] == " WPA":
             self.show_message("create wpa instance")
-            self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist, self.verbose_level)
+            self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist,
+                                  self.verbose_level, self.silent_attack)
             self.show_message("start scanning")
             self.net_attack.scan_network('/tmp/WiCC/')
             self.show_message("start cracking")
@@ -538,6 +544,8 @@ class Control:
             self.show_message("finished cracking")
             self.cracking_network = False
             #pass
+        else:
+            self.show_info_notification("Unsupported encryption type. Try selecting a WEP or WPA/WPA2 network")
 
         self.cracking_completed = True
         self.stop_scan()
@@ -571,17 +579,24 @@ class Control:
         Method to spoof a network client's MAc
         :param bssid: bssid of the target network
         :return: spoofed client mac
+
+        :Author: Miguel Yanes Fernández
         """
         network = self.model.search_network(id)
         if network.get_clients() != 0:
             client = network.get_first_client()
             client_mac = client.get_mac()
-            # macchanger with client mac
             return client_mac
         else:
             return self.model.get_mac(self.selectedInterface)
 
     def check_cracking_status(self):
+        """
+        Calls the net_attack object's method to check the password cracking status
+        :return: output of the check_cracking_status command
+
+        :Author: Miguel Yanes Fernández
+        """
         return self.net_attack.check_cracking_status('/tmp/WiCC/aircrack-out')
 
     def randomize_mac(self, interface):
@@ -620,7 +635,8 @@ class Control:
             (output, err) = p.communicate()
             output = output.decode("utf-8")
             line = output.split(" ")[4]
+            self.show_message(line)
             return line
         except:
-            self.view.show_warning_notification("Can't show current MAC adress")
+            self.view.show_warning_notification("Unable to get current MAC address")
             return False
