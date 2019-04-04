@@ -13,6 +13,8 @@ import time
 
 class EncryptionType:
 
+    injection_supported = True  # to know if the interface supports packet injection
+
     def __init__(self, network, interface, verbose_level, silent_attack):
         """
         Construction for the parent class EncryptionType.
@@ -78,6 +80,29 @@ class EncryptionType:
         thread = threading.Thread(target=self.execute_command, args=(airodump_scan_cmd,))
         thread.start()
         thread.join(1)
+
+        aireplay_check_cmd = ['aireplay-ng', '-9', self.interface]
+        aireplay_check_out, err = self.execute_command(aireplay_check_cmd)
+        self.aireplay_check_injection(aireplay_check_out)
+
+    def aireplay_check_injection(self, output):
+        """
+        Filters the output from aireplay to check if the interface allows packet injection
+        :param output: output from the aireplay -9 command
+        :return: true or false wether it allows packet injection
+        """
+        output = output.decode('utf-8')
+        lines = output.split('\n')
+        for line in lines:
+            if 'Injection is working!' in line:
+                return True
+        self.silent_attack = True
+        self.injection_supported = False
+        self.show_message("Selected interface doesn't support packet injection")
+        return False
+
+    def get_injection_supported(self):
+        return self.injection_supported
 
     def filter_pyrit_out(self, output):
         """
