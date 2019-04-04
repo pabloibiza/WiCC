@@ -94,7 +94,8 @@ class View:
         # BUTTON - STOP SCAN
         self.null_label9 = Message(self.labelframe_analysis, text="")
         self.null_label9.grid(column=10, row=0)
-        self.button_stop_scan = ttk.Button(self.labelframe_analysis, text='Stop scan', command=self.stop_scan)
+        self.button_stop_scan = ttk.Button(self.labelframe_analysis, text='Stop scan', state=DISABLED,
+                                           command=self.stop_scan)
         self.button_stop_scan.grid(column=11, row=0)
 
         # LABEL - CHANNELS
@@ -122,7 +123,8 @@ class View:
         self.null_label7.grid(column=5, row=0)
 
         # BUTTON - CHANGE MAC
-        self.button_mac_menu= ttk.Button(self.labelframe_more_options, text="MAC menu", command=self.mac_menu)
+        self.button_mac_menu= ttk.Button(self.labelframe_more_options, text="MAC menu", state=ACTIVE,
+                                         command=self.mac_menu)
         self.button_mac_menu.grid(column=6, row=0)
         self.null_label8 = Message(self.labelframe_more_options, text="")
         self.null_label8.grid(column=7, row=0)
@@ -173,20 +175,44 @@ class View:
         self.null_label3 = Message(self.labelframe_start_stop, text="")
         self.null_label3.grid(column=2, row=0)
 
-        # FOCUS IN
-        self.button_start_scan.focus_set()
-
         if not headless:
             self.root.mainloop()
 
     # Sends the selected interface to control
     def start_scan(self):
+        self.start_button_pressed()
         self.send_notify(Operation.SCAN_OPTIONS, self.apply_filters())
         self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
 
     # Sends a stop scanning order to control
     def stop_scan(self):
+        self.stop_button_pressed()
         self.send_notify(Operation.STOP_SCAN, "")
+
+    def start_button_pressed(self):
+        self.button_mac_menu['state'] = DISABLED
+        self.custom_wordlist_path['state'] = DISABLED
+        self.generate_wordlist['state'] = DISABLED
+        self.interfaces_combobox['state'] = DISABLED
+        self.encryption_combobox['state'] = DISABLED
+        self.wps_checkbox['state'] = DISABLED
+        self.channels_combobox['state'] = DISABLED
+        self.clients_checkbox['state'] = DISABLED
+        self.button_start_scan['state'] = DISABLED
+        self.button_stop_scan['state'] = ACTIVE
+
+    def stop_button_pressed(self):
+        self.button_mac_menu['state'] = ACTIVE
+        self.custom_wordlist_path['state'] = ACTIVE
+        self.generate_wordlist['state'] = ACTIVE
+        self.interfaces_combobox['state'] = ACTIVE
+        self.encryption_combobox['state'] = ACTIVE
+        self.wps_checkbox['state'] = ACTIVE
+        self.channels_combobox['state'] = ACTIVE
+        self.clients_checkbox['state'] = ACTIVE
+        self.button_start_scan['state'] = ACTIVE
+        self.button_stop_scan['state'] = DISABLED
+
 
     # Sends the selected network id to Control
     def select_network(self):
@@ -253,7 +279,7 @@ class View:
             self.show_warning_notification("No interface selected. Close the window and select one")
 
     def mac_menu(self):
-        mac_menu = ViewMac(self)
+        mac_menu = ViewMac(self, self.mac_spoofing_status)
 
     # Filters networks
     """
