@@ -17,9 +17,11 @@ class ViewMac:
     main_view = ""
     current_mac = ""
 
-    def __init__(self, view):
+    def __init__(self, view, spoofing_status):
         self.main_view = view
+        self.spoofing_status = spoofing_status
         self.build_window()
+        self.set_spoofing()
         self.root.mainloop()
 
     def build_window(self):
@@ -74,7 +76,7 @@ class ViewMac:
         self.null_label2 = Message(self.labelframe_random_mac, text="")
         self.null_label2.grid(column=0, row=0)
         self.label_random_mac = Label(self.labelframe_random_mac,
-                                      text="Changes the current MAC to a completly \nrandom MAC")
+                                      text="Changes the current MAC to a completly \nrandom MAC", justify=LEFT)
         self.label_random_mac.grid(column=1, row=0, rowspan=2)
 
         # BUTTON - RANDOM MAC
@@ -94,7 +96,8 @@ class ViewMac:
         self.null_label4 = Message(self.labelframe_restore_original, text="")
         self.null_label4.grid(column=0, row=0)
         self.label_restore_original = Label(self.labelframe_restore_original,
-                                            text="Restores the original selected interface's\n MAC address")
+                                            text="Restores the original selected interface's\nMAC address",
+                                            justify=LEFT)
         self.label_restore_original.grid(column=1, row=0)
 
         # BUTTON - RESTORE ORIGINAL
@@ -120,9 +123,8 @@ class ViewMac:
         # CHECKBUTTON - MAC SPOOFING
         self.null_label17 = Message(self.labelframe_mac_spoofing, text="")
         self.null_label17.grid(column=2, row=0)
-        self.macSpoofingVar = BooleanVar()
-        self.checkbutton_mac_spoofing = ttk.Checkbutton(self.labelframe_mac_spoofing, text="Active",
-                                                        variable=self.macSpoofingVar, command=self.mac_spoofing)
+        #self.macSpoofingVar = IntVar()
+        self.checkbutton_mac_spoofing = Checkbutton(self.labelframe_mac_spoofing, text="Active", command=self.mac_spoofing)
         self.checkbutton_mac_spoofing.grid(column=3, row=0)
 
         # BUTTON - DONE
@@ -140,13 +142,21 @@ class ViewMac:
     def restore_mac(self):
         self.notify_view(2, "")
 
-    def mac_spoofing(self):
-        if self.macSpoofingVar.get():
-            self.notify_view(3, True)
-            print("--------------------------------------TRUE")
+    def set_spoofing(self):
+        if self.spoofing_status:
+            self.checkbutton_mac_spoofing.select()
         else:
+            self.checkbutton_mac_spoofing.deselect()
+
+    def mac_spoofing(self):
+        if self.spoofing_status:
+            self.spoofing_status = False
             self.notify_view(3, False)
             print("--------------------------------------FALSE")
+        else:
+            self.spoofing_status = True
+            self.notify_view(3, True)
+            print("--------------------------------------TRUE")
 
     def notify_view(self, operation,value):
         """
