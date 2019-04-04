@@ -87,18 +87,15 @@ if __name__ == '__main__':
 
     software, some_missing = control.check_software()
     if some_missing:
+        # variable 'software' is an array of pair [tool_name, boolean_if_its_installed]
         print("The required software is not installed:\n")
         for i in range(0, len(software)):
-            if not software[i]:
-                if i == 0:
-                    print("\t***Missing ifconfig")
-                elif i == 1:
-                    print("\t***Missing aircrack-ng")
-                elif i == 2:
-                    print("\t***Missing pyrit")
-
+            if not software[i][1]:
+                print("\t***Missing " + software[i][0])
         print("\n")
         sys.exit(1)
+    else:
+        show_message("All required software is installed")
 
     if headless:
         view_thread = threading.Thread(target=control.start_view, args=(True,))

@@ -75,7 +75,8 @@ class WEP(EncryptionType):
                     if pgrep_out != "":
                         pids = pgrep_out.split('\n')
                         for pid in pids:
-                            self.execute_command(['kill', '-9', pid])
+                            if pid != "":
+                                self.execute_command(['kill', '-9', pid])
 
                     fakeauth_out, err = self.execute_command(fakeauth_cmd)
                     self.show_message("Faked authentication on ap: " + self.bssid + " with MAC: " + self.mac)
