@@ -666,3 +666,6 @@ class Control:
         except:
             self.view.show_warning_notification("Unable to get current MAC address")
             return False
+
+    def get_running_stopped(self):
+        return self.running_stopped
