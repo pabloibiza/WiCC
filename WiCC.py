@@ -103,13 +103,13 @@ if __name__ == '__main__':
         view_thread = threading.Thread(target=control.start_view, args=(False,))
     view_thread.start()
     view_thread.join(1)
-    while not exit:
+    while not exit and not control.get_running_stopped():
         if control.has_selected_interface():
             show_message("Selected interface: " + control.selectedInterface)
             control.scan_networks()
             show_message("Start scanning available networks...")
             time.sleep(3)
-            while not control.selectedNetwork and control.running_scan():
+            while not control.selectedNetwork and control.running_scan() and not control.get_running_stopped():
                 time.sleep(1)
                 print("\t... Scanning networks ...")
                 if not control.filter_networks():
@@ -129,17 +129,18 @@ if __name__ == '__main__':
                     show_message("Start scanning available networks...")
                     time.sleep(3)
             show_message("\n * Network scanning stopped * \n")
-            while not control.selectedNetwork:
+            while not control.selectedNetwork and not control.get_running_stopped():
                 # waits until a network is selected
                 time.sleep(1)
             show_message("Selected network: " + str(control.selectedNetwork))
             show_message("\nStarting attack...\n")
 
-            while not control.cracking_completed and not control.is_cracking_network():
+            while not control.cracking_completed and not control.is_cracking_network() \
+                    and not control.get_running_stopped():
                 show_message("\t... Cracking network ...")
                 time.sleep(1)
 
-            while control.is_cracking_network():
+            while control.is_cracking_network() and not control.get_running_stopped():
                 show_message("\t... Cracking password ...")
                 # print(control.check_cracking_status())
                 time.sleep(1)
