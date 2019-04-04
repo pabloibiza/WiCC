@@ -89,8 +89,9 @@ class WPA(EncryptionType):
         if pgrep_out != "":
             pids = pgrep_out.split('\n')
             for pid in pids:
-                self.execute_command(['kill', '-9', pid])  # kills all processes related with the process
-                self.show_message("killed pid " + pid)
+                if pid != "":
+                    self.execute_command(['kill', '-9', pid])  # kills all processes related with the process
+                    self.show_message("killed pid " + pid)
 
     def crack_network(self):
         """
