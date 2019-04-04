@@ -14,11 +14,14 @@ from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
 
 from wicc_operations import Operation
 from wicc_view_mac import ViewMac
+from wicc_view_splash import Splash
 
 class View:
     control = ""
     interfaces = ""
     networks = ""
+    width = 830
+    height = 420
     interfaces_old = []
     networks_old = []
     encryption_types = ('ALL', 'WEP', 'WPA')
@@ -27,11 +30,18 @@ class View:
 
     def __init__(self, control):
         self.control = control
+        self.splash = Splash()
 
     def build_window(self, headless=False):
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.notify_kill)
-        self.root.geometry('830x420')
+        # get screen width and height
+        ws = self.root.winfo_screenwidth()
+        hs = self.root.winfo_screenheight()
+        # calculate position x, y
+        x = (ws / 2) - (self.width / 2)
+        y = (hs / 2) - (self.height / 2)
+        self.root.geometry('%dx%d+%d+%d' % (self.width, self.height, x, y))
         self.root.resizable(width=True, height=True)
         self.root.title('WiCC - Wifi Cracking Camp')
 
@@ -180,16 +190,16 @@ class View:
 
     # Sends the selected interface to control
     def start_scan(self):
-        self.start_button_pressed()
+        self.disable_buttons()
         self.send_notify(Operation.SCAN_OPTIONS, self.apply_filters())
         self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
 
     # Sends a stop scanning order to control
     def stop_scan(self):
-        self.stop_button_pressed()
+        self.enable_buttons()
         self.send_notify(Operation.STOP_SCAN, "")
 
-    def start_button_pressed(self):
+    def disable_buttons(self):
         self.button_mac_menu['state'] = DISABLED
         self.custom_wordlist_path['state'] = DISABLED
         self.generate_wordlist['state'] = DISABLED
@@ -201,7 +211,7 @@ class View:
         self.button_start_scan['state'] = DISABLED
         self.button_stop_scan['state'] = ACTIVE
 
-    def stop_button_pressed(self):
+    def enable_buttons(self):
         self.button_mac_menu['state'] = ACTIVE
         self.custom_wordlist_path['state'] = ACTIVE
         self.generate_wordlist['state'] = ACTIVE
@@ -279,7 +289,8 @@ class View:
             self.show_warning_notification("No interface selected. Close the window and select one")
 
     def mac_menu(self):
-        mac_menu = ViewMac(self, self.mac_spoofing_status)
+        self.disable_window(True)
+        mac_menu_window = ViewMac(self, self.mac_spoofing_status)
 
     # Filters networks
     """
@@ -358,3 +369,11 @@ class View:
         self.control.get_notify(operation, value)
         return
 
+    def disable_window(self, value):
+        if value:
+            self.disable_buttons()
+            self.button_stop_scan['state'] = DISABLED
+            self.button_select['state'] = DISABLED
+        elif not value:
+            self.enable_buttons()
+            self.button_select['state'] = ACTIVE
