@@ -27,6 +27,7 @@ class ViewMac:
     def build_window(self):
         self.root = Tk()
         self.root.geometry('440x490')
+        self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
         self.root.resizable(width=False, height=False)
         self.root.title('WiCC - Mac Changer Tools')
 
@@ -130,7 +131,7 @@ class ViewMac:
         # BUTTON - DONE
         self.null_label14 = Message(self.root, text="")
         self.null_label14.pack()
-        self.button_done = ttk.Button(self.root, text="Done", command= self.root.destroy)
+        self.button_done = ttk.Button(self.root, text="Done", command= self.destroy_window)
         self.button_done.pack()
 
     def customize_mac(self):
@@ -171,3 +172,7 @@ class ViewMac:
         :return:
         """
         self.main_view.get_notify_mac(operation, value)
+
+    def destroy_window(self):
+        self.main_view.disable_window(False)
+        self.root.destroy()
