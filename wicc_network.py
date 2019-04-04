@@ -28,7 +28,6 @@ class Network:
     num_clients = 0
     clients = []
 
-
     def __init__(self, id, bssid, first_seen, last_seen, channel, speed, privacy, cipher, authentication, power,
                  beacons, ivs, lan_ip, essid, handshake, password, num_clients):
         """

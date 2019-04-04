@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from wicc_control import Control
 import sys
 import os
@@ -39,6 +42,49 @@ if __name__ == '__main__':
 
     control = Control()
 
+    exit = False
+
+    print("\n\tStarting WiCC\n")
+
+    headless = False  # run the program without the front-end
+    auto_select = False  # auto-select the network interface
+    args = sys.argv[1:]
+    for arg in args:
+        if '-v' in arg:
+            if verbose_level == 0:
+                if arg == '-v':
+                    control.set_verbose_level(1)
+                    verbose_level = 1
+                    print(" *** Verbose level set to " + str(verbose_level) + "\n")
+                elif arg == '-vv':
+                    control.set_verbose_level(2)
+                    verbose_level = 2
+                    print( "*** Verbose level set to " + str(verbose_level) + "\n")
+                elif arg == '-vvv':
+                    control.set_verbose_level(3)
+                    verbose_level = 3
+                    print(" *** Verbose level set to " + str(verbose_level) + "\n")
+        elif arg == '-h':
+            if not headless:
+                headless = True
+                print(" *** Running program headless\n")
+        elif arg == '-a':
+            if not auto_select:
+                auto_select = True
+                print(" *** Auto-select network interface\n")
+        elif arg == '--help':
+            print(" ***  -h to run the program headless")
+            print(" ***  -a to auto-select the first available network interface")
+            print(" ***  -v to select the verbose level for the program")
+            print("\t-v   for level 1 (basic output)")
+            print("\t-vv  for level 2 (advanced output)")
+            print("\t-vvv for level 3 (advanced output and executed commands)\n")
+            sys.exit(0)
+        else:
+            print("*** Unrecognized option " + arg)
+            print("*** Use option --help to view the help and finish execution. Only for debugging purposes\n")
+            break
+
     software, some_missing = control.check_software()
     if some_missing:
         print("The required software is not installed:\n")
@@ -53,49 +99,6 @@ if __name__ == '__main__':
 
         print("\n")
         sys.exit(1)
-
-    exit = False
-
-    print("\n\tStarting WiCC\n")
-
-    headless = False  # run the program without the front-end
-    auto_select = False  # auto-select the network interface
-    args = sys.argv[1:]
-    for arg in args:
-        if arg == '-h':
-            if not headless:
-                headless = True
-                print(" *** Running program headless\n")
-        elif arg == '-a':
-            if not auto_select:
-                auto_select = True
-                print(" *** Auto-select network interface\n")
-        elif '-v' in arg:
-            if verbose_level == 0:
-                if arg == '-v':
-                    control.set_verbose_level(1)
-                    verbose_level = 1
-                    print("*** Verbose level set to " + str(verbose_level) + "\n")
-                elif arg == '-vv':
-                    control.set_verbose_level(2)
-                    verbose_level = 2
-                    print("*** Verbose level set to " + str(verbose_level) + "\n")
-                elif arg == '-vvv':
-                    control.set_verbose_level(3)
-                    verbose_level = 3
-                    print("*** Verbose level set to " + str(verbose_level) + "\n")
-        elif arg == '--help':
-            print(" ***  -h to run the program headless")
-            print(" ***  -a to auto-select the first available network interface")
-            print(" ***  -v to select the verbose level for the program")
-            print("\t-v   for level 1 (basic output)")
-            print("\t-vv  for level 2 (advanced output)")
-            print("\t-vvv for level 3 (advanced output and executed commands)\n")
-            sys.exit(0)
-        else:
-            print("*** Unrecognized option " + arg)
-            print("*** Use option --help to view the help and finish execution. Only for debugging purposes\n")
-            break
 
     if headless:
         view_thread = threading.Thread(target=control.start_view, args=(True,))
