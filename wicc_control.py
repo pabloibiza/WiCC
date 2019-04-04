@@ -247,7 +247,7 @@ class Control:
         This file is then passed to the method filter_networks
         :return: none
 
-        :Author: Miguel Yanes Fernández
+        :Author: Miguel Yanes Fernández & Pablo Sanz Alguacil
         """
 
         self.check_monitor_mode()
@@ -404,7 +404,7 @@ class Control:
         :param value: value applied to that operation
         :return:
 
-        :Author: Miguel Yanes Fernández
+        :Author: Miguel Yanes Fernández & Pablo Sanz Alguacil
         """
         if operation == Operation.SELECT_INTERFACE:
             self.selectedInterface = value
@@ -486,7 +486,7 @@ class Control:
         scan_filter_parameters[1] = channel
         :param: value: array containing the parameters [encryption, wps, clients, channel]
         :return: none
-        :author: Pablo Sanz
+        :author: Pablo Sanz Alguacil
         """
         self.scan_filter_parameters[0] = value[0]
         self.scan_filter_parameters[1] = value[3]
@@ -598,6 +598,13 @@ class Control:
         return self.net_attack.check_cracking_status('/tmp/WiCC/aircrack-out')
 
     def randomize_mac(self, interface):
+        """
+
+        :param interface:
+        :return:
+
+        :author: Pablo Sanz Alguacil
+        """
         command1 = ['ifconfig', interface, 'down']
         command2 = ['macchanger', '-r', interface]
         command3 = ['ifconfig', interface, 'up']
@@ -609,6 +616,8 @@ class Control:
         """
         :param values: 0 - interface, 1 - mac address
         :return:
+
+        :author: Pablo Sanz Alguacil
         """
         print("###################################\n" + values[0] + values[1] + "##################################")
         command1 = ['ifconfig', values[0], 'down']
@@ -619,6 +628,13 @@ class Control:
         self.execute_command(command3)
 
     def restore_mac(self, interface):
+        """
+
+        :param interface:
+        :return:
+
+        :author: Pablo Sanz Alguacil
+        """
         command1 = ['ifconfig', interface, 'down']
         command2 = ['macchanger', '-p', interface]
         command3 = ['ifconfig', interface, 'up']
@@ -627,6 +643,13 @@ class Control:
         self.execute_command(command3)
 
     def mac_checker(self, interface):
+        """
+
+        :param interface:
+        :return:
+
+        :author: Pablo Sanz Alguacil
+        """
         try:
             command1 = ['macchanger', '-s', interface]
             p = Popen(command1, stdout=PIPE, stderr=PIPE)
