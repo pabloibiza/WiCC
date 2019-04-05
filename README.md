@@ -1,5 +1,11 @@
 WiCC
 ====
+![](https://img.shields.io/github/license/pabloibiza/WiCC.svg)
+![](https://img.shields.io/github/release/pabloibiza/WiCC.svg)
+![](https://img.shields.io/github/release-date/pabloibiza/WiCC.svg)
+![](https://img.shields.io/github/commits-since/pabloibiza/WiCC/v0.2.svg)
+![](https://img.shields.io/github/contributors/pabloibiza/WiCC.svg)
+![](https://img.shields.io/github/repo-size/pabloibiza/WiCC.svg)
 
 <a href="url"><img src="https://github.com/pabloibiza/WiCC/blob/master/Resources/logo_circle_code.png" align="left" height="210" width="210" >
 </a>
