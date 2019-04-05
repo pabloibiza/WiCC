@@ -30,9 +30,10 @@ class View:
 
     def __init__(self, control):
         self.control = control
-        self.splash = Splash()
 
-    def build_window(self, headless=False):
+    def build_window(self, headless=False, splash_image=True):
+        if splash_image:
+            self.splash = Splash()
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.notify_kill)
         # get screen width and height

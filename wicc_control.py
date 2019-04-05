@@ -39,19 +39,20 @@ class Control:
     auto_select = False
     cracking_completed = False  # to know if the network cracking process has finished or not
     selected_wordlist = "/usr/share/wordlists/rockyou.txt"
-    cracking_network = False
-    net_attack = ""
+    cracking_network = False  # state of the network cracking process (if it has started or not)
+    net_attack = ""  # EncryptionType generic object, used to store the specific instance of the running attack
     verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
     allows_monitor = False  # to know if the wireless interface allows monitor mode
-    spoof_mac = False
-    silent_attack = False
+    spoof_mac = False  # spoof a client's MAC address
+    silent_attack = False  # if the netwrok attack should be runned in silent mode
+    write_directory = "/tmp/WiCC"  # directory to store all generated dump files
 
     def __init__(self):
         self.model = ""
         self.model = Model()
         self.view = View(self)
 
-    def start_view(self, headless):
+    def start_view(self, headless, show_image):
         """
         Start the view windows
         :param headless: indicates whether the program will run headless
@@ -59,7 +60,7 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        self.view.build_window(headless)
+        self.view.build_window(headless, show_image)
         self.headless = headless
 
     def execute_command(self, command):
@@ -74,7 +75,7 @@ class Control:
             output = "[Command]:  "
             for word in command:
                 output += word + " "
-            self.show_message(output)
+            self.show_message("\033[34m" + output + "\033[0m")
 
         process = Popen(command, stdout=PIPE, stderr=PIPE)
         return process.communicate()
@@ -254,9 +255,11 @@ class Control:
 
         self.scan_stopped = False
 
-        tempfile = "/tmp/WiCC/net_scan"
-        self.execute_command(['rm', '-r', '/tmp/WiCC'])
-        out, err = self.execute_command(['mkdir', '/tmp/WiCC'])
+        tempfile = self.write_directory + "/net_scan"
+
+        if self.write_directory[:5] == "/tmp/":
+            self.execute_command(['rm', '-r', self.write_directory])
+        out, err = self.execute_command(['mkdir', self.write_directory])
 
         # change wireless interface name to the parameter one
 
@@ -268,12 +271,14 @@ class Control:
             interface = self.selectedInterface
 
         command = ['airodump-ng', interface, '--write', tempfile, '--output-format', 'csv']
-        if (self.scan_filter_parameters[0] != "ALL"):
+
+        if self.scan_filter_parameters[0] != "ALL":
             command.append('--encrypt')
             command.append(self.scan_filter_parameters[0])
-        if (self.scan_filter_parameters[1] != "ALL"):
+        if self.scan_filter_parameters[1] != "ALL":
             command.append('--channel')
             command.append(self.scan_filter_parameters[1])
+
         thread = threading.Thread(target=self.execute_command, args=(command,))
         thread.start()
         thread.join(1)
@@ -396,7 +401,11 @@ class Control:
         if not self.headless:
             # if the program is not running headless, we notify the view
             interfaces, networks = self.model.get_parameters()
-            self.view.get_notify(interfaces, networks)
+            try:
+                self.view.get_notify(interfaces, networks)
+            except:
+                self.show_message("Error while notifying view (try running the program with the option -s)")
+                sys.exit(1)
 
     def get_notify(self, operation, value):
         """
@@ -502,68 +511,77 @@ class Control:
         """
         network = self.model.search_network(self.selectedNetwork)
         password = ""
-        try:
-            network_encryption = network.get_encryption()
-            time.sleep(0.01)
+        #try:
+        network_encryption = network.get_encryption()
+        time.sleep(0.01)
 
-            if network_encryption == " OPN":
-                self.show_info_notification("The selected network is open. No password required to connect")
-                self.cracking_completed = True
-                self.stop_scan()
-                return
-
-            self.show_info_notification("Starting attack on" + network_encryption + " network:" + "\n\nName: " +
-                                        network.get_essid() + "\nBSSID: " + network.get_bssid() +
-                                        "\n\nPlease wait up to a few minutes until the process is finished")
-
-            if network_encryption == " WEP":
-                if self.spoof_mac:
-                    attacker_mac = self.spoof_client_mac(self.selectedNetwork)
-                    self.show_message("Spoofed client MAC: " + attacker_mac)
-                else:
-                    attacker_mac = self.mac_checker(self.selectedInterface)
-                    self.show_message("Attacker's MAC: " + attacker_mac)
-
-                self.show_message("WEP attack")
-                self.net_attack = WEP(network, self.selectedInterface, attacker_mac,
-                                      self.verbose_level, self.silent_attack)
-                self.show_message("Scanning network")
-                password = self.net_attack.scan_network('/tmp/WiCC/')
-                self.show_message("Cracking finised")
-            elif network_encryption[:4] == " WPA":
-                self.show_message("create wpa instance")
-                self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist,
-                                      self.verbose_level, self.silent_attack)
-                self.show_message("start scanning")
-                self.net_attack.scan_network('/tmp/WiCC/')
-                if not self.net_attack.get_injection_supported() and not self.silent_attack:
-                    self.show_info_notification("The selected interface doesnt support packet injection."
-                                                "\nAutomatically switching to silent mode (no client de-authing)"
-                                                "\n\nThe attack will be slower")
-                self.show_message("start cracking")
-                self.show_info_notification("Handshake captured.\n\nStarting password cracking with the given wordlist")
-                self.cracking_network = True
-                password = self.net_attack.crack_network()
-                self.show_message("finished cracking")
-                self.cracking_network = False
-                #pass
-            else:
-                self.show_info_notification("Unsupported encryption type. Try selecting a WEP or WPA/WPA2 network")
-
+        # ------------- OPEN network ----------------
+        if network_encryption == " OPN":
+            self.show_info_notification("The selected network is open. No password required to connect")
             self.cracking_completed = True
             self.stop_scan()
+            return
 
-            if password != "":
-                self.view.show_info_notification("Cracking process finished\n\nPassword: " + password +
-                                                 "\n\nYou can now restart the scanning process")
+        self.show_info_notification("Starting attack on" + network_encryption + " network:" + "\n\nName: " +
+                                    network.get_essid() + "\nBSSID: " + network.get_bssid() +
+                                    "\n\nPlease wait up to a few minutes until the process is finished")
+
+        # ------------- WEP Attack ----------------
+        if network_encryption == " WEP":
+            if self.spoof_mac:
+                attacker_mac = self.spoof_client_mac(self.selectedNetwork)
+                self.show_message("Spoofed client MAC: " + attacker_mac)
             else:
-                self.view.show_info_notification("Cracking process finished\n\nNo password retrieved"
-                                                 "\n\nYou can restart the scanning process")
-            self.selectedNetwork = ""
-        except Exception:
-            self.view.show_info_notification("Please select a valid target network")
-            self.selectedNetwork = ""
-            print(Exception)
+                attacker_mac = self.mac_checker(self.selectedInterface,)
+                self.show_message("Attacker's MAC: " + attacker_mac)
+
+            self.show_message("WEP attack")
+            self.net_attack = WEP(network, self.selectedInterface, attacker_mac,
+                                  self.verbose_level, self.silent_attack, self.write_directory)
+
+            self.show_message("Scanning network")
+            password = self.net_attack.scan_network()
+            self.show_message("Cracking finised")
+
+        # ------------- WPA Attack ----------------
+        elif network_encryption[:4] == " WPA":
+            self.show_message("create wpa instance")
+            self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist,
+                                  self.verbose_level, self.silent_attack, self.write_directory)
+            self.show_message("start scanning")
+            self.net_attack.scan_network()
+            if not self.net_attack.get_injection_supported() and not self.silent_attack:
+                self.show_info_notification("The selected interface doesnt support packet injection."
+                                            "\nAutomatically switching to silent mode (no client de-authing)"
+                                            "\n\nThe attack will be slower")
+            self.show_message("start cracking")
+            self.show_info_notification("Handshake captured.\n\nStarting password cracking with the given wordlist")
+            self.cracking_network = True
+
+            password = self.net_attack.crack_network()
+            self.show_message("finished cracking")
+            self.cracking_network = False
+            #pass
+
+        # ------------- Unsupported encryption -----------
+        else:
+            self.show_info_notification("Unsupported encryption type. Try selecting a WEP or WPA/WPA2 network")
+
+        self.cracking_completed = True
+        self.stop_scan()
+
+        if password != "":
+            self.view.show_info_notification("Cracking process finished\n\nPassword: " + password +
+                                             "\n\nYou can now restart the scanning process")
+        else:
+            self.view.show_info_notification("Cracking process finished\n\nNo password retrieved"
+                                             "\n\nYou can restart the scanning process")
+        self.selectedNetwork = ""
+
+        #except Exception:
+        #    self.view.show_info_notification("Please select a valid target network")
+        #    self.selectedNetwork = ""
+        #    print(Exception)
 
     def running_scan(self):
         """
