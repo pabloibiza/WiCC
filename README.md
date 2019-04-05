@@ -71,6 +71,14 @@ purposes, but you may find some of them useful:
 
 You can always view the help with the option `--help`
 
+# Authors
+
+* **Miguel Yanes Fernández** - *Source Code* - [MiguelYanes](https://github.com/MiguelYanes)
+* **Pablo Sanz Alguacil** - *Source Code* - [pabloibiza](https://github.com/pabloibiza)
+* **Adam Chalkley**
+
+See also the list of [contributors](https://github.com/pabloibiza/WiCC/contributors) who participated in this project.
+
 # Source License
 This project is under license GNU GPL 3.0
 
