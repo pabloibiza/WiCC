@@ -110,6 +110,6 @@ class WEP(EncryptionType):
 
         while password != "":
             with open(self.write_directory + '/aircrack-out', 'r') as aircrack_out:
-                password = self.filter_aircrack(aircrack_out.read())
+                self.password = self.filter_aircrack(aircrack_out.read())
         self.show_message("--------------------------------------")
-        return password
+        return self.password
