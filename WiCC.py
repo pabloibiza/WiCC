@@ -9,11 +9,14 @@ import threading
 
 
 verbose_level = 0
+
 green = "\033[32m"
 orange = "\033[33m"
 blue = "\033[34m"
 white = "\033[0m"
-
+cyan = "\033[36m"
+light_blue = "\033[1;34m"
+light_cyan = "\033[1;36m"
 
 def show_message(message):
     """
@@ -49,50 +52,57 @@ if __name__ == '__main__':
     exit = False
 
     print("")
-    print(green + "=============================================")
-    print(orange + "      __      __ ___________  ________   ")
+    print(cyan + "=============================================")
+    print(light_blue + "      __      __ ___________  ________   ")
     print("     /  \    /  \__\_   ___ \|_   ___ \  ")
     print("     \   \/\/   /  /    \  \//    \  \/ ")
-    print("      \        /|  \     \___\     \____ ")
+    print(blue +"      \        /|  \     \___\     \____ ")
     print("       \__/\__/ |__|\________/\________/ ")
     print("")
     print("")
     print("              Wifi Cracking Camp")
-    print(green + "=============================================")
-    print(white)
+    print(cyan + "=============================================")
 
     headless = False  # run the program without the front-end
     auto_select = False  # auto-select the network interface
     splash_image = True  # show splash image during startup
+    ignore_savefiles = False  # ignore the generated local savefiles
     args = sys.argv[1:]
+
+    options_message = ""
     for arg in args:
-        print(orange)
+        print(light_cyan)
         if '-v' in arg:
             if verbose_level == 0:
                 if arg == '-v':
                     control.set_verbose_level(1)
                     verbose_level = 1
-                    print(" *** Verbose level set to " + str(verbose_level) + "\n")
+                    options_message += " *** Verbose level set to " + str(verbose_level) + "\n"
                 elif arg == '-vv':
                     control.set_verbose_level(2)
                     verbose_level = 2
-                    print( "*** Verbose level set to " + str(verbose_level) + "\n")
+                    options_message += "*** Verbose level set to " + str(verbose_level) + "\n"
                 elif arg == '-vvv':
                     control.set_verbose_level(3)
                     verbose_level = 3
-                    print(" *** Verbose level set to " + str(verbose_level) + "\n")
+                    options_message += " *** Verbose level set to " + str(verbose_level) + "\n"
         elif arg == '-h':
             if not headless:
                 headless = True
-                print(" *** Running program headless\n")
+                options_message += " *** Running program headless\n"
         elif arg == '-a':
             if not auto_select:
                 auto_select = True
-                print(" *** Auto-select network interface\n")
+                options_message += " *** Auto-select network interface\n"
         elif arg == '-s':
             if splash_image:
                 splash_image = False
-                print(" *** Not showing splash image\n")
+                options_message += " *** Not showing splash image\n"
+        elif arg == '-i':
+            if not ignore_savefiles:
+                ignore_savefiles = True
+                control.set_ignore_savefiles(ignore_savefiles)
+                options_message += " *** Ignoring local savefiles\n"
         elif arg == '--help':
             print("Viewing help")
             print("Usage: # python3 WiCC.py [option(s)]\n")
@@ -109,7 +119,7 @@ if __name__ == '__main__':
             print("*** Unrecognized option " + arg)
             print("*** Use option --help to view the help and finish execution. Only for debugging purposes\n")
             break
-
+    print(options_message)
     print(white)
 
     software, some_missing = control.check_software()
@@ -131,59 +141,60 @@ if __name__ == '__main__':
     view_thread.start()
     view_thread.join(3)
 
-    if auto_select:
-        control.view.disable_buttons()
-
-    while not exit and not control.get_running_stopped():
-        if control.has_selected_interface():
-            show_message("Selected interface: " + control.selectedInterface)
-            control.scan_networks()
-            show_message("Start scanning available networks...")
-            time.sleep(3)
-            while not control.selectedNetwork and control.running_scan() and not control.get_running_stopped():
-                time.sleep(1)
-                print("\t... Scanning networks ...")
-                if not control.filter_networks():
+    try:
+        while not exit and not control.get_running_stopped():
+            if control.has_selected_interface():
+                if auto_select:
+                    control.view.disable_buttons()
+                show_message("Selected interface: " + control.selectedInterface)
+                control.scan_networks()
+                show_message("Start scanning available networks...")
+                time.sleep(3)
+                while not control.selectedNetwork and control.running_scan() and not control.get_running_stopped():
                     time.sleep(1)
-                    control.stop_scan()
-                    time.sleep(1)
-                    show_message(" * An error ocurred, please, re-select the interface")
-                    control.selectedInterface = ""
-                    control.last_selectedInterface = ""
-                    control.model.interfaces = []
-                    while not control.has_selected_interface():
-                        control.scan_interfaces(auto_select)
-                        show_message("Scanning interfaces")
+                    show_message("\t... Scanning networks ...")
+                    if not control.filter_networks():
                         time.sleep(1)
-                    show_message("Selected interface: " + control.selectedInterface)
-                    control.scan_networks()
-                    show_message("Start scanning available networks...")
-                    time.sleep(3)
-            show_message("\n * Network scanning stopped * \n")
-            while not control.selectedNetwork and not control.get_running_stopped():
-                # waits until a network is selected
+                        control.stop_scan()
+                        time.sleep(1)
+                        show_message(" * An error ocurred, please, re-select the interface")
+                        control.selectedInterface = ""
+                        control.last_selectedInterface = ""
+                        control.model.interfaces = []
+                        while not control.has_selected_interface():
+                            control.scan_interfaces(auto_select)
+                            show_message("Scanning interfaces")
+                            time.sleep(1)
+                        show_message("Selected interface: " + control.selectedInterface)
+                        control.scan_networks()
+                        show_message("Start scanning available networks...")
+                        time.sleep(3)
+                show_message("\n * Network scanning stopped * \n")
+                while not control.selectedNetwork and not control.get_running_stopped():
+                    # waits until a network is selected
+                    time.sleep(1)
+                show_message("Selected network: " + str(control.selectedNetwork))
+                show_message("\nStarting attack...\n")
+
+                while not control.cracking_completed and not control.is_cracking_network() \
+                        and not control.get_running_stopped():
+                    show_message("\t... Cracking network ...")
+                    time.sleep(1)
+
+                while control.is_cracking_network() and not control.get_running_stopped():
+                    show_message("\t... Cracking password ...")
+                    # print(control.check_cracking_status())
+                    time.sleep(1)
+
+                show_message("Cracking process finished.")
+                # sys.exit(0)
+            else:
+                show_message("Scanning interfaces")
+                control.scan_interfaces(auto_select)
                 time.sleep(1)
-            show_message("Selected network: " + str(control.selectedNetwork))
-            show_message("\nStarting attack...\n")
-
-            while not control.cracking_completed and not control.is_cracking_network() \
-                    and not control.get_running_stopped():
-                show_message("\t... Cracking network ...")
-                time.sleep(1)
-
-            while control.is_cracking_network() and not control.get_running_stopped():
-                show_message("\t... Cracking password ...")
-                # print(control.check_cracking_status())
-                time.sleep(1)
-
-            show_message("Cracking process finished.")
-            # sys.exit(0)
-        else:
-            show_message("Scanning interfaces")
-            control.scan_interfaces(auto_select)
-            time.sleep(1)
-            if control.get_interfaces() == "":
-                control.view.show_info_notification("No wireless interfaces found."
-                                                    "\n\nPlease connect a wireless card.")
-
+                if control.get_interfaces() == "":
+                    control.view.show_info_notification("No wireless interfaces found."
+                                                        "\n\nPlease connect a wireless card.")
+    except:
+        sys.exit(1)
     view_thread.join(0)
