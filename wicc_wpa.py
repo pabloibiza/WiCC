@@ -52,22 +52,25 @@ class WPA(EncryptionType):
         if self.silent_attack:
             super().show_message("Running silent attack (no de-authing)")
         else:
-            second_iterator = 5  # when 15, de-auth's clients on the network
+            second_iterator = 10  # when 15, de-auth's clients on the network
 
         while not valid_handshake:
-            pyrit_out, err = self.execute_command(pyrit_cmd)
-            cowpatty_out, err = self.execute_command(cowpatty_cmd)
-            valid_handshake = self.filter_pyrit_out(pyrit_out) or self.filter_cowpatty_out(cowpatty_out)
             if not valid_handshake:
                 time.sleep(1)
                 if not self.silent_attack:
-                    if second_iterator == 6:
+                    if second_iterator == 10:
                         self.show_message("de-authing . . .")
                         out, err = self.execute_command(de_auth_cmd)
                         second_iterator = 0
                     else: second_iterator += 1
             else:
                 break
+            time.sleep(0.5)
+            pyrit_out, err = self.execute_command(pyrit_cmd)
+            time.sleep(0.5)
+            cowpatty_out, err = self.execute_command(cowpatty_cmd)
+            valid_handshake = self.filter_pyrit_out(pyrit_out) or self.filter_cowpatty_out(cowpatty_out)
+
 
         # 1' 46" scanning
         # 5' 15" cracking (4' 30" only on cracking)

@@ -56,7 +56,7 @@ class EncryptionType:
             output = "[Command]:  "
             for word in command:
                 output += word + " "
-            self.show_message("\033[34m" + output + "\033[0m")
+            self.show_message("\033[1;30m" + output + "\033[0m")
 
         process = Popen(command, stdout=PIPE, stderr=PIPE)
         return process.communicate()
@@ -76,7 +76,7 @@ class EncryptionType:
         self.interface += 'mon'
         airmon_check_cmd = ['airmon-ng', 'check', 'kill']
         airodump_scan_cmd = ['airodump-ng', self.interface, '-a', '--bssid', self.bssid, '--write',
-                             self.write_directory + '/net_attack', '--channel', self.channel, '--write-interval', '1']
+                             self.write_directory + '/net_attack', '--channel', self.channel, '--write-interval', '2']
         self.execute_command(airmon_start_cmd)
         self.execute_command(airmon_check_cmd)
         thread = threading.Thread(target=self.execute_command, args=(airodump_scan_cmd,))

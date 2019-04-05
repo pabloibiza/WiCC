@@ -46,11 +46,17 @@ class Control:
     spoof_mac = False  # spoof a client's MAC address
     silent_attack = False  # if the netwrok attack should be runned in silent mode
     write_directory = "/tmp/WiCC"  # directory to store all generated dump files
+    ignore_local_savefiles = False  # option to ingnore the local files, for both creating and reading them
+    main_directory = ""  # directory where the program is running
+    local_folder = "/savefiles"  # folder to locally save files
 
     def __init__(self):
         self.model = ""
         self.model = Model()
         self.view = View(self)
+        directory, err = self.execute_command(['pwd'])
+        self.main_directory = directory.decode('utf-8')[:-1]
+        self.local_folder = self.main_directory + self.local_folder
 
     def start_view(self, headless, show_image):
         """
@@ -75,7 +81,7 @@ class Control:
             output = "[Command]:  "
             for word in command:
                 output += word + " "
-            self.show_message("\033[34m" + output + "\033[0m")
+            self.show_message("\033[1;30m" + output + "\033[0m")
 
         process = Popen(command, stdout=PIPE, stderr=PIPE)
         return process.communicate()
@@ -86,6 +92,9 @@ class Control:
 
     def set_verbose_level(self, level):
         self.verbose_level = level
+
+    def set_ignore_savefiles(self, ignore_savefiles):
+        self.ignore_local_savefiles = ignore_savefiles
 
     def check_software(self):
         """
@@ -509,6 +518,12 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
+        password = self.check_cracked_networks("cracked_networks")
+        if password != "":
+            self.view.show_info_notification("Network already cracked\n\nPassword: " + password +
+                                             "\n\nYou can now restart the scanning process")
+            return
+
         network = self.model.search_network(self.selectedNetwork)
         password = ""
         #try:
@@ -573,6 +588,9 @@ class Control:
         if password != "":
             self.view.show_info_notification("Cracking process finished\n\nPassword: " + password +
                                              "\n\nYou can now restart the scanning process")
+            self.create_local_folder()
+            bssid = self.model.search_network(self.selectedNetwork).get_bssid()
+            self.store_local_file("cracked_networks", bssid + " " + password)
         else:
             self.view.show_info_notification("Cracking process finished\n\nNo password retrieved"
                                              "\n\nYou can restart the scanning process")
@@ -582,6 +600,67 @@ class Control:
         #    self.view.show_info_notification("Please select a valid target network")
         #    self.selectedNetwork = ""
         #    print(Exception)
+
+    def create_local_folder(self):
+        """
+        Create (if doesn't exist) a local folder to store program-related files
+        :return:
+
+        :Author: Miguel Yanes Fernández
+        """
+
+        print(self.main_directory)
+        print(self.local_folder)
+        if not self.ignore_local_savefiles:
+            mkdir_cmd = ['mkdir', self.local_folder]
+            print(mkdir_cmd)
+            self.execute_command(mkdir_cmd)
+            print("creating folder")
+
+    def store_local_file(self, file_name, file_contents):
+        """
+        Stores the passed content in a local file (adds the content if it already exists)
+        :param file_name: name of the file
+        :param file_contents: contents to store on the file
+        :return:
+
+        :Author: Miguel Yanes Fernández
+        """
+        if not self.ignore_local_savefiles:
+            with open(self.local_folder + "/" + file_name, "a") as file:
+                file.write(file_contents + "\n")
+                file.close()
+
+            print("creating file")
+        else:
+            print("not creating")
+
+    def read_local_file(self, file_name):
+        """
+        Read contents of a local file
+        :param file_name: name of the file to read
+        :return:
+
+        :Author: Miguel Yanes Fernández
+        """
+        if not self.ignore_local_savefiles:
+            try:
+                with open(self.local_folder + "/" + file_name, "r") as file:
+                    return file.read()
+            except:
+                self.show_message("There are no stored cracked networks")
+
+    def check_cracked_networks(self, file_name):
+        contents = self.read_local_file(file_name)
+        if contents:
+            lines = contents.split("\n")
+            for line in lines:
+                print(line)
+                words = line.split()
+                if words[0] == self.model.search_network(self.selectedNetwork).get_bssid():
+                    return words[1]
+        self.show_message("Selected network is not in the stored cracked networks list")
+        return ""
 
     def running_scan(self):
         """
