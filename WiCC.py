@@ -9,6 +9,10 @@ import threading
 
 
 verbose_level = 0
+green = "\033[32m"
+orange = "\033[33m"
+blue = "\033[34m"
+white = "\033[0m"
 
 
 def show_message(message):
@@ -44,12 +48,25 @@ if __name__ == '__main__':
 
     exit = False
 
-    print("\n\tStarting WiCC\n")
+    print("")
+    print(green + "=============================================")
+    print(orange + "      __      __ ___________  ________   ")
+    print("     /  \    /  \__\_   ___ \|_   ___ \  ")
+    print("     \   \/\/   /  /    \  \//    \  \/ ")
+    print("      \        /|  \     \___\     \____ ")
+    print("       \__/\__/ |__|\________/\________/ ")
+    print("")
+    print("")
+    print("              Wifi Cracking Camp")
+    print(green + "=============================================")
+    print(white)
 
     headless = False  # run the program without the front-end
     auto_select = False  # auto-select the network interface
+    splash_image = True  # show splash image during startup
     args = sys.argv[1:]
     for arg in args:
+        print(orange)
         if '-v' in arg:
             if verbose_level == 0:
                 if arg == '-v':
@@ -72,18 +89,28 @@ if __name__ == '__main__':
             if not auto_select:
                 auto_select = True
                 print(" *** Auto-select network interface\n")
+        elif arg == '-s':
+            if splash_image:
+                splash_image = False
+                print(" *** Not showing splash image\n")
         elif arg == '--help':
-            print(" ***  -h to run the program headless")
-            print(" ***  -a to auto-select the first available network interface")
-            print(" ***  -v to select the verbose level for the program")
-            print("\t-v   for level 1 (basic output)")
-            print("\t-vv  for level 2 (advanced output)")
-            print("\t-vvv for level 3 (advanced output and executed commands)\n")
+            print("Viewing help")
+            print("Usage: # python3 WiCC.py [option(s)]\n")
+            print("Options (mainly for debugging purposes):")
+            print("   -h \trun the program headless")
+            print("   -a \tauto-select the first available network interface")
+            print("   -s \tavoid showing the splash image during startup")
+            print("   -v \tselect the verbose level for the program (default: 0, no output)")
+            print("\t   -v   level 1 (basic output)")
+            print("\t   -vv  level 2 (advanced output)")
+            print("\t   -vvv level 3 (advanced output and executed commands)\n")
             sys.exit(0)
         else:
             print("*** Unrecognized option " + arg)
             print("*** Use option --help to view the help and finish execution. Only for debugging purposes\n")
             break
+
+    print(white)
 
     software, some_missing = control.check_software()
     if some_missing:
@@ -98,11 +125,15 @@ if __name__ == '__main__':
         show_message("All required software is installed")
 
     if headless:
-        view_thread = threading.Thread(target=control.start_view, args=(True,))
+        view_thread = threading.Thread(target=control.start_view, args=(True, splash_image,))
     else:
-        view_thread = threading.Thread(target=control.start_view, args=(False,))
+        view_thread = threading.Thread(target=control.start_view, args=(False, splash_image,))
     view_thread.start()
-    view_thread.join(1)
+    view_thread.join(3)
+
+    if auto_select:
+        control.view.disable_buttons()
+
     while not exit and not control.get_running_stopped():
         if control.has_selected_interface():
             show_message("Selected interface: " + control.selectedInterface)
@@ -146,7 +177,7 @@ if __name__ == '__main__':
                 time.sleep(1)
 
             show_message("Cracking process finished.")
-            sys.exit(0)
+            # sys.exit(0)
         else:
             show_message("Scanning interfaces")
             control.scan_interfaces(auto_select)

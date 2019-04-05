@@ -14,7 +14,7 @@ class EncryptionType:
 
     injection_supported = True  # to know if the interface supports packet injection
 
-    def __init__(self, network, interface, verbose_level, silent_attack):
+    def __init__(self, network, interface, verbose_level, silent_attack, write_directory):
         """
         Construction for the parent class EncryptionType.
         :param network: target network
@@ -30,6 +30,7 @@ class EncryptionType:
         self.channel = str(int(self.target_network.get_channel()))
         self.verbose_level = verbose_level
         self.silent_attack = silent_attack
+        self.write_directory = write_directory
 
     def show_message(self, message):
         """
@@ -54,12 +55,12 @@ class EncryptionType:
             output = "[Command]:  "
             for word in command:
                 output += word + " "
-            self.show_message(output)
+            self.show_message("\033[34m" + output + "\033[0m")
 
         process = Popen(command, stdout=PIPE, stderr=PIPE)
         return process.communicate()
 
-    def scan_network(self, write_directory):
+    def scan_network(self):
         """
         Scans the target network and writes the dump file in the selected directory
         :param write_directory: directory to write the dump file
@@ -67,13 +68,14 @@ class EncryptionType:
 
         :Author: Miguel Yanes Fernández
         """
-        self.execute_command(['rm', '-r', write_directory])
-        self.execute_command(['mkdir', write_directory])
+        if self.write_directory[:5] == '/tmp/':
+            self.execute_command(['rm', '-r', self.write_directory])
+        self.execute_command(['mkdir', self.write_directory])
         airmon_start_cmd = ['airmon-ng', 'start', self.interface, self.channel]
         self.interface += 'mon'
         airmon_check_cmd = ['airmon-ng', 'check', 'kill']
         airodump_scan_cmd = ['airodump-ng', self.interface, '-a', '--bssid', self.bssid, '--write',
-                             write_directory + 'net_attack', '--channel', self.channel, '--write-interval', '1']
+                             self.write_directory + '/net_attack', '--channel', self.channel, '--write-interval', '1']
         self.execute_command(airmon_start_cmd)
         self.execute_command(airmon_check_cmd)
         thread = threading.Thread(target=self.execute_command, args=(airodump_scan_cmd,))
