@@ -31,6 +31,7 @@ class EncryptionType:
         self.verbose_level = verbose_level
         self.silent_attack = silent_attack
         self.write_directory = write_directory
+        self.password = ""
 
     def show_message(self, message):
         """

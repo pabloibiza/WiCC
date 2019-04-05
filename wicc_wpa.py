@@ -119,8 +119,8 @@ class WPA(EncryptionType):
                         self.write_directory + '/aicrack-out']
         aircrack_out, aircrack_err = self.execute_command(aircrack_cmd)
         aircrack_out = aircrack_out.decode('utf-8')
-        password = self.filter_aircrack(aircrack_out)
-        return password
+        self.password = self.filter_aircrack(aircrack_out)
+        return self.password
 
     def calculate_pmk(self):
         """z

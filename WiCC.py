@@ -18,6 +18,15 @@ cyan = "\033[36m"
 light_blue = "\033[1;34m"
 light_cyan = "\033[1;36m"
 
+
+def print_ascii(file):
+    output = ""
+    with open(file, "r") as art:
+        for line in art:
+            output += line
+    print(output)
+
+
 def show_message(message):
     """
     Method to print a message if the verbose level is higher or equal to 1
@@ -51,7 +60,8 @@ if __name__ == '__main__':
 
     exit = False
 
-    print("")
+
+    print_ascii("Resources/ascii_art.txt")
     print(cyan + "=============================================")
     print(light_blue + "      __      __ ___________  ________   ")
     print("     /  \    /  \__\_   ___ \|_   ___ \  ")
