@@ -27,6 +27,7 @@ class View:
     encryption_types = ('ALL', 'WEP', 'WPA')
     channels = ('ALL', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14')
     mac_spoofing_status = False
+    icon_path = "Resources/icon.png"
 
     def __init__(self, control):
         self.control = control
@@ -45,6 +46,8 @@ class View:
         self.root.geometry('%dx%d+%d+%d' % (self.width, self.height, x, y))
         self.root.resizable(width=True, height=True)
         self.root.title('WiCC - Wifi Cracking Camp')
+        icon = Image("photo", file=self.icon_path)
+        self.root.call('wm', 'iconphoto', self.root._w, icon)
 
         # LABEL FRAME - ANALYSIS OPTIONS
         self.labelframe_analysis = LabelFrame(self.root, text="Analysis Options")
