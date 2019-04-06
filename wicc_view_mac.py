@@ -12,6 +12,8 @@ from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
     Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
     HORIZONTAL, END, FALSE, IntVar, StringVar, messagebox, filedialog, LabelFrame
 
+from wicc_view_right_click import rClicker
+
 
 class ViewMac:
     main_view = ""
@@ -31,108 +33,79 @@ class ViewMac:
         self.root.resizable(width=False, height=False)
         self.root.title('WiCC - Mac Changer Tools')
 
-        # LABELFRAME - CURRENT MAC
-        self.labelframe_current_mac = LabelFrame(self.root, text="")
-        self.labelframe_current_mac.pack(fill="both", expand="no")
+        # LABELFRAME - INFO
+        self.labelframe_info = LabelFrame(self.root, text="")
+        self.labelframe_info.pack(fill="both", expand="no", pady=15)
 
-        # LABEL - SHOW MAC
-        self.null_label10 = Message(self.labelframe_current_mac, text="")
-        self.null_label10.pack(side=TOP)
-        self.label_mac = Label(self.labelframe_current_mac, text="In this window you can change your MAC as you want by"
-                                                                 "\nusing one this options. A great power comes with a"
-                                                                 "\ngreat responsibility")
-        self.label_mac.pack(side=TOP)
-        self.null_label13 = Message(self.labelframe_current_mac, text="")
-        self.null_label13.pack(side=TOP)
+        # LABEL - INFO
+        self.label_info = Label(self.labelframe_info, pady=15,
+                                text="In this window you can change your MAC as you want by"
+                                     "\nusing one this options. A great power comes with a"
+                                     "\ngreat responsibility")
+        self.label_info.pack(side=TOP)
 
         # LABELFRAME - CUSTOM MAC
-        self.null_label11 = Message(self.root, text="")
-        self.null_label11.pack()
         self.labelframe_custom_mac = LabelFrame(self.root, text="Write custom MAC")
-        self.labelframe_custom_mac.pack(fill="both", expand="no")
+        self.labelframe_custom_mac.pack(fill="both", expand="no", pady=10)
 
         # LABEL - CUSTOM MAC
-        self.null_label0 = Message(self.labelframe_custom_mac, text="")
-        self.null_label0.grid(column=0, row=0)
         self.label_custom_mac = Label(self.labelframe_custom_mac, text="Custom MAC: ")
-        self.label_custom_mac.grid(column=1, row=0)
+        self.label_custom_mac.grid(column=1, row=0, padx=5)
 
         # ENTRY - CUSTOM MAC
         self.entry_custom_mac = ttk.Entry(self.labelframe_custom_mac)
-        self.entry_custom_mac.grid(column=2, row=0)
-        self.null_label1 = Message(self.labelframe_custom_mac, text="   ")
-        self.null_label1.grid(column=3, row=0)
+        self.entry_custom_mac.grid(column=2, row=0, padx=5)
+        self.entry_custom_mac.bind('<Button-3>', rClicker, add='')
 
         # BUTTON - CUSTOM MAC
         self.button_custom_mac = ttk.Button(self.labelframe_custom_mac, text="Set custom MAC", command=self.customize_mac)
         self.button_custom_mac.grid(column=4, row=0)
 
         # LABELFRAME - RANDOM MAC
-        self.null_label12 = Message(self.root, text="")
-        self.null_label12.pack()
         self.labelframe_random_mac = LabelFrame(self.root, text="Randomize MAC")
-        self.labelframe_random_mac.pack(fill="both", expand="no")
+        self.labelframe_random_mac.pack(fill="both", expand="no", pady=10)
 
         # LABEL - RANDOM MAC
-        self.null_label2 = Message(self.labelframe_random_mac, text="")
-        self.null_label2.grid(column=0, row=0)
         self.label_random_mac = Label(self.labelframe_random_mac,
                                       text="Changes the current MAC to a completly \nrandom MAC", justify=LEFT)
-        self.label_random_mac.grid(column=1, row=0, rowspan=2)
+        self.label_random_mac.grid(column=1, row=0, rowspan=2, padx=5)
 
         # BUTTON - RANDOM MAC
-        self.null_label3 = Message(self.labelframe_random_mac, text="")
-        self.null_label3.grid(column=2, row=0)
         self.button_random_mac = ttk.Button(self.labelframe_random_mac, text="Randomize MAC",
                                             command=self.randomize_mac)
-        self.button_random_mac.grid(column=3, row=0)
+        self.button_random_mac.grid(column=3, row=0, padx=5)
 
         # LABELFRAME - RESTORE ORIGINAL
-        self.null_label20 = Message(self.root, text="")
-        self.null_label20.pack()
         self.labelframe_restore_original = LabelFrame(self.root, text="Restore original MAC")
-        self.labelframe_restore_original.pack(fill="both", expand="no")
+        self.labelframe_restore_original.pack(fill="both", expand="no", pady=10)
 
         # LABEL - RESTORE ORIGINAL
-        self.null_label4 = Message(self.labelframe_restore_original, text="")
-        self.null_label4.grid(column=0, row=0)
         self.label_restore_original = Label(self.labelframe_restore_original,
                                             text="Restores the original selected interface's\nMAC address",
                                             justify=LEFT)
-        self.label_restore_original.grid(column=1, row=0)
+        self.label_restore_original.grid(column=1, row=0, padx=5)
 
         # BUTTON - RESTORE ORIGINAL
-        self.null_label5 = Message(self.labelframe_restore_original, text="")
-        self.null_label5.grid(column=2, row=0)
         self.button_restore_original = ttk.Button(self.labelframe_restore_original, text="Restore MAC",
                                                   command=self.restore_mac)
-        self.button_restore_original.grid(column=3, row=0)
+        self.button_restore_original.grid(column=3, row=0, padx=5)
 
         # LABELFRAME - MAC SPOOFING
-        self.null_label15 = Message(self.root, text="")
-        self.null_label15.pack()
         self.labelframe_mac_spoofing = LabelFrame(self.root, text="MAC spoofing")
-        self.labelframe_mac_spoofing.pack(fill="both", expand="no")
+        self.labelframe_mac_spoofing.pack(fill="both", expand="no", pady=10)
 
-        # LABEL - MAC SPOOFING
-        self.null_label16 = Message(self.labelframe_mac_spoofing, text="")
-        self.null_label16.grid(column=0, row=0)
+        # LABEL - MAC SPOOFING)
         self.label_mac_spoofing = Label(self.labelframe_mac_spoofing,
                                             text="Spoof client's MAC address during attack")
-        self.label_mac_spoofing.grid(column=1, row=0)
+        self.label_mac_spoofing.grid(column=1, row=0, padx=5)
 
         # CHECKBUTTON - MAC SPOOFING
-        self.null_label17 = Message(self.labelframe_mac_spoofing, text="")
-        self.null_label17.grid(column=2, row=0)
-        #self.macSpoofingVar = IntVar()
         self.checkbutton_mac_spoofing = Checkbutton(self.labelframe_mac_spoofing, text="Active", command=self.mac_spoofing)
-        self.checkbutton_mac_spoofing.grid(column=3, row=0)
+        self.checkbutton_mac_spoofing.grid(column=3, row=0, padx=5)
 
         # BUTTON - DONE
-        self.null_label14 = Message(self.root, text="")
-        self.null_label14.pack()
         self.button_done = ttk.Button(self.root, text="Done", command= self.destroy_window)
-        self.button_done.pack()
+        self.button_done.pack(padx=15, pady=15)
 
     def customize_mac(self):
         self.notify_view(0, self.entry_custom_mac.get())
@@ -153,11 +126,9 @@ class ViewMac:
         if self.spoofing_status:
             self.spoofing_status = False
             self.notify_view(3, False)
-            print("--------------------------------------FALSE")
         else:
             self.spoofing_status = True
             self.notify_view(3, True)
-            print("--------------------------------------TRUE")
 
     def notify_view(self, operation,value):
         """
@@ -171,7 +142,7 @@ class ViewMac:
         :param value:
         :return:
         """
-        self.main_view.get_notify_mac(operation, value)
+        self.main_view.get_notify_childs(operation, value)
 
     def destroy_window(self):
         self.main_view.disable_window(False)

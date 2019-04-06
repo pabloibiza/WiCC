@@ -49,6 +49,7 @@ class Control:
     ignore_local_savefiles = False  # option to ingnore the local files, for both creating and reading them
     main_directory = ""  # directory where the program is running
     local_folder = "/savefiles"  # folder to locally save files
+    path_directory_crunch = "/home"  #directory to save generated lists with crunch
 
     def __init__(self):
         self.model = ""
@@ -451,12 +452,17 @@ class Control:
         elif operation == Operation.RESTORE_MAC:
             self.restore_mac(value)
         elif operation == Operation.SPOOF_MAC:
+            print(value)
             self.spoof_mac = value
         elif operation == Operation.CHECK_MAC:
             self.mac_checker(value)
         elif operation == Operation.SELECT_CUSTOM_WORDLIST:
             self.selected_wordlist = value
             return
+        elif operation == Operation.PATH_GENERATED_LISTS:
+            self.path_directory_crunch = value
+        elif operation == Operation.GENERATE_LIST:
+            self.generate_wordlist_crunch(value)
 
     def stop_scan(self):
         """
@@ -766,3 +772,19 @@ class Control:
 
     def get_running_stopped(self):
         return self.running_stopped
+
+    def generate_wordlist_crunch(self, words_list):
+        input_list = ""
+        count = 0
+        for word in words_list:
+            if count == 0:
+                input_list = input_list + word
+                count=+1
+            else:
+                input_list = input_list + " " + word
+
+        output_list = self.path_directory_crunch + "/crunch_output.txt"
+        command1 = ['crunch', '0', '0', '-o', output_list, '-p', input_list]
+        print(input_list)
+        print(output_list)
+        self.execute_command(command1)
