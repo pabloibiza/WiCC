@@ -38,6 +38,7 @@ The utilised tools are the following:
 * coWPAtty
 * pgrep
 * macchanger
+* crunch
 <br/><br/>
 
 # Requirements
