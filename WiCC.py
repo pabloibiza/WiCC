@@ -60,8 +60,7 @@ if __name__ == '__main__':
 
     exit = False
 
-
-    print_ascii("Resources/ascii_art.txt")
+    # print_ascii("Resources/ascii_art.txt")
     print(cyan + "=============================================")
     print(light_blue + "      __      __ ___________  ________   ")
     print("     /  \    /  \__\_   ___ \|_   ___ \  ")
@@ -117,13 +116,14 @@ if __name__ == '__main__':
             print("Viewing help")
             print("Usage: # python3 WiCC.py [option(s)]\n")
             print("Options (mainly for debugging purposes):")
-            print("   -h \trun the program headless")
-            print("   -a \tauto-select the first available network interface")
-            print("   -s \tavoid showing the splash image during startup")
-            print("   -v \tselect the verbose level for the program (default: 0, no output)")
-            print("\t   -v   level 1 (basic output)")
-            print("\t   -vv  level 2 (advanced output)")
-            print("\t   -vvv level 3 (advanced output and executed commands)\n")
+            print("   -h | --help \tshow the help")
+            print("   -a \t\tauto-select the first available network interface")
+            print("   -s \t\tavoid showing the splash image during startup")
+            print("   -i \t\tignore local save files")
+            print("   -v \t\tselect the verbose level for the program (default: 0, no output)")
+            print("\t-v  \tlevel 1 (basic output)")
+            print("\t-vv \tlevel 2 (advanced output)")
+            print("\t-vvv\tlevel 3 (advanced output and executed commands)\n")
             sys.exit(0)
         else:
             print("*** Unrecognized option " + arg)
