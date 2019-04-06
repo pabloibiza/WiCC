@@ -81,5 +81,7 @@ See also the list of [contributors](https://github.com/pabloibiza/WiCC/contribut
 
 # Source License
 This project is under license GNU GPL 3.0
+<br/><br/>
+![](https://www.gnu.org/graphics/gplv3-with-text-136x68.png)
 
 
