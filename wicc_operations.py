@@ -21,3 +21,5 @@ class Operation:
     SELECT_CUSTOM_WORDLIST = "Select custom wordlist"
     SCAN_OPTIONS = "Scan Options"
     CHECK_MAC = "Check mac"
+    PATH_GENERATED_LISTS = "Path generated lists"
+    GENERATE_LIST = "Generate list"
