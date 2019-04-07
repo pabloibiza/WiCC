@@ -6,13 +6,13 @@
     Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
-import threading
 from tkinter import *
 from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
     Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
     HORIZONTAL, END, FALSE, IntVar, StringVar, messagebox, filedialog
 
 from wicc_operations import Operation
+from wicc_view_crunch import GenerateWordlist
 from wicc_view_mac import ViewMac
 from wicc_view_splash import Splash
 
@@ -35,6 +35,8 @@ class View:
     def build_window(self, headless=False, splash_image=True):
         if splash_image:
             self.splash = Splash()
+
+
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.notify_kill)
         # get screen width and height
@@ -66,10 +68,8 @@ class View:
         self.labelframe_start_stop.pack(fill="both", expand="yes")
 
         # LABEL - INTERFACES
-        self.null_label0 = Message(self.labelframe_analysis, text="")
-        self.null_label0.grid(column=0, row=0)
-        self.label_interfaces = ttk.Label(self.labelframe_analysis, text="Interface: ")
-        self.label_interfaces.grid(column=1, row=0)
+        self.label_interfaces = Label(self.labelframe_analysis, text="Interface: ")
+        self.label_interfaces.grid(column=1, row=0, padx=5)
 
         # COMBO BOX - NETWORK INTERFACES
         self.interfaceVar = StringVar()
@@ -77,12 +77,10 @@ class View:
         self.interfaces_combobox['values'] = self.interfaces
         self.interfaces_combobox.bind("<<ComboboxSelected>>")
         self.interfaces_combobox.grid(column=2, row=0)
-        self.null_label1 = Message(self.labelframe_analysis, text="")
-        self.null_label1.grid(column=3, row=0)
 
         # LABEL - ENCRYPTIONS
-        self.label_encryptions = ttk.Label(self.labelframe_analysis, text="Encryption: ")
-        self.label_encryptions.grid(column=4, row=0)
+        self.label_encryptions = Label(self.labelframe_analysis, text="Encryption: ")
+        self.label_encryptions.grid(column=4, row=0, padx=5)
 
         # COMBO BOX - ENCRYPTOION
         self.encryptionVar = StringVar()
@@ -91,31 +89,23 @@ class View:
         self.encryption_combobox.current(0)
         self.encryption_combobox.bind("<<ComboboxSelected>>")
         self.encryption_combobox.grid(column=5, row=0)
-        self.null_label2 = Message(self.labelframe_analysis, text="")
-        self.null_label2.grid(column=6, row=0)
 
         # CHECKBUTTON - WPS
         self.wps_status = BooleanVar()
-        self.wps_checkbox = ttk.Checkbutton(self.labelframe_analysis, text="Only WPS", variable=self.wps_status)
-        self.wps_checkbox.grid(column=7, row=0)
-        self.null_label3 = Message(self.labelframe_analysis, text="")
-        self.null_label3.grid(column=8, row=0)
+        self.wps_checkbox = Checkbutton(self.labelframe_analysis, text="Only WPS", variable=self.wps_status)
+        self.wps_checkbox.grid(column=7, row=0, padx=5)
 
         # BUTTON - START SCAN
-        self.button_start_scan = ttk.Button(self.labelframe_analysis, text='Start scan', command=self.start_scan)
-        self.button_start_scan.grid(column=9, row=0)
+        self.button_start_scan = Button(self.labelframe_analysis, text='Start scan', command=self.start_scan)
+        self.button_start_scan.grid(column=9, row=0, padx=5)
 
         # BUTTON - STOP SCAN
-        self.null_label9 = Message(self.labelframe_analysis, text="")
-        self.null_label9.grid(column=10, row=0)
-        self.button_stop_scan = ttk.Button(self.labelframe_analysis, text='Stop scan', state=DISABLED,
+        self.button_stop_scan = Button(self.labelframe_analysis, text='Stop scan', state=DISABLED,
                                            command=self.stop_scan)
-        self.button_stop_scan.grid(column=11, row=0)
+        self.button_stop_scan.grid(column=11, row=0, padx=5)
 
         # LABEL - CHANNELS
-        self.null_label4 = Message(self.labelframe_more_options, text="")
-        self.null_label4.grid(column=0, row=0)
-        self.label_channels = ttk.Label(self.labelframe_more_options, text="Channel: ")
+        self.label_channels = Label(self.labelframe_more_options, text="Channel: ", padx=10, pady=10)
         self.label_channels.grid(column=1, row=0)
 
         # COMBO BOX - CHANNELS
@@ -125,34 +115,27 @@ class View:
         self.channels_combobox.bind("<<ComboboxSelected>>")
         self.channels_combobox.current(0)
         self.channels_combobox.grid(column=2, row=0)
-        self.null_label6 = Message(self.labelframe_more_options, text="")
-        self.null_label6.grid(column=3, row=0, sticky=W)
 
         # CHECKBOX - CLIENTS
         self.clients_status = BooleanVar()
-        self.clients_checkbox = ttk.Checkbutton(self.labelframe_more_options, text="Only clients",
+        self.clients_checkbox = Checkbutton(self.labelframe_more_options, text="Only clients",
                                                 variable=self.clients_status)
-        self.clients_checkbox.grid(column=4, row=0)
-        self.null_label7 = Message(self.labelframe_more_options, text="")
-        self.null_label7.grid(column=5, row=0)
+        self.clients_checkbox.grid(column=4, row=0, padx=5)
 
         # BUTTON - CHANGE MAC
-        self.button_mac_menu= ttk.Button(self.labelframe_more_options, text="MAC menu", state=ACTIVE,
+        self.button_mac_menu= Button(self.labelframe_more_options, text="MAC menu", state=ACTIVE,
                                          command=self.mac_menu)
-        self.button_mac_menu.grid(column=6, row=0)
-        self.null_label8 = Message(self.labelframe_more_options, text="")
-        self.null_label8.grid(column=7, row=0)
+        self.button_mac_menu.grid(column=6, row=0, padx=5)
 
         # BUTTON - CUSTOM WORDLIST
-        self.custom_wordlist_path = ttk.Button(self.labelframe_more_options, text="Select wordlist",
+        self.custom_wordlist_path = Button(self.labelframe_more_options, text="Select wordlist",
                                                command=self.select_custom_wordlist)
-        self.custom_wordlist_path.grid(column=8, row=0)
+        self.custom_wordlist_path.grid(column=8, row=0, padx=5)
 
         # BUTTON - GENERATE WORDLIST
-        self.null_label10 = Message(self.labelframe_more_options, text="")
-        self.null_label10.grid(column=9, row=0)
-        self.generate_wordlist = ttk.Button(self.labelframe_more_options, text="Generate wordlist")
-        self.generate_wordlist.grid(column=10, row=0)
+        self.generate_wordlist = Button(self.labelframe_more_options, text="Generate wordlist",
+                                            command=self.generate_wordlist)
+        self.generate_wordlist.grid(column=10, row=0, padx=5)
 
         # TREEVIEW - NETWORKS
         self.networks_treeview = ttk.Treeview(self.labelframe_networks)
@@ -182,12 +165,8 @@ class View:
         self.networks_treeview.pack(fill=X)
 
         # BUTTON - ATTACK
-        self.null_label2 = Message(self.labelframe_start_stop, text="")
-        self.null_label2.grid(column=0, row=0)
-        self.button_select = ttk.Button(self.labelframe_start_stop, text='Attack', command=self.select_network)
-        self.button_select.grid(column=1, row=0)
-        self.null_label3 = Message(self.labelframe_start_stop, text="")
-        self.null_label3.grid(column=2, row=0)
+        self.button_select = Button(self.labelframe_start_stop, text='Attack', command=self.select_network)
+        self.button_select.grid(column=1, row=0, padx=5)
 
         if not headless:
             self.root.mainloop()
@@ -242,11 +221,12 @@ class View:
     def reaper_calls(self):
         self.root.destroy()
 
-
     # Shows a window to select a custom wordlist to use. Then sends the path to control.
     def select_custom_wordlist(self):
-        select_window = filedialog.askopenfilename(parent=self.root, initialdir='/home/$USER', title='Choose file',
-                                                   filetypes=[('Text files', '.txt'), ("All files", "*.*")])
+        select_window = filedialog.askopenfilename(parent=self.root, initialdir='/home/$USER',
+                                                   title='Choose wordlist file', filetypes=[('Text files', '.txt'),
+                                                                                            ('List files', '.lst'),
+                                                                                            ("All files", "*.*")])
         if select_window:
             try:
                 self.send_notify(Operation.SELECT_CUSTOM_WORDLIST, select_window)
@@ -339,7 +319,7 @@ class View:
     def current_mac(self):
         return str(self.control.mac_checker(self.interfaceVar.get()))
 
-    def get_notify_mac(self, operation, value):
+    def get_notify_childs(self, operation, value):
         if(operation == 0):     #custom MAC
             print("CUSTIMIZE MAC OPERATION")
             self.customize_mac(value)
@@ -350,9 +330,13 @@ class View:
             print("RESTORE MAC OPERATION")
             self.restore_mac()
         elif(operation == 3):   #MAC spoofing
-            print("MAC SPOOFING OPERATION: " + str(self.mac_spoofing_status))
             self.mac_spoofing_status = value
+            print("MAC SPOOFING OPERATION: " + str(self.mac_spoofing_status))
             self.spoofing_mac(value)
+        elif(operation == 4):   #SAVE DIRECTORY GENERATED WORDLIST
+            self.send_notify(Operation.PATH_GENERATED_LISTS, value)
+        elif(operation == 5):   #GENERATE WORDLIST
+            self.send_notify(Operation.GENERATE_LIST, value)
 
     def get_spoofing_status(self):
         return self.mac_spoofing_status
@@ -381,3 +365,7 @@ class View:
         elif not value:
             self.enable_buttons()
             self.button_select['state'] = ACTIVE
+
+    def generate_wordlist(self):
+        self.disable_window(True)
+        wordlist_generator_window = GenerateWordlist(self)
