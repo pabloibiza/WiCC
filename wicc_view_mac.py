@@ -18,6 +18,7 @@ from wicc_view_right_click import rClicker
 class ViewMac:
     main_view = ""
     current_mac = ""
+    accepted_characters = ['a', 'b', 'c', 'd', 'e', 'f', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ':']
 
     def __init__(self, view, spoofing_status):
         self.main_view = view
@@ -108,7 +109,18 @@ class ViewMac:
         self.button_done.pack(padx=15, pady=15)
 
     def customize_mac(self):
-        self.notify_view(0, self.entry_custom_mac.get())
+        address = self.entry_custom_mac.get().lower()
+        address_splited = list(address)
+        boolean_fg = True
+        for character in address_splited:
+            if character in self.accepted_characters:
+                pass
+            else:
+                boolean_fg = False
+        if boolean_fg:
+            self.notify_view(0, self.entry_custom_mac.get())
+        else:
+            self.main_view.show_warning_notification("Address not valid")
 
     def randomize_mac(self):
         self.notify_view(1, "")

@@ -774,17 +774,9 @@ class Control:
         return self.running_stopped
 
     def generate_wordlist_crunch(self, words_list):
-        input_list = ""
-        count = 0
-        for word in words_list:
-            if count == 0:
-                input_list = input_list + word
-                count=+1
-            else:
-                input_list = input_list + " " + word
-
         output_list = self.path_directory_crunch + "/crunch_output.txt"
-        command1 = ['crunch', '0', '0', '-o', output_list, '-p', input_list]
-        print(input_list)
+        command = ['crunch', '0', '0', '-o', output_list, '-p']
+        for word in words_list:
+            command.append(word)
         print(output_list)
-        self.execute_command(command1)
+        self.execute_command(command)

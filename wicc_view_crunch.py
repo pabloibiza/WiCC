@@ -30,6 +30,7 @@ class GenerateWordlist:
         self.root.title('WiCC - Generate Wordlist')
 
         self.build_window()
+        self.reset_list()
         self.root.mainloop()
 
     def build_window(self):
@@ -40,9 +41,9 @@ class GenerateWordlist:
         # LABEL - INFO
         self.label_info = Label(self.labelframe_info, pady=15,
                                 text="In this window you can create your custom wordlist\n"
-                                     "to use during the attacks. After generate the list don't\n"
-                                     "forget to select it using \"Select wordlist\" button in the\n"
-                                     "main window",)
+                                     "After generate the list don't forget to select it using\n"
+                                     "\"Select wordlist\" button in the main window. Words\n"
+                                     "must be separated by spaces")
         self.label_info.pack(side=TOP)
 
         # LABELFRAME - ADD WORDS
@@ -92,16 +93,19 @@ class GenerateWordlist:
 
     def destroy_window(self):
         self.main_view.disable_window(False)
+        #self.reset_list()
         self.root.destroy()
 
     def add_word(self):
-        new_words = self.entry_words.get().split(",")
+        new_words = self.entry_words.get().split(" ")
         for word in new_words:
             self.words.append(word)
-        self.reset_list()
+        self.listbox_words.delete(0, END)
         self.listbox_words.insert(END, *self.words)
+        self.entry_words.delete(0, 'end')
 
     def reset_list(self):
+        self.words = []
         self.listbox_words.delete(0, END)
 
     def choose_location(self):
