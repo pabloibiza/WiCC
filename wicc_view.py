@@ -223,8 +223,10 @@ class View:
 
     # Shows a window to select a custom wordlist to use. Then sends the path to control.
     def select_custom_wordlist(self):
-        select_window = filedialog.askopenfilename(parent=self.root, initialdir='/home/$USER', title='Choose file',
-                                                   filetypes=[('Text files', '.txt'), ("All files", "*.*")])
+        select_window = filedialog.askopenfilename(parent=self.root, initialdir='/home/$USER',
+                                                   title='Choose wordlist file', filetypes=[('Text files', '.txt'),
+                                                                                            ('List files', '.lst'),
+                                                                                            ("All files", "*.*")])
         if select_window:
             try:
                 self.send_notify(Operation.SELECT_CUSTOM_WORDLIST, select_window)
