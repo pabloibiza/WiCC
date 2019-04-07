@@ -33,6 +33,14 @@ class View:
         self.control = control
 
     def build_window(self, headless=False, splash_image=True):
+        """
+        Generates the window.
+        :param headless:
+        :param splash_image: False to don't show the splash image
+
+        :author: Pablo Sanz Alguacil
+        """
+
         if splash_image:
             self.splash = Splash()
 
@@ -124,7 +132,7 @@ class View:
 
         # BUTTON - CHANGE MAC
         self.button_mac_menu= Button(self.labelframe_more_options, text="MAC menu", state=ACTIVE,
-                                         command=self.mac_menu)
+                                     command=self.mac_tools_window)
         self.button_mac_menu.grid(column=6, row=0, padx=5)
 
         # BUTTON - CUSTOM WORDLIST
@@ -134,7 +142,7 @@ class View:
 
         # BUTTON - GENERATE WORDLIST
         self.generate_wordlist = Button(self.labelframe_more_options, text="Generate wordlist",
-                                            command=self.generate_wordlist)
+                                            command=self.generate_wordlists_window)
         self.generate_wordlist.grid(column=10, row=0, padx=5)
 
         # TREEVIEW - NETWORKS
@@ -171,18 +179,36 @@ class View:
         if not headless:
             self.root.mainloop()
 
-    # Sends the selected interface to control
     def start_scan(self):
+        """
+        Sends filters to Control and the sends the selected interface to Control to start scanning.
+        Activates button dehabilitation.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.disable_buttons()
         self.send_notify(Operation.SCAN_OPTIONS, self.apply_filters())
         self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
 
-    # Sends a stop scanning order to control
     def stop_scan(self):
+        """
+        Sends the stop scannig order to Control.
+        Deactivates buttons dehabilitation.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.enable_buttons()
         self.send_notify(Operation.STOP_SCAN, "")
 
     def disable_buttons(self):
+        """
+        Sets all buttons state to "DISABLED" and stop scan to "ACTIVE"
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.button_mac_menu['state'] = DISABLED
         self.custom_wordlist_path['state'] = DISABLED
         self.generate_wordlist['state'] = DISABLED
@@ -195,6 +221,12 @@ class View:
         self.button_stop_scan['state'] = ACTIVE
 
     def enable_buttons(self):
+        """
+        Sets all buttons state to "ACTIVE" and stop scan to "DISABLED"
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.button_mac_menu['state'] = ACTIVE
         self.custom_wordlist_path['state'] = ACTIVE
         self.generate_wordlist['state'] = ACTIVE
@@ -206,27 +238,46 @@ class View:
         self.button_start_scan['state'] = ACTIVE
         self.button_stop_scan['state'] = DISABLED
 
-
-    # Sends the selected network id to Control
     def select_network(self):
+        """
+        Sends the selected network id to Control
+
+        :author: Pablo Sanz Alguacil
+        """
+
         current_item = self.networks_treeview.focus()
         network_id = self.networks_treeview.item(current_item)['values'][0]
         self.send_notify(Operation.SELECT_NETWORK, network_id)
 
-    # Sends and order to kill all processes when X is clicked
     def notify_kill(self):
+        """
+        Sends and order to kill all processes when X is clicked
+
+        :author: Pablo Sanz Alguacil
+        """
         self.send_notify(Operation.STOP_RUNNING, "")
 
-    # Receives a notification to kill view
     def reaper_calls(self):
+        """
+        Receives a notification to kill root
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.root.destroy()
 
-    # Shows a window to select a custom wordlist to use. Then sends the path to control.
     def select_custom_wordlist(self):
-        select_window = filedialog.askopenfilename(parent=self.root, initialdir='/home/$USER',
-                                                   title='Choose wordlist file', filetypes=[('Text files', '.txt'),
-                                                                                            ('List files', '.lst'),
-                                                                                            ("All files", "*.*")])
+        """
+        Shows a window to select a custom wordlist to use. Then sends the path to control.
+
+        :author: Pablo Sanz Alguacil
+        """
+        select_window = filedialog.askopenfilename(parent=self.root,
+                                                   initialdir='/home/$USER',
+                                                   title='Choose wordlist file',
+                                                   filetypes=[('Text files', '.txt'),
+                                                              ('List files', '.lst'),
+                                                              ("All files", "*.*")])
         if select_window:
             try:
                 self.send_notify(Operation.SELECT_CUSTOM_WORDLIST, select_window)
@@ -234,8 +285,13 @@ class View:
                 messagebox.showerror("Open Source File", "Failed to read file \n'%s'" % select_window)
                 return
 
-    # Sends an order to randomize the interface MAC address
     def randomize_mac(self):
+        """
+        Generates a popup window asking for authorisation to change the MAC, then sends the randomize order to Control,
+        and shows another popup showing the new MAC.
+
+        :author: Pablo Sanz Alguacil
+        """
         if (self.interfaceVar.get() != ""):
             currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
                                                    + "\n\nAre you sure you want to change it? ")
@@ -246,6 +302,14 @@ class View:
             self.show_warning_notification("No interface selected. Close the window and select one")
 
     def customize_mac(self, new_mac):
+        """
+        Generates a popup window asking for authorisation to change the MAC, then sends the customize order to Control,
+        and shows another popup showing the new MAC.
+        :param new_mac: new MAC to be set
+
+        :author: Pablo Sanz Alguacil
+        """
+
         if (self.interfaceVar.get() != ""):
             currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
                                                    + "\n\nAre you sure you want to change it for\n" +
@@ -257,6 +321,13 @@ class View:
             self.show_warning_notification("No interface selected. Close the window and select one")
 
     def restore_mac(self):
+        """
+        Generates a popup window asking for authorisation to restore the MAC, then sends the restore order to Control,
+        and shows another popup showing the new MAC.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         if (self.interfaceVar.get() != ""):
             currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
                                                    + "\n\nAre you sure you want to restore original?")
@@ -267,12 +338,26 @@ class View:
             self.show_warning_notification("No interface selected. Close the window and select one")
 
     def spoofing_mac(self, status):
+        """
+        Sends the order to activate MAC spoofing to Control.
+        :param status: current status of MAC spoofing
+
+        :author: Pablo Sanz Alguacil
+        """
+
         if (self.interfaceVar.get() != ""):
                 self.send_notify(Operation.SPOOF_MAC, status)
         else:
             self.show_warning_notification("No interface selected. Close the window and select one")
 
-    def mac_menu(self):
+    def mac_tools_window(self):
+        """
+        Generates the MAC tools window.
+        Activates buttons dehabilitation.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.disable_window(True)
         mac_menu_window = ViewMac(self, self.mac_spoofing_status)
 
@@ -284,6 +369,17 @@ class View:
     [3]CHANNEL (string)
     """
     def apply_filters(self):
+        """
+        [0]ENCRYPTION (string)
+        [1]WPS (boolean)
+        [2]CLIENTS (boolean)
+        [3]CHANNEL (string)
+        Sets the filters parameters depending on the options choosed.
+        :return: array containing filter parameters
+
+        :author: Pablo Sanz Alguacil
+        """
+
         filters_status = ["ALL", False, False, "ALL"]
         if (self.encryptionVar.get() != "ALL"):
             print("ENCRYPTION FILTER ENABLED")
@@ -300,6 +396,14 @@ class View:
         return filters_status
 
     def get_notify(self, interfaces, networks):
+        """
+        Introduces the interfaces and networks received in their respective structures.
+        :param interfaces: array containing strings of the interfaces names.
+        :param networks: array containing the networks and its properties.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         if (self.interfaces_old != interfaces):
             self.interfaces_old = interfaces
             interfaces_list = []
@@ -317,28 +421,56 @@ class View:
                 self.networks_treeview.update()
 
     def current_mac(self):
+        """
+        Gets the current MAC from Control.
+        :return: string containing the MAC address
+
+        :author: Pablo Sanz Alguacil
+        """
+
         return str(self.control.mac_checker(self.interfaceVar.get()))
 
     def get_notify_childs(self, operation, value):
-        if(operation == 0):     #custom MAC
+        """
+        [0] Custom MAC
+        [1] Random MAC
+        [2] Restore MAC
+        [3] MAC spoofing
+        [4] Save directory to generated wordlists
+        [5] Generate wordlist
+        Manages the operations received by the child windows (MAC tools, Crunch window)
+        :param operation: integer. Is the id of the operation.
+        :param value: value of the operation
+
+        :author: Pablo Sanz Alguacil
+        """
+
+        if(operation == 0):
             print("CUSTIMIZE MAC OPERATION")
             self.customize_mac(value)
-        elif(operation == 1):    #random MAC
+        elif(operation == 1):
             print("RANDOMIZE MAC OPERATION")
             self.randomize_mac()
-        elif(operation == 2):   #restore MAC
+        elif(operation == 2):
             print("RESTORE MAC OPERATION")
             self.restore_mac()
-        elif(operation == 3):   #MAC spoofing
+        elif(operation == 3):
             self.mac_spoofing_status = value
             print("MAC SPOOFING OPERATION: " + str(self.mac_spoofing_status))
             self.spoofing_mac(value)
-        elif(operation == 4):   #SAVE DIRECTORY GENERATED WORDLIST
+        elif(operation == 4):
             self.send_notify(Operation.PATH_GENERATED_LISTS, value)
-        elif(operation == 5):   #GENERATE WORDLIST
+        elif(operation == 5):
             self.send_notify(Operation.GENERATE_LIST, value)
 
     def get_spoofing_status(self):
+        """
+        Gets the current spoofing status.
+        :return: boolean
+
+        :author: Pablo Sanz Alguacil
+        """
+
         return self.mac_spoofing_status
 
 
@@ -346,18 +478,47 @@ class View:
     # SET NOTIFICATIONS TITLES AS PARAMETERS #
     ##########################################
     def show_warning_notification(self, message):
+        """
+        Shows a warning popup window with a custom message.
+        :param message: string containing the message
+
+        :author: Pablo Sanz Alguacil
+        """
         warning_notification = messagebox.showwarning("Warning", message)
         print(warning_notification)
 
     def show_info_notification(self, message):
+        """
+        Shows a info popup window with a custom message.
+        :param message: string containing the message
+
+        :author: Pablo Sanz Alguacil
+        """
+
         info_notification = messagebox.showinfo("Info", message)
         print(info_notification)
 
     def send_notify(self, operation, value):
+        """
+        Sends an order to Control
+        :param operation: Opertaion from Operations class
+        :param value: value of the operation
+        :return:
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.control.get_notify(operation, value)
         return
 
     def disable_window(self, value):
+        """
+        Disables all buttons
+        :param value: boolean. True for disable, False for enable
+
+        :author: Pablo Sanz Alguacil
+        """
+
         if value:
             self.disable_buttons()
             self.button_stop_scan['state'] = DISABLED
@@ -366,6 +527,12 @@ class View:
             self.enable_buttons()
             self.button_select['state'] = ACTIVE
 
-    def generate_wordlist(self):
+    def generate_wordlists_window(self):
+        """
+        Generates the custom wordlists generator window.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.disable_window(True)
         wordlist_generator_window = GenerateWordlist(self)

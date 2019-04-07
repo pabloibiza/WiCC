@@ -515,7 +515,7 @@ class Control:
         """
         self.scan_filter_parameters[0] = value[0]
         self.scan_filter_parameters[1] = value[3]
-        self.model.get_filters(value[1], value[2])
+        self.model.set_filters(value[1], value[2])
 
     def attack_network(self):
         """
@@ -707,7 +707,7 @@ class Control:
 
     def randomize_mac(self, interface):
         """
-
+        Generates and executes the command to set a random MAC address.
         :param interface:
         :return:
 
@@ -722,12 +722,13 @@ class Control:
 
     def customize_mac(self,values):
         """
+        Generates and executes the command to set a custom MAC address.
         :param values: 0 - interface, 1 - mac address
         :return:
 
         :author: Pablo Sanz Alguacil
         """
-        print("###################################\n" + values[0] + values[1] + "##################################")
+
         command1 = ['ifconfig', values[0], 'down']
         command2 = ['macchanger', '-m', values[1], values[0]]
         command3 = ['ifconfig', values[0], 'up']
@@ -737,9 +738,8 @@ class Control:
 
     def restore_mac(self, interface):
         """
-
-        :param interface:
-        :return:
+        Generates and executes the command to restore the original MAC address.
+        :param interface: string cointainig the name of the target interface
 
         :author: Pablo Sanz Alguacil
         """
@@ -752,9 +752,9 @@ class Control:
 
     def mac_checker(self, interface):
         """
-
-        :param interface:
-        :return:
+        Generates and executes the command to get the curretn MAC address.
+        :param interface: string cointainig the name of the target interface
+        :return: string containing the current MAC address, Flase in case of error
 
         :author: Pablo Sanz Alguacil
         """
@@ -774,6 +774,12 @@ class Control:
         return self.running_stopped
 
     def generate_wordlist_crunch(self, words_list):
+        """
+        Generates and executes the command to generate a custom wordlist using crunch.
+        :param words_list: array containing the words to generate the list.
+
+        :author: Pablo Sanz Alguacil
+        """
         output_list = self.path_directory_crunch + "/crunch_output.txt"
         command = ['crunch', '0', '0', '-o', output_list, '-p']
         for word in words_list:

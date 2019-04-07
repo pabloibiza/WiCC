@@ -32,7 +32,7 @@ def rClicker(e):
 
 def rClickbinder(r):
     try:
-        for b in [ 'Text', 'Entry', 'Listbox', 'Label']: #
+        for b in [ 'Text', 'Entry', 'Listbox', 'Label']:
             r.bind_class(b, sequence='<Button-3>',
                          func=rClicker, add='')
     except TclError:
