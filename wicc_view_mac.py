@@ -24,10 +24,16 @@ class ViewMac:
         self.main_view = view
         self.spoofing_status = spoofing_status
         self.build_window()
-        self.set_spoofing()
+        self.set_spoofing_checkbutton()
         self.root.mainloop()
 
     def build_window(self):
+        """
+        Generates the window.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.root = Tk()
         self.root.geometry('440x490')
         self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
@@ -109,11 +115,20 @@ class ViewMac:
         self.button_done.pack(padx=15, pady=15)
 
     def customize_mac(self):
+        """
+        Sends an order to the main view to set the MAC address to the sended one.
+        Filters the address before send it (only hexadecimal values).
+
+        :author: Pablo Sanz Alguacil
+        """
+
         address = self.entry_custom_mac.get().lower()
+        address_length = len(self.entry_custom_mac.get())
+        print(address_length)
         address_splited = list(address)
         boolean_fg = True
         for character in address_splited:
-            if character in self.accepted_characters:
+            if character in self.accepted_characters and address_length == 17:
                 pass
             else:
                 boolean_fg = False
@@ -123,18 +138,42 @@ class ViewMac:
             self.main_view.show_warning_notification("Address not valid")
 
     def randomize_mac(self):
+        """
+        Sends an order to the main view to randomize the MAC address.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.notify_view(1, "")
 
     def restore_mac(self):
+        """
+        Sends an order to the main view to restore the original MAC address.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.notify_view(2, "")
 
-    def set_spoofing(self):
+    def set_spoofing_checkbutton(self):
+        """
+        Selects or deselcts the MAC spoofing checkbutton.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         if self.spoofing_status:
             self.checkbutton_mac_spoofing.select()
         else:
             self.checkbutton_mac_spoofing.deselect()
 
     def mac_spoofing(self):
+        """
+        Sends an order to the main view to set the MAC spoofing status. Saves the status in a local variable.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         if self.spoofing_status:
             self.spoofing_status = False
             self.notify_view(3, False)
@@ -145,17 +184,25 @@ class ViewMac:
     def notify_view(self, operation,value):
         """
         Operation values (int)
-        0 - Custom mac
-        1 - Random mac
-        2 - Restore mac
-        3 - Mac spoofing
+        [0] Custom mac
+        [1] Random mac
+        [2] Restore mac
+        [3] Mac spoofing
+        Sends and operation and value to the main view.
         :param self:
-        :param operation:
-        :param value:
-        :return:
+        :param operation: integer
+        :param value: object
+
+        :author: Pablo Sanz Alguacil
         """
         self.main_view.get_notify_childs(operation, value)
 
     def destroy_window(self):
+        """
+        Sends the order and words array to the main view.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.main_view.disable_window(False)
         self.root.destroy()

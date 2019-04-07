@@ -34,6 +34,12 @@ class GenerateWordlist:
         self.root.mainloop()
 
     def build_window(self):
+        """
+        Generates the window.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         # LABELFRAME - INFO
         self.labelframe_info = LabelFrame(self.root, text="")
         self.labelframe_info.pack(fill="both", expand="no", pady=5)
@@ -92,11 +98,22 @@ class GenerateWordlist:
         self.button_generate.grid(column=2, row=0, padx=5, pady=10)
 
     def destroy_window(self):
+        """
+        Enables the buttons in the main window and then destroy this window.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.main_view.disable_window(False)
-        #self.reset_list()
         self.root.destroy()
 
     def add_word(self):
+        """
+        Adds the word/words to the words array, and refreshes the Listbox
+
+        :author: Pablo Sanz Alguacil
+        """
+
         new_words = self.entry_words.get().split(" ")
         for word in new_words:
             self.words.append(word)
@@ -105,10 +122,23 @@ class GenerateWordlist:
         self.entry_words.delete(0, 'end')
 
     def reset_list(self):
+        """
+        Deletes all elements in the words array and Listobx
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.words = []
         self.listbox_words.delete(0, END)
 
     def choose_location(self):
+        """
+        Shows a popup window to select a directory to choose save the lists generated. then sends the path to
+        the main view.
+
+        :author: Pablo Sanz Algucil
+        """
+
         path = filedialog.askdirectory(title="Choose directory",
                                        initialdir="/home",
                                        mustexist=True)
@@ -116,4 +146,10 @@ class GenerateWordlist:
         self.main_view.get_notify_childs(4, self.files_location)
 
     def generate_list(self):
+        """
+        Sends the order and words array to the main view.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.main_view.get_notify_childs(5, self.words)

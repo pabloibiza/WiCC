@@ -227,9 +227,9 @@ class Model:
                 print("Interface " + interface_name + ", address " + address)
                 return interface.get_address()
 
-    def get_filters(self, wps_filter_status, clients_filter_status):
+    def set_filters(self, wps_filter_status, clients_filter_status):
         """
-
+        Sets the filters for the networks.
         :param wps_filter_status:
         :param clients_filter_status:
         :return:
