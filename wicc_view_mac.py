@@ -25,6 +25,7 @@ class ViewMac:
         self.spoofing_status = spoofing_status
         self.build_window()
         self.set_spoofing_checkbutton()
+        self.root.attributes('-topmost', True)
         self.root.mainloop()
 
     def build_window(self):
@@ -123,16 +124,17 @@ class ViewMac:
         """
 
         address = self.entry_custom_mac.get().lower()
+        colon_count = 0
         address_length = len(self.entry_custom_mac.get())
-        print(address_length)
         address_splited = list(address)
         boolean_fg = True
         for character in address_splited:
             if character in self.accepted_characters and address_length == 17:
-                pass
+                if character == ":":
+                    colon_count = colon_count + 1
             else:
                 boolean_fg = False
-        if boolean_fg:
+        if boolean_fg and colon_count == 5:
             self.notify_view(0, self.entry_custom_mac.get())
         else:
             self.main_view.show_warning_notification("Address not valid")
