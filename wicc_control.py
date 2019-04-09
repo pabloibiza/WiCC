@@ -17,9 +17,9 @@ from wicc_wpa import WPA
 from wicc_wep import WEP
 import time
 import sys
-
+import random
+import os
 import csv
-
 from subprocess import Popen, PIPE
 import threading
 
@@ -49,7 +49,9 @@ class Control:
     ignore_local_savefiles = False  # option to ingnore the local files, for both creating and reading them
     main_directory = ""  # directory where the program is running
     local_folder = "/savefiles"  # folder to locally save files
-    path_directory_crunch = "/home"  #directory to save generated lists with crunch
+    path_directory_crunch = "/home"  # directory to save generated lists with crunch
+    generated_wordlist_name = "wicc_wordlist" # name of the generated files in generate_wordlist()
+    hex_values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
 
     def __init__(self):
         self.model = ""
@@ -462,7 +464,7 @@ class Control:
         elif operation == Operation.PATH_GENERATED_LISTS:
             self.path_directory_crunch = value
         elif operation == Operation.GENERATE_LIST:
-            self.generate_wordlist_crunch(value)
+            self.generate_wordlist(value)
 
     def stop_scan(self):
         """
@@ -707,20 +709,26 @@ class Control:
 
     def randomize_mac(self, interface):
         """
-        Generates and executes the command to set a random MAC address.
-        :param interface:
+        Generates a random MAC address.
+        Calls customize_mac() to set the generated address
+        :param interface: string. The name of the interface to use
         :return:
 
         :author: Pablo Sanz Alguacil
         """
-        command1 = ['ifconfig', interface, 'down']
-        command2 = ['macchanger', '-r', interface]
-        command3 = ['ifconfig', interface, 'up']
-        self.execute_command(command1)
-        self.execute_command(command2)
-        self.execute_command(command3)
+        generated_address = ""
+        for i in range(0, 5):
+            first_digit = self.hex_values[random.randint(0, 15)]
+            second_digit = self.hex_values[random.randint(0, 15)]
+            generated_address += first_digit + second_digit + ":"
+        else:
+            first_digit = self.hex_values[random.randint(0, 15)]
+            second_digit = self.hex_values[random.randint(0, 15)]
+            generated_address += first_digit + second_digit
 
-    def customize_mac(self,values):
+        self.customize_mac((interface, generated_address))
+
+    def customize_mac(self, values):
         """
         Generates and executes the command to set a custom MAC address.
         :param values: 0 - interface, 1 - mac address
@@ -728,13 +736,16 @@ class Control:
 
         :author: Pablo Sanz Alguacil
         """
-
-        command1 = ['ifconfig', values[0], 'down']
-        command2 = ['macchanger', '-m', values[1], values[0]]
-        command3 = ['ifconfig', values[0], 'up']
-        self.execute_command(command1)
-        self.execute_command(command2)
-        self.execute_command(command3)
+        try:
+            command1 = ['ifconfig', values[0], 'down']
+            command2 = ['ifconfig', values[0], 'hw', 'ether', values[1]]
+            command3 = ['ifconfig', values[0], 'up']
+            self.execute_command(command1)
+            time.sleep(2)
+            self.execute_command(command2)
+            self.execute_command(command3)
+        except:
+            self.view.show_warning_notification("Unable to set new MAC address")
 
     def restore_mac(self, interface):
         """
@@ -743,12 +754,17 @@ class Control:
 
         :author: Pablo Sanz Alguacil
         """
-        command1 = ['ifconfig', interface, 'down']
-        command2 = ['macchanger', '-p', interface]
-        command3 = ['ifconfig', interface, 'up']
-        self.execute_command(command1)
-        self.execute_command(command2)
-        self.execute_command(command3)
+        try:
+            command1 = ['ifconfig', interface, 'down']  #Turns down the interface
+            self.execute_command(command1)
+            command2 = ['ethtool', '-P', interface] #Gets permanent(original) MAC address
+            original_mac = self.execute_command(command2)[0].decode("utf-8").split(" ")[-1]
+            command3 = ['ifconfig', interface, 'hw', 'ether', original_mac] #Sets the original MAC as current MAC
+            self.execute_command(command3)
+            command4 = ['ifconfig', interface, 'up']    #Turns on the interface
+            self.execute_command(command4)
+        except:
+            self.view.show_warning_notification("Unable to restore original MAC address")
 
     def mac_checker(self, interface):
         """
@@ -759,13 +775,10 @@ class Control:
         :author: Pablo Sanz Alguacil
         """
         try:
-            command1 = ['macchanger', '-s', interface]
-            p = Popen(command1, stdout=PIPE, stderr=PIPE)
-            (output, err) = p.communicate()
-            output = output.decode("utf-8")
-            line = output.split(" ")[4]
-            self.show_message(line)
-            return line
+            command = ['ifconfig', interface]
+            current_mac = self.execute_command(command)[0].decode("utf-8").split(" ")[28]
+            self.show_message(current_mac)
+            return current_mac
         except:
             self.view.show_warning_notification("Unable to get current MAC address")
             return False
@@ -773,14 +786,28 @@ class Control:
     def get_running_stopped(self):
         return self.running_stopped
 
-    def generate_wordlist_crunch(self, words_list):
+    def generate_wordlist(self, words_list):
         """
         Generates and executes the command to generate a custom wordlist using crunch.
         :param words_list: array containing the words to generate the list.
 
         :author: Pablo Sanz Alguacil
         """
-        output_list = self.path_directory_crunch + "/crunch_output.txt"
+        index = 0
+        exists = True
+        file_name = ""
+
+        while exists:
+            if index == 0:
+                file_name = self.generated_wordlist_name + ".txt"
+            else:
+                file_name = self.generated_wordlist_name + "_" + str(index) + ".txt"
+
+            file_path = self.path_directory_crunch + "/" + file_name
+            exists = os.path.isfile(file_path)
+            index+=1
+
+        output_list = self.path_directory_crunch + "/" + file_name
         command = ['crunch', '0', '0', '-o', output_list, '-p']
         for word in words_list:
             command.append(word)

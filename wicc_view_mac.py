@@ -62,7 +62,7 @@ class ViewMac:
 
         # ENTRY - CUSTOM MAC
         self.entry_custom_mac = ttk.Entry(self.labelframe_custom_mac)
-        self.entry_custom_mac.grid(column=2, row=0, padx=5)
+        self.entry_custom_mac.grid(column=2, row=0, padx=8)
         self.entry_custom_mac.bind('<Button-3>', rClicker, add='')
 
         # BUTTON - CUSTOM MAC
