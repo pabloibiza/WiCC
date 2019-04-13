@@ -47,6 +47,8 @@ class View:
 
         self.root = Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.notify_kill)
+        self.root.style = ttk.Style()
+        self.root.style.theme_use('default')
         # get screen width and height
         ws = self.root.winfo_screenwidth()
         hs = self.root.winfo_screenheight()

@@ -12,6 +12,7 @@ import os, sys
 from wicc_operations import Operation
 from wicc_model import Model
 from wicc_view import View
+from wicc_scan import Scan
 from wicc_enc_type import EncryptionType
 from wicc_wpa import WPA
 from wicc_wep import WEP
@@ -27,12 +28,13 @@ import threading
 class Control:
     model = ""
     view = ""
+    scan = ""
     selectedInterface = ""
     last_selectedInterface = ""
     selectedNetwork = ""
     operations = ""
     headless = False
-    allows_monitor = False  # to know if the wireless interface allows monitor mode
+    allows_monitor = True  # to know if the wireless interface allows monitor mode
     scan_stopped = False  # to know if the network scan is running
     running_stopped = False  # to know if the program is running (or if the view has been closed)
     scan_filter_parameters = ["ALL", "ALL"]
@@ -42,7 +44,6 @@ class Control:
     cracking_network = False  # state of the network cracking process (if it has started or not)
     net_attack = ""  # EncryptionType generic object, used to store the specific instance of the running attack
     verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
-    allows_monitor = False  # to know if the wireless interface allows monitor mode
     spoof_mac = False  # spoof a client's MAC address
     silent_attack = False  # if the netwrok attack should be runned in silent mode
     write_directory = "/tmp/WiCC"  # directory to store all generated dump files
@@ -51,13 +52,28 @@ class Control:
     local_folder = "/savefiles"  # folder to locally save files
     path_directory_crunch = "/home"  #directory to save generated lists with crunch
 
+    # check installed software
+    # ifconfig, aircrack-ng, pyrit, cowpatty, pgrep, NetworkManager, genpmk, iw
+    # the pair will become true if it's installed
+    required_software = [["ifconfig", False], ["aircrack-ng", False], ["pyrit", False], ["cowpatty", False],
+                         ["pgrep", False], ["NetworkManager", False], ["genpmk", False], ["iw", False],
+                         ['crunch', False], ['macchanger', False]]
+    mandatory_software = ['ifconfig', 'aircrack-ng']
+
+    __instance = None  # used for singleton check
+
     def __init__(self):
-        self.model = ""
-        self.model = Model()
-        self.view = View(self)
-        directory, err = self.execute_command(['pwd'])
-        self.main_directory = directory.decode('utf-8')[:-1]
-        self.local_folder = self.main_directory + self.local_folder
+        if not Control.__instance:
+            Control.__instance = self
+            self.model = ""
+            self.model = Model()
+            self.view = View(self)
+            self.scan = Scan(self)
+            directory, err = self.execute_command(['pwd'])
+            self.main_directory = directory.decode('utf-8')[:-1]
+            self.local_folder = self.main_directory + self.local_folder
+        else:
+            raise Exception("Singleton class")
 
     def start_view(self, headless, show_image):
         """
@@ -104,139 +120,56 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        # check installed software
-        # ifconfig, aircrack-ng, pyrit, cowpatty, pgrep, NetworkManager, genpmk, iw
-        software = [["ifconfig", False], ["aircrack-ng", False], ["pyrit", False], ["cowpatty", False],
-                    ["pgrep", False], ["NetworkManager", False], ["genpmk", False], ["iw", False]]
-        # the pair will become true if it's installed
+        """
+                Check whether the required software is installed or not.
+                :return: list of software (array of booleans), and a boolean to say if any is missing
+
+                :Author: Miguel Yanes Fernández
+                """
 
         some_missing = False
+        stop_execution = False
 
-        for i in range(0, len(software)):
-            out, err = self.execute_command(['which', software[i][0]])
+        info_msg = "You are missing some of the required software"
+        mandatory_msg = "The following tool(s) are required to be able to run the program:\n"
+        optional_msg = "The following tool(s) are not mandatory but highly recommended to run the software:\n"
+
+        for i in range(0, len(self.required_software)):
+            out, err = self.execute_command(['which', self.required_software[i][0]])
 
             if int.from_bytes(out, byteorder="big") != 0:
-                software[i][1] = True
+                self.required_software[i][1] = True
             else:
                 some_missing = True
+                missing_software = self.required_software[i][0]
 
-        return software, some_missing
+                for mand_software in self.mandatory_software:
+                    if mand_software == missing_software:
+                        stop_execution = True
+                        # Stops running if any mandatory software is missing
 
-    def check_monitor_mode(self):
-        """
-        Checks if the selected interface supports monitor mode
-        :return: whether the selected interface supports monitor mode
+                        mandatory_msg += " - " + missing_software + "\n"
 
-        :Author: Miguel Yanes Fernández
-        """
-        iw_cmd = ['iw', 'list']
-        iw_out, iw_err = self.execute_command(iw_cmd)
+                if (missing_software not in optional_msg) and (missing_software not in mandatory_msg):
+                    optional_msg += " - " + missing_software + "\n"
 
-        iw_out = iw_out.decode('utf-8')
-        lines = iw_out.split('\n')
-        for line in lines:
-            words = line.split(' ')
-            for word in words:
-                if word == 'monitor':
-                    self.allows_monitor = True
-                    return
-        self.view.show_info_notification("The selected interface doesn't support monitor mode, "
-                                         "which is highly recommended."
-                                         "\nYou can run the program anyways but "
-                                         "may be missing some functionalities")
+        if some_missing:
+            if mandatory_msg.count('\n') > 1:
+                info_msg += "\n\n" + mandatory_msg
+
+            if optional_msg.count('\n') > 1:
+                info_msg += "\n\n" + optional_msg
+
+            print(info_msg)  # replace print with show_info_notification
+            # self.show_info_notification(info_msg)
+
+        return self.required_software, some_missing, stop_execution
 
     def scan_interfaces(self, auto_select):
-        """
-        Scans all network interfaces. After filtering them (method filter_interfaces,
-        scans available wireless interfaces. Finally calls the method filter_w_interface
-        :param auto_select: whether the interface should be selected automatically
-        :return: none
-
-        :Author: Miguel Yanes Fernández
-        """
-        # ifconfig
-        if_output, if_error = self.execute_command(['ifconfig'])
-        if_output = if_output.decode("utf-8")
-        if_error = if_error.decode("utf-8")
-
-        if if_error is not None:
-            w_interfaces = self.filter_interfaces(if_output)
-        else:
-            return
-
-        # iw info
-        interfaces = []
-        for w_interface in w_interfaces:
-
-            # command example: iw wlan0 info
-            iw_output, iw_error = self.execute_command(['iw', w_interface, 'info'])
-            iw_output = iw_output.decode("utf-8")
-            iw_error = iw_error.decode("utf-8")
-
-            iw_error = iw_error.split(':')
-            # if there is no error, it is a wireless interface
-            if iw_error[0] != "command failed":
-                interfaces.append(self.filter_w_interface(iw_output))
-                if auto_select:
-                    self.selectedInterface = self.filter_w_interface(iw_output)[0]
-                    self.last_selectedInterface = self.selectedInterface
-                    self.auto_select = auto_select
-                elif self.last_selectedInterface != "":
-                    self.selectedInterface = self.last_selectedInterface
+        interfaces, selected_interface, last_selected_interface = self.scan.scan_interfaces(auto_select)
         self.set_interfaces(interfaces)
-
-    @staticmethod
-    def filter_interfaces(str_ifconfig):
-        """
-        Filters the input for all network interfaces
-        :param str_ifconfig: string taken from the command execution stdout
-        :return: array of names of all network interfaces
-
-        :Author: Miguel Yanes Fernández
-        """
-        interfaces = str_ifconfig.split('\n')
-        names_interfaces = []
-
-        for line in interfaces:
-            if line[:1] != " " and line[:1] != "":
-                info = line.split(" ")
-                info = info[0].split(":")
-
-                name = info[0]
-                names_interfaces.append(name)
-        return names_interfaces
-
-    @staticmethod
-    def filter_w_interface(str_iw_info):
-        """
-        Filters the input for a single wireless interface. First checks if the interface is wireless
-        :param str_iw_info: stdout for the command to see the wireless interfaces
-        :return: array with the Interface parameters
-
-        :Author: Miguel Yanes Fernández
-        """
-        # Interface: name address type power channel
-        interface = ["", "", "", 0, 0]
-        str_iw_info = str_iw_info.split("\n")
-        for lines in str_iw_info:
-            # if last line
-            if lines == "":
-                break
-
-            # reads the data from each line
-            line = lines.split()
-            if line[0] == "Interface":
-                interface[0] = line[1]
-            elif line[0] == "addr":
-                interface[1] = line[1]
-            elif line[0] == "type":
-                interface[2] = line[1]
-            elif line[0] == "txpower":
-                interface[3] = line[1]
-            elif line[0] == "channel":
-                interface[4] = line[1]
-
-        return interface
+        self.selectedInterface = selected_interface
+        self.last_selectedInterface = last_selected_interface
 
     def set_interfaces(self, interfaces):
         """
@@ -260,8 +193,6 @@ class Control:
 
         :Author: Miguel Yanes Fernández & Pablo Sanz Alguacil
         """
-
-        self.check_monitor_mode()
 
         self.scan_stopped = False
 
@@ -330,7 +261,7 @@ class Control:
             self.set_clients(clients)
             self.notify_view()
             return True
-        except:
+        except IOError:
             try:
                 # check if the problem was because the interface was already in monitor mode, and try to fix it
                 if self.selectedInterface[-3:] == 'mon':
@@ -428,6 +359,9 @@ class Control:
         """
         if operation == Operation.SELECT_INTERFACE:
             self.selectedInterface = value
+            if self.selectedInterface == "":
+                self.view.enable_buttons()
+                self.show_info_notification("Please, select a network interface")
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
             self.stop_scan()
@@ -442,7 +376,6 @@ class Control:
             self.stop_scan()
             self.view.reaper_calls()
             self.running_stopped = True
-            # sys.exit(0)
         elif operation == Operation.SCAN_OPTIONS:
             self.apply_filters(value)
         elif operation == Operation.CUSTOMIZE_MAC:
@@ -491,6 +424,7 @@ class Control:
                 self.execute_command(ifconf_up_cmd)
                 self.execute_command(net_man_cmd)
         self.scan_stopped = True
+        self.view.enable_buttons()
 
     def get_interfaces(self):
         """

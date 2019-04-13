@@ -132,15 +132,30 @@ if __name__ == '__main__':
     print(options_message)
     print(white)
 
-    software, some_missing = control.check_software()
+    install_required_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'python3-tk', 'iw', 'net-tools', 'aircrack-ng']
+    install_optional_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'pyrit', 'crunch', 'make', 'gcc']
+
+    software, some_missing, stop_execution = control.check_software()
     if some_missing:
         # variable 'software' is an array of pair [tool_name, boolean_if_its_installed]
-        print("The required software is not installed:\n")
+        print("The following required software is not installed:\n")
         for i in range(0, len(software)):
             if not software[i][1]:
                 print("\t***Missing " + software[i][0])
         print("\n")
-        sys.exit(1)
+        if stop_execution:
+            install_required = input("Would you like to install the required mandatory software? (y): ")
+            if install_required == 'y':
+                control.execute_command(install_required_cmd)
+                install_optional = input("Would you also like to install the optional software? (y): ")
+                if install_optional == 'y':
+                    control.execute_command(install_optional_cmd)
+            else:
+                sys.exit(1)
+        else:
+            install_optional = input("Would you like to install the optional software? (y):")
+            if install_optional == 'y':
+                control.execute_command(install_optional_cmd)
     else:
         show_message("All required software is installed")
 
@@ -171,7 +186,7 @@ if __name__ == '__main__':
                         control.selectedInterface = ""
                         control.last_selectedInterface = ""
                         control.model.interfaces = []
-                        while not control.has_selected_interface():
+                        while not control.has_selected_interface() and not control.get_running_stopped():
                             control.scan_interfaces(auto_select)
                             show_message("Scanning interfaces")
                             time.sleep(1)
@@ -180,23 +195,24 @@ if __name__ == '__main__':
                         show_message("Start scanning available networks...")
                         time.sleep(3)
                 show_message("\n * Network scanning stopped * \n")
-                while not control.selectedNetwork and not control.get_running_stopped():
-                    # waits until a network is selected
-                    time.sleep(1)
-                show_message("Selected network: " + str(control.selectedNetwork))
-                show_message("\nStarting attack...\n")
+                if not control.get_running_stopped():
+                    while not control.selectedNetwork and not control.get_running_stopped():
+                        # waits until a network is selected
+                        time.sleep(1)
+                    show_message("Selected network: " + str(control.selectedNetwork))
+                    show_message("\nStarting attack...\n")
 
-                while not control.cracking_completed and not control.is_cracking_network() \
-                        and not control.get_running_stopped():
-                    show_message("\t... Cracking network ...")
-                    time.sleep(1)
+                    while not control.cracking_completed and not control.is_cracking_network() \
+                            and not control.get_running_stopped():
+                        show_message("\t... Cracking network ...")
+                        time.sleep(1)
 
-                while control.is_cracking_network() and not control.get_running_stopped():
-                    show_message("\t... Cracking password ...")
-                    # print(control.check_cracking_status())
-                    time.sleep(1)
+                    while control.is_cracking_network() and not control.get_running_stopped():
+                        show_message("\t... Cracking password ...")
+                        # print(control.check_cracking_status())
+                        time.sleep(1)
 
-                show_message("Cracking process finished.")
+                    show_message("Cracking process finished.")
                 # sys.exit(0)
             else:
                 show_message("Scanning interfaces")
@@ -205,6 +221,6 @@ if __name__ == '__main__':
                 if control.get_interfaces() == "":
                     control.view.show_info_notification("No wireless interfaces found."
                                                         "\n\nPlease connect a wireless card.")
+        sys.exit(0)
     except:
         sys.exit(1)
-    view_thread.join(0)

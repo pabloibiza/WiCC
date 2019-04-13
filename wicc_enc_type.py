@@ -106,24 +106,6 @@ class EncryptionType:
     def get_injection_supported(self):
         return self.injection_supported
 
-    def filter_pyrit_out(self, output):
-        """
-        Filters the output from the pyrit command. Checks if pyrit finds any valid handshake
-        :param output: output from the pyrit command
-        :return: boolean whether it found a handshake or not
-
-        :Author: Miguel Yanes Fernández
-        """
-        output = output.decode('utf-8')
-        lines = output.split('\n')
-        for line in lines:
-            if line == 'No valid EAOPL-handshake + ESSID detected.':
-                return False
-            elif 'handshake(s)' in line:
-                self.show_message("pyrit handshake: " + line)
-                return True
-        return False
-
     def check_cracking_status(self, file):
         """
         Checks the status of the password cracking process given a file with the output from aircrack
@@ -134,25 +116,6 @@ class EncryptionType:
         """
         return ""
         #print(file.decode('utf-8'))
-
-    def filter_cowpatty_out(self, output):
-        """
-        Filters the output from the cowpatty command to check if the dump file has any valid handshake
-        :param output: output from the cowpatty command
-        :return: boolean wether it found a valid handshake or not
-
-        :Author: Miguel Yanes Fernández
-        """
-        output = output.decode('utf-8')
-        lines = output.split('\n')
-        for line in lines:
-            if line == 'End of pcap capture file, incomplete four-way handshake exchange.  ' \
-                       'Try using a different capture.':
-                return False
-            elif 'mount crack' in line:
-                self.show_message("cowpatty handshake: " + line)
-                return True
-        return False
 
     @staticmethod
     def filter_aircrack(output):
