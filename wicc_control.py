@@ -171,13 +171,13 @@ class Control:
         for w_interface in w_interfaces:
 
             # command example: iw wlan0 info
-            iw_output, iw_error = self.execute_command(['iw', w_interface, 'info'])
+            iw_output, iw_error = self.execute_command(['iwconfig', w_interface])
             iw_output = iw_output.decode("utf-8")
             iw_error = iw_error.decode("utf-8")
 
             iw_error = iw_error.split(':')
             # if there is no error, it is a wireless interface
-            if iw_error[0] != "command failed":
+            if iw_output:
                 interfaces.append(self.filter_w_interface(iw_output))
                 if auto_select:
                     self.selectedInterface = self.filter_w_interface(iw_output)[0]
@@ -227,17 +227,15 @@ class Control:
 
             # reads the data from each line
             line = lines.split()
-            if line[0] == "Interface":
-                interface[0] = line[1]
-            elif line[0] == "addr":
-                interface[1] = line[1]
-            elif line[0] == "type":
-                interface[2] = line[1]
-            elif line[0] == "txpower":
-                interface[3] = line[1]
-            elif line[0] == "channel":
-                interface[4] = line[1]
-
+            if interface[0] == "":
+                interface[0] = line[0]
+                print("Name: " + interface[0])
+            elif "Mode" in line[0]:
+                str = line[0].split(":")
+                interface[2] = str[1]
+                print("Mode: " + interface[2])
+                break
+        print("return interface")
         return interface
 
     def set_interfaces(self, interfaces):
@@ -333,6 +331,7 @@ class Control:
             self.notify_view()
             return True
         except:
+            self.show_info_notification("Error when scanning networks")
             try:
                 # check if the problem was because the interface was already in monitor mode, and try to fix it
                 if self.selectedInterface[-3:] == 'mon':
