@@ -19,7 +19,7 @@ class WPA(EncryptionType):
 
     def __init__(self, network, interface, wordlist, verbose_level, silent_attack, write_directory):
         """
-        Constructor for the class WPA. Calls the parent's class consturctor
+        Constructor for the class WPA. Calls the parent's class constructor
         :param network: selected target network
         :param interface: name of the wireless interface
         :param wordlist: password wordlist directory
@@ -70,10 +70,6 @@ class WPA(EncryptionType):
             time.sleep(0.5)
             cowpatty_out, err = self.execute_command(cowpatty_cmd)
             valid_handshake = self.filter_pyrit_out(pyrit_out) or self.filter_cowpatty_out(cowpatty_out)
-
-
-        # 1' 46" scanning
-        # 5' 15" cracking (4' 30" only on cracking)
 
     def kill_genpmk(self):
         """
@@ -155,3 +151,40 @@ class WPA(EncryptionType):
                 self.show_message("Found PSK: " + psk)
                 return psk
         return ""
+
+    def filter_pyrit_out(self, output):
+        """
+        Filters the output from the pyrit command. Checks if pyrit finds any valid handshake
+        :param output: output from the pyrit command
+        :return: boolean whether it found a handshake or not
+
+        :Author: Miguel Yanes Fernández
+        """
+        output = output.decode('utf-8')
+        lines = output.split('\n')
+        for line in lines:
+            if line == 'No valid EAOPL-handshake + ESSID detected.':
+                return False
+            elif 'handshake(s)' in line:
+                self.show_message("pyrit handshake: " + line)
+                return True
+        return False
+
+    def filter_cowpatty_out(self, output):
+        """
+        Filters the output from the cowpatty command to check if the dump file has any valid handshake
+        :param output: output from the cowpatty command
+        :return: boolean wether it found a valid handshake or not
+
+        :Author: Miguel Yanes Fernández
+        """
+        output = output.decode('utf-8')
+        lines = output.split('\n')
+        for line in lines:
+            if line == 'End of pcap capture file, incomplete four-way handshake exchange.  ' \
+                       'Try using a different capture.':
+                return False
+            elif 'mount crack' in line:
+                self.show_message("cowpatty handshake: " + line)
+                return True
+        return False

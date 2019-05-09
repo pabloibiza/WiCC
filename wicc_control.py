@@ -32,7 +32,6 @@ class Control:
     selectedNetwork = ""
     operations = ""
     headless = False
-    allows_monitor = False  # to know if the wireless interface allows monitor mode
     scan_stopped = False  # to know if the network scan is running
     running_stopped = False  # to know if the program is running (or if the view has been closed)
     scan_filter_parameters = ["ALL", "ALL"]
@@ -52,14 +51,18 @@ class Control:
     path_directory_crunch = "/home"  # directory to save generated lists with crunch
     generated_wordlist_name = "wicc_wordlist" # name of the generated files in generate_wordlist()
     hex_values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
+    __instance = None  # used for singleton check
 
     def __init__(self):
-        self.model = ""
-        self.model = Model()
-        self.view = View(self)
-        directory, err = self.execute_command(['pwd'])
-        self.main_directory = directory.decode('utf-8')[:-1]
-        self.local_folder = self.main_directory + self.local_folder
+        if not Control.__instance:
+            self.model = ""
+            self.model = Model()
+            self.view = View(self)
+            directory, err = self.execute_command(['pwd'])
+            self.main_directory = directory.decode('utf-8')[:-1]
+            self.local_folder = self.main_directory + self.local_folder
+        else:
+            raise Exception("Singleton Class")
 
     def start_view(self, headless, show_image):
         """
@@ -142,10 +145,6 @@ class Control:
                 if word == 'monitor':
                     self.allows_monitor = True
                     return
-        self.view.show_info_notification("The selected interface doesn't support monitor mode, "
-                                         "which is highly recommended."
-                                         "\nYou can run the program anyways but "
-                                         "may be missing some functionalities")
 
     def scan_interfaces(self, auto_select):
         """
@@ -264,6 +263,10 @@ class Control:
 
         self.check_monitor_mode()
 
+        if not self.allows_monitor:
+            self.show_info_notification("The selected interface doesn't support monitor mode")
+            return False
+
         self.scan_stopped = False
 
         tempfile = self.write_directory + "/net_scan"
@@ -274,12 +277,9 @@ class Control:
 
         # change wireless interface name to the parameter one
 
-        if self.allows_monitor:
-            airmon_cmd = ['airmon-ng', 'start', self.selectedInterface]
-            interface = self.selectedInterface + 'mon'
-            self.execute_command(airmon_cmd)
-        else:
-            interface = self.selectedInterface
+        airmon_cmd = ['airmon-ng', 'start', self.selectedInterface]
+        interface = self.selectedInterface + 'mon'
+        self.execute_command(airmon_cmd)
 
         command = ['airodump-ng', interface, '--write', tempfile, '--output-format', 'csv']
 
@@ -294,6 +294,8 @@ class Control:
         thread.start()
         thread.join(1)
         # out, err = self.execute_command(['timeout', '1', 'airodump-ng', 'wlan0'])
+
+        return True
 
     def filter_networks(self):
         """
@@ -436,6 +438,9 @@ class Control:
         """
         if operation == Operation.SELECT_INTERFACE:
             self.selectedInterface = value
+            if self.selectedInterface == "":
+                self.view.enable_buttons()
+                self.show_info_notification("Please, select a network interface")
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
             self.stop_scan()
@@ -499,6 +504,7 @@ class Control:
                 self.execute_command(ifconf_up_cmd)
                 self.execute_command(net_man_cmd)
         self.scan_stopped = True
+        self.view.enable_buttons()
 
     def get_interfaces(self):
         """
