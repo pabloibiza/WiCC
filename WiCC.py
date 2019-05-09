@@ -149,7 +149,7 @@ if __name__ == '__main__':
     else:
         view_thread = threading.Thread(target=control.start_view, args=(False, splash_image,))
     view_thread.start()
-    view_thread.join(3)
+    view_thread.join(1)
 
     try:
         while not exit and not control.get_running_stopped():

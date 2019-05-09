@@ -208,8 +208,7 @@ class Control:
                 names_interfaces.append(name)
         return names_interfaces
 
-    @staticmethod
-    def filter_w_interface(str_iw_info):
+    def filter_w_interface(self, str_iw_info):
         """
         Filters the input for a single wireless interface. First checks if the interface is wireless
         :param str_iw_info: stdout for the command to see the wireless interfaces
@@ -235,6 +234,8 @@ class Control:
                 interface[2] = str[1]
                 print("Mode: " + interface[2])
                 break
+        interface[1] = self.mac_checker(interface[0])
+        print("Mac: " + interface[1])
         print("return interface")
         return interface
 
@@ -331,7 +332,6 @@ class Control:
             self.notify_view()
             return True
         except:
-            self.show_info_notification("Error when scanning networks")
             try:
                 # check if the problem was because the interface was already in monitor mode, and try to fix it
                 if self.selectedInterface[-3:] == 'mon':
@@ -340,6 +340,12 @@ class Control:
                     self.stop_scan()
                     self.scan_networks()
                     return True
+                self.show_info_notification("Error when scanning networks. \n"
+                                            "The selected wireless card may not support Monitor mode")
+                self.selectedInterface = ""
+                self.stop_scan()
+                self.view.enable_buttons()
+                return False
             except Exception:
                 # Unknown exception. Tries to fix it by resetting the interface, but may not work
                 out, err = self.execute_command(['airmon-ng', 'stop', self.selectedInterface])
@@ -355,9 +361,10 @@ class Control:
                 else:
                     # if there is an error when resetting the wireless card. The users must solve this by themselves.
                     exception_msg += "\n\nThe error couldn't be fixed automatically. Please reconnect or reconfigure " \
-                                     "your wireless card. Make sure it's not running in monitor mode"
+                                     "your wireless card"
                     self.show_message(Exception.args)
                 self.view.show_warning_notification(exception_msg)
+                self.view.enable_buttons()
                 return False
                 #sys.exit(1)
 
@@ -775,7 +782,11 @@ class Control:
         """
         try:
             command = ['ifconfig', interface]
-            current_mac = self.execute_command(command)[0].decode("utf-8").split(" ")[28]
+            current_mac = self.execute_command(command)[0].decode("utf-8").split(" ")
+            for i in range(0, len(current_mac)):
+                if current_mac[i] == "ether":
+                    current_mac = current_mac[i+1]
+                    break
             self.show_message(current_mac)
             return current_mac
         except:

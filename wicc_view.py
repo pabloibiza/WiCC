@@ -31,6 +31,7 @@ class View:
 
     def __init__(self, control):
         self.control = control
+        self.splash = Splash()
 
     def build_window(self, headless=False, splash_image=True):
         """
@@ -41,8 +42,8 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        if splash_image:
-            self.splash = Splash()
+        #if splash_image:
+        #    self.splash = Splash()
 
 
         self.root = Tk()

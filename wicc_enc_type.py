@@ -164,6 +164,7 @@ class EncryptionType:
 
         :Author: Miguel Yanes Fernández
         """
+        print(output)
         words = output.split(" ")
         next_1 = False
         next_2 = False
