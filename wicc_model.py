@@ -224,7 +224,6 @@ class Model:
         for interface in self.interfaces:
             if interface.get_name() == interface_name:
                 address = interface.get_address()
-                print("Interface " + interface_name + ", address " + address)
                 return interface.get_address()
 
     def set_filters(self, wps_filter_status, clients_filter_status):

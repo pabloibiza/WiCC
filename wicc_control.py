@@ -37,7 +37,7 @@ class Control:
     scan_filter_parameters = ["ALL", "ALL"]
     auto_select = False
     cracking_completed = False  # to know if the network cracking process has finished or not
-    selected_wordlist = "/usr/share/wordlists/rockyou.txt"
+    selected_wordlist = ""
     cracking_network = False  # state of the network cracking process (if it has started or not)
     net_attack = ""  # EncryptionType generic object, used to store the specific instance of the running attack
     verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
@@ -173,7 +173,6 @@ class Control:
             iw_output, iw_error = self.execute_command(['iwconfig', w_interface])
             iw_output = iw_output.decode("utf-8")
             iw_error = iw_error.decode("utf-8")
-
             iw_error = iw_error.split(':')
             # if there is no error, it is a wireless interface
             if iw_output:
@@ -227,15 +226,13 @@ class Control:
             line = lines.split()
             if interface[0] == "":
                 interface[0] = line[0]
-                print("Name: " + interface[0])
-            elif "Mode" in line[0]:
-                str = line[0].split(":")
-                interface[2] = str[1]
-                print("Mode: " + interface[2])
-                break
+            if "Mode" in lines:
+                for i in range(0, len(line)):
+                    if "Mode" in line[i]:
+                        str = line[i].split(":")
+                        interface[2] = str[1]
+                        break
         interface[1] = self.mac_checker(interface[0])
-        print("Mac: " + interface[1])
-        print("return interface")
         return interface
 
     def set_interfaces(self, interfaces):
@@ -261,6 +258,14 @@ class Control:
         :Author: Miguel Yanes Fernández & Pablo Sanz Alguacil
         """
 
+        if not self.model.get_mac(self.selectedInterface):
+            self.selectedInterface = self.selectedInterface[:-3]
+            self.stop_scan()
+            self.selectedInterface = ""
+            self.show_info_notification("Card already in monitor mode.\nPlease, re-select the wireless interface")
+            self.view.enable_buttons()
+            return False
+
         self.check_monitor_mode()
 
         if not self.allows_monitor:
@@ -274,8 +279,6 @@ class Control:
         if self.write_directory[:5] == "/tmp/":
             self.execute_command(['rm', '-r', self.write_directory])
         out, err = self.execute_command(['mkdir', self.write_directory])
-
-        # change wireless interface name to the parameter one
 
         airmon_cmd = ['airmon-ng', 'start', self.selectedInterface]
         interface = self.selectedInterface + 'mon'
@@ -342,6 +345,7 @@ class Control:
                     self.stop_scan()
                     self.scan_networks()
                     return True
+                self.show_message(" * Error * - Wireless card may not support monitor mode")
                 self.show_info_notification("Error when scanning networks. \n"
                                             "The selected wireless card may not support Monitor mode")
                 self.selectedInterface = ""
@@ -465,7 +469,6 @@ class Control:
         elif operation == Operation.RESTORE_MAC:
             self.restore_mac(value)
         elif operation == Operation.SPOOF_MAC:
-            print(value)
             self.spoof_mac = value
         elif operation == Operation.CHECK_MAC:
             self.mac_checker(value)
@@ -495,16 +498,15 @@ class Control:
             for pid in pids:
                 if pid != "":
                     self.execute_command(['kill', '-9', pid])  # kills all processes related with airodump
-            if self.allows_monitor:
-                airmon_cmd = ['airmon-ng', 'stop', self.selectedInterface + 'mon']  # stop card to be in monitor mode
-                ifconf_up_cmd = ['ifconfig', self.selectedInterface, 'up']  # sets the wireless interface up again
-                net_man_cmd = ['NetworkManager']  # restarts NetworkManager
+        airmon_cmd = ['airmon-ng', 'stop', self.selectedInterface + 'mon']  # stop card to be in monitor mode
+        ifconf_up_cmd = ['ifconfig', self.selectedInterface, 'up']  # sets the wireless interface up again
+        net_man_cmd = ['NetworkManager']  # restarts NetworkManager
 
-                self.execute_command(airmon_cmd)
-                self.execute_command(ifconf_up_cmd)
-                self.execute_command(net_man_cmd)
+        self.execute_command(airmon_cmd)
+        self.execute_command(ifconf_up_cmd)
+        self.execute_command(net_man_cmd)
+
         self.scan_stopped = True
-        self.view.enable_buttons()
 
     def get_interfaces(self):
         """
@@ -580,6 +582,9 @@ class Control:
 
         # ------------- WPA Attack ----------------
         elif network_encryption[:4] == " WPA":
+            if self.selected_wordlist == "":
+                self.show_info_notification("You need to select a wordlist for the WPA attack")
+                return
             self.show_message("create wpa instance")
             self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist,
                                   self.verbose_level, self.silent_attack, self.write_directory)
@@ -629,13 +634,9 @@ class Control:
         :Author: Miguel Yanes Fernández
         """
 
-        print(self.main_directory)
-        print(self.local_folder)
         if not self.ignore_local_savefiles:
             mkdir_cmd = ['mkdir', self.local_folder]
-            print(mkdir_cmd)
             self.execute_command(mkdir_cmd)
-            print("creating folder")
 
     def store_local_file(self, file_name, file_contents):
         """
@@ -650,10 +651,6 @@ class Control:
             with open(self.local_folder + "/" + file_name, "a") as file:
                 file.write(file_contents + "\n")
                 file.close()
-
-            print("creating file")
-        else:
-            print("not creating")
 
     def read_local_file(self, file_name):
         """
@@ -675,7 +672,6 @@ class Control:
         if contents:
             lines = contents.split("\n")
             for line in lines:
-                print(line)
                 words = line.split()
                 if words[0] == self.model.search_network(self.selectedNetwork).get_bssid():
                     return words[1]
@@ -784,7 +780,7 @@ class Control:
         :param interface: string cointainig the name of the target interface
         :return: string containing the current MAC address, Flase in case of error
 
-        :author: Pablo Sanz Alguacil
+        :author: Pablo Sanz Alguacil and Miguel Yanes Fernández
         """
         try:
             command = ['ifconfig', interface]
@@ -792,9 +788,8 @@ class Control:
             for i in range(0, len(current_mac)):
                 if current_mac[i] == "ether":
                     current_mac = current_mac[i+1]
-                    break
-            self.show_message(current_mac)
-            return current_mac
+                    return current_mac
+            return None
         except:
             self.view.show_warning_notification("Unable to get current MAC address")
             return False
@@ -827,5 +822,4 @@ class Control:
         command = ['crunch', '0', '0', '-o', output_list, '-p']
         for word in words_list:
             command.append(word)
-        print(output_list)
         self.execute_command(command)
