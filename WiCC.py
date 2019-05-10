@@ -204,6 +204,7 @@ if __name__ == '__main__':
 
                         show_message("Cracking process finished.")
                         # sys.exit(0)
+                    control.selectedInterface = ""
                 else:
                     control.stop_scan()
                     control.selectedInterface = ""

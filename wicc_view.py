@@ -320,6 +320,9 @@ class View:
         network_id = self.networks_treeview.item(current_item)['values'][0]
         self.send_notify(Operation.SELECT_NETWORK, network_id)
 
+    def stop_attack(self):
+        return
+
     def notify_kill(self):
         """
         Sends and order to kill all processes when X is clicked

@@ -547,6 +547,9 @@ class Control:
         if password != "":
             self.view.show_info_notification("Network already cracked\n\nPassword: " + password +
                                              "\n\nYou can now restart the scanning process")
+            self.cracking_completed = True
+            self.stop_scan()
+            self.selectedNetwork = ""
             return
 
         network = self.model.search_network(self.selectedNetwork)
@@ -560,6 +563,7 @@ class Control:
             self.show_info_notification("The selected network is open. No password required to connect")
             self.cracking_completed = True
             self.stop_scan()
+            self.selectedNetwork = ""
             return
 
         self.show_info_notification("Starting attack on" + network_encryption + " network:" + "\n\nName: " +
