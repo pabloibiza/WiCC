@@ -56,8 +56,6 @@ if __name__ == '__main__':
         print("\n\tError: Must be executed with Python 3\n")
         sys.exit(1)
 
-    control = Control()
-
     exit = False
 
     # print_ascii("Resources/ascii_art.txt")
@@ -71,6 +69,8 @@ if __name__ == '__main__':
     print("")
     print("              Wifi Cracking Camp")
     print(cyan + "=============================================")
+
+    control = Control()
 
     headless = False  # run the program without the front-end
     auto_select = False  # auto-select the network interface
@@ -112,6 +112,10 @@ if __name__ == '__main__':
                 ignore_savefiles = True
                 control.set_ignore_savefiles(ignore_savefiles)
                 options_message += " *** Ignoring local savefiles\n"
+        elif arg == '-w':
+            if control.get_wordlist() == "":
+                control.set_wordlist("/usr/share/wordlists/rockyou.txt")
+                options_message += " *** Using default wordlist (rockyou)\n"
         elif arg == '--help':
             print("Viewing help")
             print("Usage: # python3 WiCC.py [option(s)]\n")
@@ -120,6 +124,7 @@ if __name__ == '__main__':
             print("   -a \t\tauto-select the first available network interface")
             print("   -s \t\tavoid showing the splash image during startup")
             print("   -i \t\tignore local save files")
+            print("   -w \t\tuse default wordlist directory: /usr/share/wordlists/rockyou.txt")
             print("   -v \t\tselect the verbose level for the program (default: 0, no output)")
             print("\t-v  \tlevel 1 (basic output)")
             print("\t-vv \tlevel 2 (advanced output)")

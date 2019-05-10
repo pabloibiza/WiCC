@@ -237,3 +237,6 @@ class Model:
         """
         self.network_filters[0] = wps_filter_status
         self.network_filters[1] = clients_filter_status
+
+    def clear_interfaces(self):
+        self.interfaces = []

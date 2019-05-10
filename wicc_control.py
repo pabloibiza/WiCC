@@ -165,6 +165,8 @@ class Control:
         else:
             return
 
+        self.model.clear_interfaces()
+
         # iw info
         interfaces = []
         for w_interface in w_interfaces:
@@ -264,6 +266,7 @@ class Control:
             self.selectedInterface = ""
             self.show_info_notification("Card already in monitor mode.\nPlease, re-select the wireless interface")
             self.view.enable_buttons()
+            self.model.clear_interfaces()
             return False
 
         self.check_monitor_mode()
@@ -823,3 +826,9 @@ class Control:
         for word in words_list:
             command.append(word)
         self.execute_command(command)
+
+    def get_wordlist(self):
+        return self.selected_wordlist
+
+    def set_wordlist(self, wordlist):
+        self.selected_wordlist = wordlist

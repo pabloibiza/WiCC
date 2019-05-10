@@ -48,7 +48,7 @@ class WPA(EncryptionType):
 
         pyrit_cmd = ['pyrit', '-r', self.write_directory + '/net_attack-01.cap', 'analyze']
         cowpatty_cmd = ['cowpatty', '-c', '-r', self.write_directory + '/net_attack-01.cap']
-        de_auth_cmd = ['aireplay-ng', '-0', '3', '--ignore-negative-one', '-a', self.bssid, '-D', self.interface]
+        de_auth_cmd = ['aireplay-ng', '-0', '5', '--ignore-negative-one', '-a', self.bssid, '-D', self.interface]
         if self.silent_attack:
             super().show_message("Running silent attack (no de-authing)")
         else:
