@@ -20,7 +20,7 @@ class View:
     control = ""
     interfaces = ""
     networks = ""
-    width = 830
+    width = 970
     height = 420
     interfaces_old = []
     networks_old = []
@@ -58,6 +58,55 @@ class View:
         icon = Image("photo", file=self.icon_path)
         self.root.call('wm', 'iconphoto', self.root._w, icon)
 
+        # MENU BAR
+        self.menubar = Menu(self.root)
+        self.root['menu'] = self.menubar
+
+        self.menu1 = Menu(self.menubar)
+        self.menu2 = Menu(self.menubar)
+        self.menu3 = Menu(self.menubar)
+        self.menubar.add_cascade(menu=self.menu1, label='File')
+        self.menubar.add_cascade(menu=self.menu2, label='Tools')
+        self.menubar.add_cascade(menu=self.menu3, label='Help')
+
+        # MENU 1
+        self.menu1.add_command(label='Exit',
+                               command=self.notify_kill,
+                               underline=0,
+                               compound=LEFT)
+
+        # MENU 2
+        self.menu2.add_command(label='MAC menu',
+                               command=self.mac_tools_window,
+                               underline=0,
+                               compound=LEFT)
+
+        self.menu2.add_command(label='Select wordlist',
+                               command=self.select_custom_wordlist,
+                               underline=0,
+                               compound=LEFT)
+
+        self.menu2.add_command(label='Generate wordlist',
+                               command=self.generate_wordlists_window,
+                               underline=0,
+                               compound=LEFT)
+
+        self.menu2.add_command(label='Temporary files location',
+                               command=self.temporary_files_location,
+                               underline=0,
+                               compound=LEFT)
+
+        # MENU 3
+        self.menu3.add_command(label='Help',
+                               command='',
+                               underline=0,
+                               compound=LEFT)
+
+        self.menu3.add_command(label='About',
+                               command=self.test_method,
+                               underline=0,
+                               compound=LEFT)
+
         # LABEL FRAME - ANALYSIS OPTIONS
         self.labelframe_analysis = LabelFrame(self.root, text="Analysis Options")
         self.labelframe_analysis.pack(fill="both", expand="yes")
@@ -70,9 +119,17 @@ class View:
         self.labelframe_networks = LabelFrame(self.root, text="Available Networks")
         self.labelframe_networks.pack(fill="both", expand="yes")
 
-        # LABEL FRAME - START
+        # LABEL FRAME - START/STOP
         self.labelframe_start_stop = LabelFrame(self.root, text="Start/Stop")
         self.labelframe_start_stop.pack(fill="both", expand="yes")
+
+        # LABEL FRAME - WEP
+        self.labelframe_wep = LabelFrame("", text="WEP Attack")
+        self.labelframe_wep.pack(fill="both", expand="yes")
+
+        # LABEL FRMAE - WPA
+        self.labelframe_wpa = LabelFrame("", text="WPA Attack")
+        self.labelframe_wpa.pack(fill="both", expand="yes")
 
         # LABEL - INTERFACES
         self.label_interfaces = Label(self.labelframe_analysis, text="Interface: ")
@@ -144,6 +201,11 @@ class View:
                                             command=self.generate_wordlists_window)
         self.generate_wordlist.grid(column=10, row=0, padx=5)
 
+        # BUTTON - TEMPORARY FILES BUTTON
+        self.temporary_files_button = Button(self.labelframe_more_options, text="Temporary files location",
+                                             command=self.temporary_files_location)
+        self.temporary_files_button.grid(column=12, row=0, padx=5)
+
         # TREEVIEW - NETWORKS
         self.networks_treeview = ttk.Treeview(self.labelframe_networks)
         self.networks_treeview["columns"] = ("id", "bssid_col", "channel_col", "encryption_col", "power_col", "wps_col",
@@ -171,9 +233,19 @@ class View:
 
         self.networks_treeview.pack(fill=X)
 
-        # BUTTON - ATTACK
-        self.button_select = Button(self.labelframe_start_stop, text='Attack', command=self.select_network)
-        self.button_select.grid(column=1, row=0, padx=5)
+        # CHECKBUTTON - SILENT MODE
+        self.silent_mode_status = BooleanVar()
+        self.checkbutton_silent = Checkbutton(self.labelframe_wep, text="Silent Mode",
+                                            variable=self.silent_mode_status)
+        self.clients_checkbox.grid(column=0, row=0, padx=5)
+
+        # BUTTON - START ATTACK
+        self.button_start_attack = Button(self.labelframe_wep, text='Attack', command=self.start_attack)
+        self.button_start_attack.grid(column=2, row=0, padx=5)
+
+        # BUTTON - STOP ATTACK
+        self.button_stop_attack = Button(self.labelframe_wep, text='Attack', command=self.stop_attack)
+        self.button_stop_attack.grid(column=4, row=0, padx=5)
 
         if not headless:
             self.root.mainloop()
@@ -237,9 +309,9 @@ class View:
         self.button_start_scan['state'] = ACTIVE
         self.button_stop_scan['state'] = DISABLED
 
-    def select_network(self):
+    def start_attack(self):
         """
-        Sends the selected network id to Control
+        Sends the selected network id to Control, to start the attack.
 
         :author: Pablo Sanz Alguacil
         """
@@ -521,10 +593,10 @@ class View:
         if value:
             self.disable_buttons()
             self.button_stop_scan['state'] = DISABLED
-            self.button_select['state'] = DISABLED
+            self.button_start_attack['state'] = DISABLED
         elif not value:
             self.enable_buttons()
-            self.button_select['state'] = ACTIVE
+            self.button_start_attack['state'] = ACTIVE
 
     def generate_wordlists_window(self):
         """
@@ -535,3 +607,23 @@ class View:
 
         self.disable_window(True)
         wordlist_generator_window = GenerateWordlist(self)
+
+    def temporary_files_location(self):
+        """
+        Shows a window to select a location to save temporary files. Then sends the path to control.
+
+        :author: Pablo Sanz Alguacil
+        """
+
+        select_window = filedialog.askdirectory(parent=self.root,
+                                         initialdir='/home/$USER',
+                                         title='Choose directory')
+        if select_window:
+            try:
+                self.send_notify(Operation.SELECT_TEMPORARY_FILES_LOCATION, select_window)
+            except:
+                messagebox.showerror("Error", "Failed to set directory \n'%s'" % select_window)
+                return
+
+    def test_method(self):
+        messagebox.showinfo("funciona", "esta wea funciona")
