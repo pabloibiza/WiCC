@@ -74,9 +74,12 @@ class View:
         self.menu1 = Menu(self.menubar)
         self.menu2 = Menu(self.menubar)
         self.menu3 = Menu(self.menubar)
-        self.menubar.add_cascade(menu=self.menu1, label='File', image=self.file_icon)
-        self.menubar.add_cascade(menu=self.menu2, label='Tools', image=self.tools_icon)
-        self.menubar.add_cascade(menu=self.menu3, label='Help', image=self.help_icon)
+        #self.menubar.add_cascade(menu=self.menu1, label='File', image=self.file_icon)
+        #self.menubar.add_cascade(menu=self.menu2, label='Tools', image=self.tools_icon)
+        #self.menubar.add_cascade(menu=self.menu3, label='Help', image=self.help_icon)
+        self.menubar.add_cascade(menu=self.menu1, label='File')
+        self.menubar.add_cascade(menu=self.menu2, label='Tools')
+        self.menubar.add_cascade(menu=self.menu3, label='Help')
 
         # MENU 1
         self.menu1.add_command(label='Exit',
