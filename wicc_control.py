@@ -486,6 +486,12 @@ class Control:
             print(value)
         elif operation == Operation.STOP_ATTACK:
             pass
+        elif operation == Operation.START_SCAN_WPA:
+            pass
+        elif operation == Operation.STOP_SCAN_WPA:
+            pass
+        elif operation == Operation.SILENT_SCAN:
+            pass
 
     def stop_scan(self):
         """

@@ -273,21 +273,25 @@ class View:
         self.clients_checkbox.grid(column=0, row=0, padx=5)
 
         # BUTTON - SCAN WPA
-        self.button_scan_wpa = Button(self.labelframe_wpa, text="Scan", command="")
+        self.button_scan_wpa = Button(self.labelframe_wpa, text="Scan", command=self.start_scan_wpa)
+        self.button_scan_wpa.grid(column=1, row=0, padx=5)
+
+        # BUTTON - STOP SCAN WPA
+        self.button_scan_wpa = Button(self.labelframe_wpa, text="Stop scan", command=self.stop_scan_wpa)
         self.button_scan_wpa.grid(column=2, row=0, padx=5)
 
         # BUTTON - TEMPORARY FILES BUTTON WPA
         self.temporary_files_button_wpa = Button(self.labelframe_wpa, text="Temporary files location",
                                                  command=self.temporary_files_location)
-        self.temporary_files_button_wpa.grid(column=4, row=0, padx=5)
+        self.temporary_files_button_wpa.grid(column=3, row=0, padx=5)
 
         # BUTTON - START ATTACK WPA
         self.button_start_attack_wpa = Button(self.labelframe_wpa, text='Attack', command=self.start_attack)
-        self.button_start_attack_wpa.grid(column=6, row=0, padx=5)
+        self.button_start_attack_wpa.grid(column=4, row=0, padx=5)
 
         # BUTTON - STOP ATTACK WPA
         self.button_stop_attack_wpa = Button(self.labelframe_wpa, text='Stop Attack', command=self.stop_attack)
-        self.button_stop_attack_wpa.grid(column=8, row=0, padx=5)
+        self.button_stop_attack_wpa.grid(column=5, row=0, padx=5)
 
         if not headless:
             self.root.mainloop()
@@ -296,7 +300,7 @@ class View:
         current_item = self.networks_treeview.focus()
         network_enc = self.networks_treeview.item(current_item)['values'][3]
         self.labelframe_attack_options.pack_forget()
-        if(network_enc == "WEP"):
+        if(network_enc == " WEP"):
             self.labelframe_wpa.pack_forget()
             self.labelframe_wep.pack(fill="both", expand="yes")
         elif("WPA2" in network_enc or network_enc == "WPA"):
@@ -392,7 +396,7 @@ class View:
 
         current_item = self.networks_treeview.focus()
         network_id = self.networks_treeview.item(current_item)['values'][0]
-        self.send_notify(Operation.SELECT_NETWORK, network_id)
+        self.send_notify(Operation.ATTACK_NETWORK, network_id)
 
     def notify_kill(self):
         """
@@ -707,6 +711,24 @@ class View:
         """
 
         self.send_notify(Operation.STOP_ATTACK, "")
+
+    def start_scan_wpa(self):
+        """
+        Sends a notification to start a WPA scan.
+
+        :author: Pablo Sanz Alguacil
+        """
+
+        self.send_notify(Operation.START_SCAN_WPA, "")
+
+    def stop_scan_wpa(self):
+        """
+        Sends a notification to stop the WPA scan.
+
+        :author: Pablo Sanz Alguacil
+        """
+
+        self.send_notify(Operation.STOP_SCAN_WPA, "")
 
     def test_method(self):
         messagebox.showinfo("funciona", "esta wea funciona")
