@@ -299,17 +299,19 @@ class View:
     def select_network(self):
         current_item = self.networks_treeview.focus()
         network_enc = self.networks_treeview.item(current_item)['values'][3]
+        network_id = self.networks_treeview.item(current_item)['values'][0]
         self.labelframe_attack_options.pack_forget()
-        if(network_enc == " WEP"):
+        if("WEP" in network_enc):
             self.labelframe_wpa.pack_forget()
             self.labelframe_wep.pack(fill="both", expand="yes")
-        elif("WPA2" in network_enc or network_enc == "WPA"):
+        elif("WPA" in network_enc):
             self.labelframe_wep.pack_forget()
             self.labelframe_wpa.pack(fill="both", expand="yes")
         elif(network_enc == "OPN"):
             print("This is an open network")
         else:
             print("No network selected")
+        self.send_notify(Operation.SELECT_NETWORK, network_id)
 
     def start_scan(self):
         """
@@ -671,10 +673,10 @@ class View:
         if value:
             self.disable_buttons()
             self.button_stop_scan['state'] = DISABLED
-            self.button_start_attack['state'] = DISABLED
+            #self.button_start_attack['state'] = DISABLED
         elif not value:
             self.enable_buttons()
-            self.button_start_attack['state'] = ACTIVE
+            #self.button_start_attack['state'] = ACTIVE
 
     def generate_wordlists_window(self):
         """
