@@ -482,6 +482,10 @@ class Control:
             self.path_directory_crunch = value
         elif operation == Operation.GENERATE_LIST:
             self.generate_wordlist(value)
+        elif operation == Operation.SELECT_TEMPORARY_FILES_LOCATION:
+            print(value)
+        elif operation == Operation.STOP_ATTACK:
+            pass
 
     def stop_scan(self):
         """

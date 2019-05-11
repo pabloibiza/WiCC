@@ -23,3 +23,5 @@ class Operation:
     CHECK_MAC = "Check mac"
     PATH_GENERATED_LISTS = "Path generated lists"
     GENERATE_LIST = "Generate list"
+    SELECT_TEMPORARY_FILES_LOCATION = "Select temporary files location"
+    STOP_ATTACK = "Stop attack"
