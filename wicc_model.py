@@ -17,6 +17,7 @@ class Model:
     networks = []
     clients = []
     network_filters = [False, False]
+    net_attack_instances = []  # object instances of the net attack classes
 
     def __init__(self):
         """
@@ -240,3 +241,16 @@ class Model:
 
     def clear_interfaces(self):
         self.interfaces = []
+
+    def clear_networks(self):
+        self.networks = []
+
+    def add_net_attack(self, mac, object_reference):
+        self.net_attack_instances.append([mac, object_reference])
+
+    def get_net_attack(self, mac):
+        for i in range(0, len(self.net_attack_instances)):
+            if self.net_attack_instances[i][0] == mac:
+                return self.net_attack_instances[i][1]
+        return None
+

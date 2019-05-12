@@ -84,9 +84,9 @@ class EncryptionType:
         thread.start()
         thread.join(1)
 
-        aireplay_check_cmd = ['aireplay-ng', '-9', self.interface]
-        aireplay_check_out, err = self.execute_command(aireplay_check_cmd)
-        self.aireplay_check_injection(aireplay_check_out)
+        #aireplay_check_cmd = ['aireplay-ng', '-9', self.interface]
+        #aireplay_check_out, err = self.execute_command(aireplay_check_cmd)
+        #self.aireplay_check_injection(aireplay_check_out)
 
     def aireplay_check_injection(self, output):
         """

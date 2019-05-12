@@ -636,6 +636,7 @@ class View:
         :author: Pablo Sanz Alguacil
         """
         warning_notification = messagebox.showwarning("Warning", message)
+        self.root.update()
         print(warning_notification)
 
     def show_info_notification(self, message):
@@ -647,6 +648,7 @@ class View:
         """
 
         info_notification = messagebox.showinfo("Info", message)
+        self.root.update()
         print(info_notification)
 
     def send_notify(self, operation, value):

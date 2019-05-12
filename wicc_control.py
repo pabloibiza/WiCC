@@ -22,6 +22,7 @@ import os
 import csv
 from subprocess import Popen, PIPE
 import threading
+from tkinter import messagebox
 
 
 class Control:
@@ -61,6 +62,7 @@ class Control:
             directory, err = self.execute_command(['pwd'])
             self.main_directory = directory.decode('utf-8')[:-1]
             self.local_folder = self.main_directory + self.local_folder
+            self.__instance = self
         else:
             raise Exception("Singleton Class")
 
@@ -259,13 +261,17 @@ class Control:
 
         :Author: Miguel Yanes Fernández & Pablo Sanz Alguacil
         """
+        self.model.clear_networks()
+        self.notify_view()
 
         if not self.model.get_mac(self.selectedInterface):
             self.selectedInterface = self.selectedInterface[:-3]
             self.stop_scan()
             self.selectedInterface = ""
-            self.show_info_notification("Card already in monitor mode.\nPlease, re-select the wireless interface")
-            self.view.enable_buttons()
+            if not self.auto_select:
+                self.show_info_notification("Card already in monitor mode.\nPlease, re-select the wireless interface")
+                self.show_message("Card already in monitor mode")
+                self.view.enable_buttons()
             self.model.clear_interfaces()
             return False
 
@@ -418,6 +424,18 @@ class Control:
         """
         return self.selectedNetwork != ""
 
+    def add_net_attack(self, mac, object_reference):
+        self.model.add_net_attack(mac, object_reference)
+
+    def get_net_attack(self, mac):
+        return self.model.get_net_attack(mac)
+
+    def warning_box(self, message):
+        messagebox.showerror("", message)
+
+    def info_box(self, message):
+        messagebox.showinfo("", message)
+
     def notify_view(self):
         """
         Send notify to update the view with the list of interfaces and networks
@@ -431,8 +449,13 @@ class Control:
             try:
                 self.view.get_notify(interfaces, networks)
             except:
-                self.show_message("Error while notifying view (try running the program with the option -s)")
-                sys.exit(1)
+                self.show_message("Error while notifying view (try restarting the program)")
+                #msg_box_thread = threading.Thread(target=self.msg_box,
+                #                                  args=("Error connecting View and Control\nClosing the program...",))
+                #msg_box_thread.start()
+                #msg_box_thread.join(0)
+                self.get_notify(Operation.STOP_RUNNING, None)
+                #sys.exit(1)
 
     def get_notify(self, operation, value):
         """
@@ -450,8 +473,7 @@ class Control:
                 self.show_info_notification("Please, select a network interface")
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
-            self.stop_scan()
-            self.attack_network()
+            print("selected network - " + str(value))
         elif operation == Operation.ATTACK_NETWORK:
             # USELESS right now
             self.stop_scan()
@@ -461,6 +483,9 @@ class Control:
         elif operation == Operation.STOP_RUNNING:
             self.stop_scan()
             self.view.reaper_calls()
+            self.show_message("\n\n\tClossing WiCC ...\n\n")
+            os.close(2)  # block writing to stdout
+            del self.view
             self.running_stopped = True
             # sys.exit(0)
         elif operation == Operation.SCAN_OPTIONS:
@@ -487,11 +512,12 @@ class Control:
         elif operation == Operation.STOP_ATTACK:
             pass
         elif operation == Operation.START_SCAN_WPA:
+            self.scan_network()
             pass
         elif operation == Operation.STOP_SCAN_WPA:
             pass
         elif operation == Operation.SILENT_SCAN:
-            pass
+            self.silent_attack = value
 
     def stop_scan(self):
         """
@@ -546,6 +572,34 @@ class Control:
         self.scan_filter_parameters[1] = value[3]
         self.model.set_filters(value[1], value[2])
 
+    def scan_network(self):
+        network = self.model.search_network(self.selectedNetwork)
+
+        self.show_message("create wpa instance")
+        self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist,
+                         self.verbose_level, self.silent_attack, self.write_directory)
+
+        self.add_net_attack(network.get_bssid(), self.net_attack)
+        print(self.net_attack)
+
+        self.show_info_notification("Starting scan on WPA network:" + "\n\nName: " +
+                                    network.get_essid() + "\nBSSID: " + network.get_bssid() +
+                                    "\n\nPlease wait up to a few minutes until a handshake is captured")
+
+        self.show_message("start scanning")
+        self.net_attack.scan_network()
+        if not self.net_attack.get_injection_supported() and not self.silent_attack:
+            self.show_info_notification("The selected interface doesnt support packet injection."
+                                        "\nAutomatically switching to silent mode (no client de-authing)"
+                                        "\n\nThe attack will be slower")
+        self.show_message("Scanned network - Handshake captured")
+
+        self.show_info_notification("Handshake captured.\n\nYou can now start the attack (cracking process)")
+        return
+
+        # <wicc_wpa.WPA object at 0x7fe7792c77b8>
+        # <wicc_wpa.WPA object at 0x7fe7792c77b8>
+
     def attack_network(self):
         """
         Method to start the attack depending on the type of selected network.
@@ -595,7 +649,7 @@ class Control:
 
             self.show_message("Scanning network")
             password = self.net_attack.scan_network()
-            self.show_message("Cracking finised")
+            self.show_message("Cracking finished")
 
         # ------------- WPA Attack ----------------
         elif network_encryption[:4] == " WPA":
@@ -603,16 +657,10 @@ class Control:
                 self.show_info_notification("You need to select a wordlist for the WPA attack")
                 return
             self.show_message("create wpa instance")
-            self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist,
-                                  self.verbose_level, self.silent_attack, self.write_directory)
-            self.show_message("start scanning")
-            self.net_attack.scan_network()
-            if not self.net_attack.get_injection_supported() and not self.silent_attack:
-                self.show_info_notification("The selected interface doesnt support packet injection."
-                                            "\nAutomatically switching to silent mode (no client de-authing)"
-                                            "\n\nThe attack will be slower")
+            self.net_attack = self.get_net_attack(network.get_bssid())
+            print(self.net_attack)
+            self.net_attack.add_wordlist(self.selected_wordlist)
             self.show_message("start cracking")
-            self.show_info_notification("Handshake captured.\n\nStarting password cracking with the given wordlist")
             self.cracking_network = True
 
             password = self.net_attack.crack_network()
@@ -690,8 +738,9 @@ class Control:
             lines = contents.split("\n")
             for line in lines:
                 words = line.split()
-                if words[0] == self.model.search_network(self.selectedNetwork).get_bssid():
-                    return words[1]
+                if line != "":
+                    if words[0] == self.model.search_network(self.selectedNetwork).get_bssid():
+                        return words[1]
         self.show_message("Selected network is not in the stored cracked networks list")
         return ""
 

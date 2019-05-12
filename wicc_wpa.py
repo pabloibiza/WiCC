@@ -52,13 +52,13 @@ class WPA(EncryptionType):
         if self.silent_attack:
             super().show_message("Running silent attack (no de-authing)")
         else:
-            second_iterator = 10  # when 15, de-auth's clients on the network
+            second_iterator = 7  # when 15, de-auth's clients on the network
 
         while not valid_handshake:
             if not valid_handshake:
                 time.sleep(1)
                 if not self.silent_attack:
-                    if second_iterator == 10:
+                    if second_iterator == 7:
                         self.show_message("de-authing . . .")
                         out, err = self.execute_command(de_auth_cmd)
                         second_iterator = 0
@@ -89,6 +89,9 @@ class WPA(EncryptionType):
                 if pid != "":
                     self.execute_command(['kill', '-9', pid])  # kills all processes related with the process
                     self.show_message("killed pid " + pid)
+
+    def add_wordlist(self, wordlist):
+        self.wordlist = wordlist
 
     def crack_network(self):
         """
