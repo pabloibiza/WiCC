@@ -66,11 +66,6 @@ class View:
         self.menubar = Menu(self.root)
         self.root['menu'] = self.menubar
 
-        self.file_icon = PhotoImage(file=self.file_icon_path)
-        self.file_icon.zoom(50, 50)
-        self.tools_icon = PhotoImage(file=self.tools_icon_path)
-        self.help_icon = PhotoImage(file=self.help_icon_path)
-
         self.menu1 = Menu(self.menubar)
         self.menu2 = Menu(self.menubar)
         self.menu3 = Menu(self.menubar)
