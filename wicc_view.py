@@ -382,7 +382,7 @@ class View:
         :author: Pablo Sanz Alguacil
         """
         select_window = filedialog.askopenfilename(parent=self.root,
-                                                   initialdir='/home/$USER',
+                                                   initialdir='/home',
                                                    title='Choose wordlist file',
                                                    filetypes=[('Text files', '.txt'),
                                                               ('List files', '.lst'),
