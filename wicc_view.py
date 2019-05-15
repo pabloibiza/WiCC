@@ -547,7 +547,7 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        if (self.interfaces_old != interfaces):
+        if interfaces:
             self.interfaces_old = interfaces
             interfaces_list = []
             for item in interfaces:
@@ -753,9 +753,9 @@ class View:
             status = DISABLED
 
         for button in buttons:
-            if button == "scan":
+            if button == "scan_wpa":
                 self.button_scan_wpa['state'] = status
-            elif button == "stop_scan":
+            elif button == "stop_scan_wpa":
                 self.button_stop_attack_wpa['state'] = status
             elif button == "attack_wpa":
                 self.button_start_attack_wpa['state'] = status

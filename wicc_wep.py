@@ -99,8 +99,8 @@ class WEP(EncryptionType):
 
         :Author: Miguel Yanes Fernández
         """
-        aircrack_cmd = ['aircrack-ng', self.write_directory + '/net_attack-01.cap',
-                        '>', self.write_directory + '/aircrack-out']
+        aircrack_cmd = ['aircrack-ng', self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap',
+                        '>', self.write_directory + '/aircrack-out_' + str(self.timestamp)]
         self.show_message("---------Executing aircrack-----------")
         aircrack_thread = threading.Thread(target=self.execute_command, args=(aircrack_cmd,))
         aircrack_thread.start()
@@ -109,7 +109,7 @@ class WEP(EncryptionType):
         password = ""
 
         while password != "":
-            with open(self.write_directory + '/aircrack-out', 'r') as aircrack_out:
+            with open(self.write_directory + '/aircrack-out_' + str(self.timestamp), 'r') as aircrack_out:
                 self.password = self.filter_aircrack(aircrack_out.read())
             time.sleep(1)
         self.show_message("--------------------------------------")

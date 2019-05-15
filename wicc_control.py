@@ -23,6 +23,8 @@ import csv
 from subprocess import Popen, PIPE
 import threading
 from tkinter import messagebox
+from wicc_view_popup import PopUpWindow
+import datetime
 
 
 class Control:
@@ -53,12 +55,15 @@ class Control:
     generated_wordlist_name = "wicc_wordlist" # name of the generated files in generate_wordlist()
     hex_values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
     __instance = None  # used for singleton check
+    popup = None
+    timestamp = 0
 
     def __init__(self):
         if not Control.__instance:
             self.model = ""
             self.model = Model()
             self.view = View(self)
+            self.popup = PopUpWindow()
             directory, err = self.execute_command(['pwd'])
             self.main_directory = directory.decode('utf-8')[:-1]
             self.local_folder = self.main_directory + self.local_folder
@@ -283,15 +288,16 @@ class Control:
 
         self.scan_stopped = False
 
-        tempfile = self.write_directory + "/net_scan"
+        tempfile = self.write_directory + "/net_scan_"
 
-        if self.write_directory[:5] == "/tmp/":
-            self.execute_command(['rm', '-r', self.write_directory])
         out, err = self.execute_command(['mkdir', self.write_directory])
 
         airmon_cmd = ['airmon-ng', 'start', self.selectedInterface]
         interface = self.selectedInterface + 'mon'
         self.execute_command(airmon_cmd)
+
+        self.timestamp = int(datetime.datetime.now().timestamp()*1000000)
+        tempfile += str(self.timestamp)
 
         command = ['airodump-ng', interface, '--write', tempfile, '--output-format', 'csv']
 
@@ -319,9 +325,10 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        tempfile = "/tmp/WiCC/net_scan"
+        tempfile = "/tmp/WiCC/net_scan_"
         # networks = self.filter_networks(tempfile)
 
+        tempfile += str(self.timestamp)
         tempfile += '-01.csv'
         networks = []
         clients = []
@@ -473,7 +480,6 @@ class Control:
                 self.show_info_notification("Please, select a network interface")
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
-            print("selected network - " + str(value))
         elif operation == Operation.ATTACK_NETWORK:
             # USELESS right now
             self.stop_scan()
@@ -508,11 +514,11 @@ class Control:
         elif operation == Operation.GENERATE_LIST:
             self.generate_wordlist(value)
         elif operation == Operation.SELECT_TEMPORARY_FILES_LOCATION:
-            print(value)
+            self.write_directory = value
         elif operation == Operation.STOP_ATTACK:
             pass
         elif operation == Operation.START_SCAN_WPA:
-            self.scan_network()
+            self.scan_wpa()
             pass
         elif operation == Operation.STOP_SCAN_WPA:
             pass
@@ -557,7 +563,7 @@ class Control:
         return self.model.get_interfaces()
 
     def show_info_notification(self, message):
-        self.view.show_info_notification(message)
+        self.popup.popup_info("", message)
 
     def apply_filters(self, value):
         """
@@ -572,7 +578,7 @@ class Control:
         self.scan_filter_parameters[1] = value[3]
         self.model.set_filters(value[1], value[2])
 
-    def scan_network(self):
+    def scan_wpa(self):
         network = self.model.search_network(self.selectedNetwork)
 
         self.show_message("create wpa instance")
@@ -580,7 +586,6 @@ class Control:
                          self.verbose_level, self.silent_attack, self.write_directory)
 
         self.add_net_attack(network.get_bssid(), self.net_attack)
-        print(self.net_attack)
 
         self.show_info_notification("Starting scan on WPA network:" + "\n\nName: " +
                                     network.get_essid() + "\nBSSID: " + network.get_bssid() +
@@ -658,7 +663,6 @@ class Control:
                 return
             self.show_message("create wpa instance")
             self.net_attack = self.get_net_attack(network.get_bssid())
-            print(self.net_attack)
             self.net_attack.add_wordlist(self.selected_wordlist)
             self.show_message("start cracking")
             self.cracking_network = True

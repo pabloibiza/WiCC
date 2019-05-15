@@ -8,12 +8,13 @@
 """
 from subprocess import Popen, PIPE
 import threading
-import time
+import datetime
 
 
 class EncryptionType:
 
     injection_supported = True  # to know if the interface supports packet injection
+    timestamp = 0
 
     def __init__(self, network, interface, verbose_level, silent_attack, write_directory):
         """
@@ -31,6 +32,7 @@ class EncryptionType:
         self.channel = str(int(self.target_network.get_channel()))
         self.verbose_level = verbose_level
         self.silent_attack = silent_attack
+        print(silent_attack)
         self.write_directory = write_directory
         self.password = ""
 
@@ -70,23 +72,22 @@ class EncryptionType:
 
         :Author: Miguel Yanes Fernández
         """
-        if self.write_directory[:5] == '/tmp/':
-            self.execute_command(['rm', '-r', self.write_directory])
-        self.execute_command(['mkdir', self.write_directory])
+        self.timestamp = int(datetime.datetime.now().timestamp()*1000000)
+
+        #if self.write_directory[:5] == '/tmp/':
+        #    self.execute_command(['rm', '-r', self.write_directory])
+        #self.execute_command(['mkdir', self.write_directory])
         airmon_start_cmd = ['airmon-ng', 'start', self.interface, self.channel]
         self.interface += 'mon'
         airmon_check_cmd = ['airmon-ng', 'check', 'kill']
         airodump_scan_cmd = ['airodump-ng', self.interface, '-a', '--bssid', self.bssid, '--write',
-                             self.write_directory + '/net_attack', '--channel', self.channel, '--write-interval', '2']
+                             self.write_directory + '/net_attack_' + str(self.timestamp), '--channel', self.channel,
+                             '--write-interval', '2', '--output-format', 'pcap']
         self.execute_command(airmon_start_cmd)
         self.execute_command(airmon_check_cmd)
         thread = threading.Thread(target=self.execute_command, args=(airodump_scan_cmd,))
         thread.start()
         thread.join(1)
-
-        #aireplay_check_cmd = ['aireplay-ng', '-9', self.interface]
-        #aireplay_check_out, err = self.execute_command(aireplay_check_cmd)
-        #self.aireplay_check_injection(aireplay_check_out)
 
     def aireplay_check_injection(self, output):
         """
@@ -127,7 +128,6 @@ class EncryptionType:
 
         :Author: Miguel Yanes Fernández
         """
-        print(output)
         words = output.split(" ")
         next_1 = False
         next_2 = False
