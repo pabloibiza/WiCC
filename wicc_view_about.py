@@ -32,7 +32,7 @@ class About:
 
         # LABEL - INFO
         self.label_info = Label(self.root, pady=15,
-                                text="Developed by as the Group Project for 3rd year of the Bachelor "
+                                text="Developed as the Group Project for 3rd year of the Bachelor "
                                      "\nof Science in Computing in Digital Forensics and Cyber Security "
                                      "\nat the Technological University Dublin."
                                      "\n")

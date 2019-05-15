@@ -233,9 +233,9 @@ class View:
         self.checkbutton_silent.grid(column=2, row=0, padx=5, pady=5, sticky=W)
 
         # CHECKBUTTON - SILENT MODE
-        self.checkbutton_silent = Button(self.labelframe_sel_net, text=" Select wordlist",
+        self.button_select_wordlist = Button(self.labelframe_sel_net, text=" Select wordlist",
                                               command=self.select_custom_wordlist)
-        self.checkbutton_silent.grid(column=3, row=0, padx=5, pady=5, sticky=W)
+        self.button_select_wordlist.grid(column=3, row=0, padx=5, pady=5, sticky=W)
 
         # LABEL - NULL LABEL
         self.null_label = Label(self.labelframe_attack_options, text=" ")
@@ -296,7 +296,7 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        self.disable_buttons()
+        self.set_buttons(False)
         self.send_notify(Operation.SCAN_OPTIONS, self.apply_filters())
         self.send_notify(Operation.SELECT_INTERFACE, self.interfaceVar.get())
 
@@ -308,52 +308,44 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        self.enable_buttons()
+        self.set_buttons(True)
         self.send_notify(Operation.STOP_SCAN, "")
 
-    def disable_buttons(self):
+    def set_buttons(self, status):
         """
-        Sets all buttons state to "DISABLED" and stop scan to "ACTIVE"
+        Sets all buttons state to "ACTIVE" or "DISABLED".
 
+        :param status: boolean
         :author: Pablo Sanz Alguacil
         """
+        if status:
+            state = ACTIVE
+            self.button_stop_scan['state'] = DISABLED
+            self.menubar.entryconfig("File", state="normal")
+            self.menubar.entryconfig("Tools", state="normal")
+            self.menubar.entryconfig("Help", state="normal")
+        else:
+            state = DISABLED
+            self.button_stop_scan['state'] = ACTIVE
+            self.menubar.entryconfig("File", state="disabled")
+            self.menubar.entryconfig("Tools", state="disabled")
+            self.menubar.entryconfig("Help", state="disabled")
 
-        self.interfaces_combobox['state'] = DISABLED
-        self.encryption_combobox['state'] = DISABLED
-        self.channels_combobox['state'] = DISABLED
-        self.clients_checkbox['state'] = DISABLED
-        self.button_start_scan['state'] = DISABLED
-        self.button_select_network['state'] = DISABLED
-        self.checkbutton_silent['state'] = DISABLED
-        self.button_start_attack_wep['state'] = DISABLED
-        self.button_stop_attack_wep['state'] = DISABLED
-        self.button_scan_wpa['state'] = DISABLED
-        self.button_stop_scan_wpa['state'] = DISABLED
-        self.button_start_attack_wpa['state'] = DISABLED
-        self.button_stop_attack_wpa['state'] = DISABLED
-        self.button_stop_scan['state'] = ACTIVE
-
-    def enable_buttons(self):
-        """
-        Sets all buttons state to "ACTIVE" and stop scan to "DISABLED"
-
-        :author: Pablo Sanz Alguacil
-        """
-
-        self.interfaces_combobox['state'] = ACTIVE
-        self.encryption_combobox['state'] = ACTIVE
-        self.channels_combobox['state'] = ACTIVE
-        self.clients_checkbox['state'] = ACTIVE
-        self.button_start_scan['state'] = ACTIVE
-        self.button_select_network['state'] = ACTIVE
-        self.checkbutton_silent['state'] = ACTIVE
-        self.button_start_attack_wep['state'] = ACTIVE
-        self.button_stop_attack_wep['state'] = ACTIVE
-        self.button_scan_wpa['state'] = ACTIVE
-        self.button_stop_scan_wpa['state'] = ACTIVE
-        self.button_start_attack_wpa['state'] = ACTIVE
-        self.button_stop_attack_wpa['state'] = ACTIVE
-        self.button_stop_scan['state'] = DISABLED
+        self.interfaces_combobox['state'] = state
+        self.encryption_combobox['state'] = state
+        self.channels_combobox['state'] = state
+        self.clients_checkbox['state'] = state
+        self.button_start_scan['state'] = state
+        self.button_select_network['state'] = state
+        self.checkbutton_silent['state'] = state
+        self.button_start_attack_wep['state'] = state
+        self.button_stop_attack_wep['state'] = state
+        self.button_scan_wpa['state'] = state
+        self.button_stop_scan_wpa['state'] = state
+        self.button_start_attack_wpa['state'] = state
+        self.button_stop_attack_wpa['state'] = state
+        self.checkbutton_silent['state'] = state
+        self.button_select_wordlist['state'] = state
 
     def start_attack(self):
         """
@@ -501,13 +493,10 @@ class View:
 
         filters_status = ["ALL", False, False, "ALL"]
         if self.encryptionVar.get() != "ALL":
-            print("ENCRYPTION FILTER ENABLED")
             filters_status[0] = self.encryptionVar.get()
         if self.clients_status.get() == True:
-            print("CLIENTS FILTER ENABLED")
             filters_status[2] = True
         if self.channelVar.get() != "ALL":
-            print("CHANNELS FILTER ENABLED")
             filters_status[3] = self.channelVar.get()
         return filters_status
 
@@ -636,11 +625,11 @@ class View:
         """
 
         if value:
-            self.disable_buttons()
+            self.set_buttons(False)
             self.button_stop_scan['state'] = DISABLED
             # self.button_start_attack['state'] = DISABLED
         elif not value:
-            self.enable_buttons()
+            self.set_buttons(True)
             # self.button_start_attack['state'] = ACTIVE
 
     def generate_wordlists_window(self):
