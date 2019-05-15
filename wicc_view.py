@@ -107,7 +107,7 @@ class View:
 
         # MENU 3
         self.menu3.add_command(label='Help',
-                               command=self.open_link(),
+                               command=self.open_link,
                                underline=0,
                                compound=LEFT)
 
