@@ -75,10 +75,15 @@ class View:
         self.menu2 = Menu(self.menubar)
         self.menu3 = Menu(self.menubar)
         self.menubar.add_cascade(menu=self.menu1, label='File')
-        self.menubar.add_cascade(menu=self.menu2, label='Attack options')
+        self.menubar.add_cascade(menu=self.menu2, label='Tools')
         self.menubar.add_cascade(menu=self.menu3, label='Help')
 
         # MENU 1
+        self.menu1.add_command(label='Temporary files location',
+                               command=self.temporary_files_location,
+                               underline=0,
+                               compound=LEFT)
+
         self.menu1.add_command(label='Exit',
                                command=self.notify_kill,
                                underline=0,
@@ -100,11 +105,6 @@ class View:
                                underline=0,
                                compound=LEFT)
 
-        self.menu2.add_command(label='Temporary files location',
-                               command=self.temporary_files_location,
-                               underline=0,
-                               compound=LEFT)
-
         # MENU 3
         self.menu3.add_command(label='Help',
                                command=self.open_link(),
@@ -116,13 +116,13 @@ class View:
                                underline=0,
                                compound=LEFT)
 
-        # LABEL FRAME - ANALYSIS OPTIONS
-        self.labelframe_analysis = LabelFrame(self.root, text="Analysis Options")
-        self.labelframe_analysis.pack(fill="both", expand="yes")
+        # LABEL FRAME - SCAN
+        self.labelframe_scan = LabelFrame(self.root, text="Scan")
+        self.labelframe_scan.pack(fill="both", expand="yes")
 
-        # LABEL FRAME - MORE FILTERS
-        self.labelframe_more_options = LabelFrame(self.root, text="More Options")
-        self.labelframe_more_options.pack(fill="both", expand="yes")
+        # LABEL FRAME - FILTERS
+        self.labelframe_filters = LabelFrame(self.root, text="Filters")
+        self.labelframe_filters.pack(fill="both", expand="yes")
 
         # LABEL FRAME - AVAILABLE NETWORKS
         self.labelframe_networks = LabelFrame(self.root, text="Available Networks")
@@ -144,18 +144,18 @@ class View:
         self.labelframe_wpa = LabelFrame("", text="WPA Attack Options")
 
         # LABEL - INTERFACES
-        self.label_interfaces = Label(self.labelframe_analysis, text="Interface: ")
+        self.label_interfaces = Label(self.labelframe_scan, text="Interface: ")
         self.label_interfaces.grid(column=1, row=0, padx=5)
 
         # COMBO BOX - NETWORK INTERFACES
         self.interfaceVar = StringVar()
-        self.interfaces_combobox = ttk.Combobox(self.labelframe_analysis, textvariable=self.interfaceVar)
+        self.interfaces_combobox = ttk.Combobox(self.labelframe_scan, textvariable=self.interfaceVar)
         self.interfaces_combobox['values'] = self.interfaces
         self.interfaces_combobox.bind("<<ComboboxSelected>>")
         self.interfaces_combobox.grid(column=2, row=0)
 
         # FRAME - START/STOP SCAN
-        self.frame_start_stop = Frame(self.labelframe_analysis)
+        self.frame_start_stop = Frame(self.labelframe_scan)
         self.frame_start_stop.grid(column=3, row=0, padx=380, pady=5)
 
         # BUTTON - START SCAN
@@ -168,24 +168,24 @@ class View:
         self.button_stop_scan.grid(column=2, row=0, padx=5)
 
         # LABEL - CHANNELS
-        self.label_channels = Label(self.labelframe_more_options, text="Channel: ", padx=10, pady=10)
+        self.label_channels = Label(self.labelframe_filters, text="Channel: ", padx=10, pady=10)
         self.label_channels.grid(column=1, row=0)
 
         # COMBO BOX - CHANNELS
         self.channelVar = StringVar()
-        self.channels_combobox = ttk.Combobox(self.labelframe_more_options, textvariable=self.channelVar)
+        self.channels_combobox = ttk.Combobox(self.labelframe_filters, textvariable=self.channelVar)
         self.channels_combobox['values'] = self.channels
         self.channels_combobox.bind("<<ComboboxSelected>>")
         self.channels_combobox.current(0)
         self.channels_combobox.grid(column=2, row=0)
 
         # LABEL - ENCRYPTIONS
-        self.label_encryptions = Label(self.labelframe_more_options, text="Encryption: ")
+        self.label_encryptions = Label(self.labelframe_filters, text="Encryption: ")
         self.label_encryptions.grid(column=3, row=0, padx=5)
 
         # COMBO BOX - ENCRYPTOION
         self.encryptionVar = StringVar()
-        self.encryption_combobox = ttk.Combobox(self.labelframe_more_options, textvariable=self.encryptionVar)
+        self.encryption_combobox = ttk.Combobox(self.labelframe_filters, textvariable=self.encryptionVar)
         self.encryption_combobox['values'] = self.encryption_types
         self.encryption_combobox.current(0)
         self.encryption_combobox.bind("<<ComboboxSelected>>")
@@ -193,7 +193,7 @@ class View:
 
         # CHECKBOX - CLIENTS
         self.clients_status = BooleanVar()
-        self.clients_checkbox = Checkbutton(self.labelframe_more_options, text="Only clients",
+        self.clients_checkbox = Checkbutton(self.labelframe_filters, text="Only clients",
                                             variable=self.clients_status)
         self.clients_checkbox.grid(column=5, row=0, padx=15)
 
@@ -232,6 +232,11 @@ class View:
                                               command=self.silent_mode)
         self.checkbutton_silent.grid(column=2, row=0, padx=5, pady=5, sticky=W)
 
+        # CHECKBUTTON - SILENT MODE
+        self.checkbutton_silent = Button(self.labelframe_sel_net, text=" Select wordlist",
+                                              command=self.select_custom_wordlist)
+        self.checkbutton_silent.grid(column=3, row=0, padx=5, pady=5, sticky=W)
+
         # LABEL - NULL LABEL
         self.null_label = Label(self.labelframe_attack_options, text=" ")
         self.null_label.grid(column=0, row=0, padx=5)
@@ -243,13 +248,6 @@ class View:
         # BUTTON - STOP ATTACK WEP
         self.button_stop_attack_wep = Button(self.labelframe_wep, text='Stop Attack', command=self.stop_attack)
         self.button_stop_attack_wep.grid(column=1, row=0, padx=5)
-
-        """
-        # BUTTON - TEMPORARY FILES BUTTON WEP
-        self.temporary_files_button_wep = Button(self.labelframe_wep, text="Temporary files location",
-                                                 command=self.temporary_files_location)
-        self.temporary_files_button_wep.grid(column=2, row=0, padx=5)
-        """
 
         # BUTTON - SCAN WPA
         self.button_scan_wpa = Button(self.labelframe_wpa, text="Scan", command=self.start_scan_wpa)
@@ -266,13 +264,6 @@ class View:
         # BUTTON - STOP ATTACK WPA
         self.button_stop_attack_wpa = Button(self.labelframe_wpa, text='Stop Attack', command=self.stop_attack)
         self.button_stop_attack_wpa.grid(column=3, row=0, padx=5)
-
-        """
-        # BUTTON - TEMPORARY FILES BUTTON WPA
-        self.temporary_files_button_wpa = Button(self.labelframe_wpa, text="Temporary files location",
-                                                 command=self.temporary_files_location)
-        self.temporary_files_button_wpa.grid(column=4, row=0, padx=5)
-        """
 
         if not headless:
             self.root.mainloop()
@@ -571,17 +562,13 @@ class View:
         """
 
         if operation == 0:
-            print("CUSTIMIZE MAC OPERATION")
             self.customize_mac(value)
         elif operation == 1:
-            print("RANDOMIZE MAC OPERATION")
             self.randomize_mac()
         elif operation == 2:
-            print("RESTORE MAC OPERATION")
             self.restore_mac()
         elif operation == 3:
             self.mac_spoofing_status = value
-            print("MAC SPOOFING OPERATION: " + str(self.mac_spoofing_status))
             self.spoofing_mac(value)
         elif operation == 4:
             self.send_notify(Operation.PATH_GENERATED_LISTS, value)
@@ -612,6 +599,9 @@ class View:
         self.root.update()
         print(warning_notification)
 
+    ##########################################
+    # SET NOTIFICATIONS TITLES AS PARAMETERS #
+    ##########################################
     def show_info_notification(self, message):
         """
         Shows a info popup window with a custom message.
@@ -729,6 +719,7 @@ class View:
 
         :author: Pablo Sanz Alguacil
         """
+
         if state:
             status = ACTIVE
         else:
@@ -749,8 +740,19 @@ class View:
                 self.button_stop_attack_wep['state'] = status
 
     def show_about(self):
+        """
+        Creates a new About object
+
+        :author: Pablo Sanz Alguacil
+        """
         About()
 
     def open_link(event):
+        """
+        Opens the URL on a new tab in the default web browser.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         url = "http://www.github.com/pabloibiza/WiCC"
         webbrowser.open_new_tab(url)

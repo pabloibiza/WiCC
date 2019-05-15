@@ -56,5 +56,11 @@ class About:
         self.label_collaborators.pack(side=RIGHT)
 
     def open_link(event):
+        """
+        Opens the URL on a new tab in the default web browser.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         url = "http://www.github.com/pabloibiza/WiCC"
         webbrowser.open_new_tab(url)
