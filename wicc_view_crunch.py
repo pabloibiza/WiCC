@@ -24,6 +24,7 @@ class GenerateWordlist:
         self.main_view = view
 
         self.root = Toplevel()
+        self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
         self.root.geometry('440x540')
 
         self.root.resizable(width=False, height=False)
@@ -144,3 +145,13 @@ class GenerateWordlist:
         """
 
         self.main_view.get_notify_childs(5, self.words)
+
+    def destroy_window(self):
+        """
+        Enables all buttons in the main window and destroys this window.
+
+        :author: Pablo Sanz Alguacil
+        """
+
+        self.main_view.disable_window(False)
+        self.root.destroy()

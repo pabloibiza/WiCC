@@ -7,11 +7,11 @@
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
 
+from wicc_view_popup import PopUpWindow
 from tkinter import *
 from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
     Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
     HORIZONTAL, END, FALSE, IntVar, StringVar, messagebox, filedialog, LabelFrame
-
 from wicc_view_right_click import rClicker
 
 
@@ -24,6 +24,7 @@ class ViewMac:
         self.main_view = view
         self.spoofing_status = spoofing_status
         self.build_window()
+        self.popup_gen = PopUpWindow()
         self.set_spoofing_checkbutton()
         self.root.attributes('-topmost', True)
         self.root.mainloop()
@@ -36,6 +37,7 @@ class ViewMac:
         """
 
         self.root = Toplevel()
+        self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
         self.root.geometry('440x490')
         self.root.resizable(width=False, height=False)
         self.root.title('WiCC - Mac Changer Tools')
@@ -136,7 +138,7 @@ class ViewMac:
         if boolean_fg and colon_count == 5:
             self.notify_view(0, self.entry_custom_mac.get())
         else:
-            self.main_view.show_warning_notification("Address not valid")
+            self.popup_gen.popup_warning("Warning", "Address not valid")
 
     def randomize_mac(self):
         """
@@ -200,7 +202,7 @@ class ViewMac:
 
     def destroy_window(self):
         """
-        Sends the order and words array to the main view.
+        Enables all buttons in the main window and destroys this window.
 
         :author: Pablo Sanz Alguacil
         """
