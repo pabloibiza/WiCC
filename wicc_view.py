@@ -196,22 +196,6 @@ class View:
         self.clients_checkbox = Checkbutton(self.labelframe_more_options, text="Only clients",
                                             variable=self.clients_status)
         self.clients_checkbox.grid(column=5, row=0, padx=15)
-        """
-        # BUTTON - CHANGE MAC
-        self.button_mac_menu = Button(self.labelframe_more_options, text="MAC menu", state=ACTIVE,
-                                      command=self.mac_tools_window)
-        self.button_mac_menu.grid(column=6, row=0, padx=5)
-
-        # BUTTON - CUSTOM WORDLIST
-        self.custom_wordlist_path = Button(self.labelframe_more_options, text="Select wordlist",
-                                           command=self.select_custom_wordlist)
-        self.custom_wordlist_path.grid(column=8, row=0, padx=5)
-
-        # BUTTON - GENERATE WORDLIST
-        self.generate_wordlist = Button(self.labelframe_more_options, text="Generate wordlist",
-                                        command=self.generate_wordlists_window)
-        self.generate_wordlist.grid(column=10, row=0, padx=5)
-        """
 
         # TREEVIEW - NETWORKS
         self.networks_treeview = ttk.Treeview(self.labelframe_networks)
@@ -299,13 +283,13 @@ class View:
             network_enc = self.networks_treeview.item(current_item)['values'][3]
             network_id = self.networks_treeview.item(current_item)['values'][0]
             self.labelframe_attack_options.pack_forget()
-            if ("WEP" in network_enc):
+            if "WEP" in network_enc:
                 self.labelframe_wpa.pack_forget()
                 self.labelframe_wep.pack(fill="both", expand="yes")
-            elif ("WPA" in network_enc):
+            elif "WPA" in network_enc:
                 self.labelframe_wep.pack_forget()
                 self.labelframe_wpa.pack(fill="both", expand="yes")
-            elif (network_enc == "OPN"):
+            elif network_enc == "OPN":
                 self.popup_gen.popup_info("No valid", "This network is open")
 
             self.send_notify(Operation.SELECT_NETWORK, network_id)
@@ -343,9 +327,6 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        #self.button_mac_menu['state'] = DISABLED
-        #self.custom_wordlist_path['state'] = DISABLED
-        #self.generate_wordlist['state'] = DISABLED
         self.interfaces_combobox['state'] = DISABLED
         self.encryption_combobox['state'] = DISABLED
         self.channels_combobox['state'] = DISABLED
@@ -355,12 +336,10 @@ class View:
         self.checkbutton_silent['state'] = DISABLED
         self.button_start_attack_wep['state'] = DISABLED
         self.button_stop_attack_wep['state'] = DISABLED
-        #self.temporary_files_button_wep['state'] = DISABLED
         self.button_scan_wpa['state'] = DISABLED
         self.button_stop_scan_wpa['state'] = DISABLED
         self.button_start_attack_wpa['state'] = DISABLED
         self.button_stop_attack_wpa['state'] = DISABLED
-        #self.temporary_files_button_wpa['state'] = DISABLED
         self.button_stop_scan['state'] = ACTIVE
 
     def enable_buttons(self):
@@ -370,9 +349,6 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        #self.button_mac_menu['state'] = ACTIVE
-        #self.custom_wordlist_path['state'] = ACTIVE
-        #self.generate_wordlist['state'] = ACTIVE
         self.interfaces_combobox['state'] = ACTIVE
         self.encryption_combobox['state'] = ACTIVE
         self.channels_combobox['state'] = ACTIVE
@@ -382,12 +358,10 @@ class View:
         self.checkbutton_silent['state'] = ACTIVE
         self.button_start_attack_wep['state'] = ACTIVE
         self.button_stop_attack_wep['state'] = ACTIVE
-        #self.temporary_files_button_wep['state'] = ACTIVE
         self.button_scan_wpa['state'] = ACTIVE
         self.button_stop_scan_wpa['state'] = ACTIVE
         self.button_start_attack_wpa['state'] = ACTIVE
         self.button_stop_attack_wpa['state'] = ACTIVE
-        #self.temporary_files_button_wpa['state'] = ACTIVE
         self.button_stop_scan['state'] = DISABLED
 
     def start_attack(self):
@@ -445,10 +419,10 @@ class View:
 
         :author: Pablo Sanz Alguacil
         """
-        if (self.interfaceVar.get() != ""):
+        if self.interfaceVar.get() != "":
             currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
                                                    + "\n\nAre you sure you want to change it? ")
-            if (currentmac_alert == True):
+            if currentmac_alert == True:
                 self.send_notify(Operation.RANDOMIZE_MAC, self.interfaceVar.get())
                 new_mac_alert = messagebox.showinfo("", "Your new MAC is: " + self.current_mac())
         else:
@@ -463,11 +437,11 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        if (self.interfaceVar.get() != ""):
+        if self.interfaceVar.get() != "":
             currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
                                                    + "\n\nAre you sure you want to change it for\n" +
                                                    new_mac + " ?")
-            if (currentmac_alert == True):
+            if currentmac_alert == True:
                 self.send_notify(Operation.CUSTOMIZE_MAC, (self.interfaceVar.get(), new_mac))
                 new_mac_alert = messagebox.showinfo("", "Your new MAC is: " + self.current_mac())
         else:
@@ -481,10 +455,10 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        if (self.interfaceVar.get() != ""):
+        if self.interfaceVar.get() != "":
             currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
                                                    + "\n\nAre you sure you want to restore original?")
-            if (currentmac_alert == True):
+            if currentmac_alert == True:
                 self.send_notify(Operation.RESTORE_MAC, self.interfaceVar.get())
                 new_mac_alert = messagebox.showinfo("", "Your new MAC is: " + self.current_mac())
         else:
@@ -498,7 +472,7 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        if (self.interfaceVar.get() != ""):
+        if self.interfaceVar.get() != "":
             self.send_notify(Operation.SPOOF_MAC, status)
         else:
             self.show_warning_notification("No interface selected. Close the window and select one")
@@ -535,13 +509,13 @@ class View:
         """
 
         filters_status = ["ALL", False, False, "ALL"]
-        if (self.encryptionVar.get() != "ALL"):
+        if self.encryptionVar.get() != "ALL":
             print("ENCRYPTION FILTER ENABLED")
             filters_status[0] = self.encryptionVar.get()
-        if (self.clients_status.get() == True):
+        if self.clients_status.get() == True:
             print("CLIENTS FILTER ENABLED")
             filters_status[2] = True
-        if (self.channelVar.get() != "ALL"):
+        if self.channelVar.get() != "ALL":
             print("CHANNELS FILTER ENABLED")
             filters_status[3] = self.channelVar.get()
         return filters_status
@@ -563,7 +537,7 @@ class View:
             self.interfaces_combobox['values'] = interfaces_list
             self.interfaces_combobox.update()
 
-        if (self.networks_old != networks):
+        if self.networks_old != networks:
             self.networks_old = networks
             self.networks_treeview.delete(*self.networks_treeview.get_children())
             for item in networks:
@@ -596,22 +570,22 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        if (operation == 0):
+        if operation == 0:
             print("CUSTIMIZE MAC OPERATION")
             self.customize_mac(value)
-        elif (operation == 1):
+        elif operation == 1:
             print("RANDOMIZE MAC OPERATION")
             self.randomize_mac()
-        elif (operation == 2):
+        elif operation == 2:
             print("RESTORE MAC OPERATION")
             self.restore_mac()
-        elif (operation == 3):
+        elif operation == 3:
             self.mac_spoofing_status = value
             print("MAC SPOOFING OPERATION: " + str(self.mac_spoofing_status))
             self.spoofing_mac(value)
-        elif (operation == 4):
+        elif operation == 4:
             self.send_notify(Operation.PATH_GENERATED_LISTS, value)
-        elif (operation == 5):
+        elif operation == 5:
             self.send_notify(Operation.GENERATE_LIST, value)
 
     def get_spoofing_status(self):
@@ -780,4 +754,3 @@ class View:
     def open_link(event):
         url = "http://www.github.com/pabloibiza/WiCC"
         webbrowser.open_new_tab(url)
-
