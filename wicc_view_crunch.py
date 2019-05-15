@@ -23,9 +23,9 @@ class GenerateWordlist:
     def __init__(self, view):
         self.main_view = view
 
-        self.root = Tk()
+        self.root = Toplevel()
         self.root.geometry('440x540')
-        self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
+
         self.root.resizable(width=False, height=False)
         self.root.title('WiCC - Generate Wordlist')
 
@@ -97,16 +97,6 @@ class GenerateWordlist:
         # BUTTON - GENERATE LIST
         self.button_generate = Button(self.labelframe_controls, text="Generate", command=self.generate_list)
         self.button_generate.grid(column=2, row=0, padx=5, pady=10)
-
-    def destroy_window(self):
-        """
-        Enables the buttons in the main window and then destroy this window.
-
-        :author: Pablo Sanz Alguacil
-        """
-
-        self.main_view.disable_window(False)
-        self.root.destroy()
 
     def add_word(self):
         """

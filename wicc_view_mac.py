@@ -35,9 +35,8 @@ class ViewMac:
         :author: Pablo Sanz Alguacil
         """
 
-        self.root = Tk()
+        self.root = Toplevel()
         self.root.geometry('440x490')
-        self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
         self.root.resizable(width=False, height=False)
         self.root.title('WiCC - Mac Changer Tools')
 

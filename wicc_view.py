@@ -16,6 +16,7 @@ from wicc_view_crunch import GenerateWordlist
 from wicc_view_mac import ViewMac
 from wicc_view_splash import Splash
 
+
 class View:
     control = ""
     interfaces = ""
@@ -27,11 +28,11 @@ class View:
     encryption_types = ('ALL', 'WEP', 'WPA')
     channels = ('ALL', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14')
     mac_spoofing_status = False
+    silent_mode_status = False
     icon_path = "Resources/icon.png"
     file_icon_path = "Resources/file_icon.png"
     tools_icon_path = "Resources/tools_icon.png"
     help_icon_path = "Resources/help_icon.png"
-
 
     def __init__(self, control):
         self.control = control
@@ -69,9 +70,6 @@ class View:
         self.menu1 = Menu(self.menubar)
         self.menu2 = Menu(self.menubar)
         self.menu3 = Menu(self.menubar)
-        #self.menubar.add_cascade(menu=self.menu1, label='File', image=self.file_icon)
-        #self.menubar.add_cascade(menu=self.menu2, label='Tools', image=self.tools_icon)
-        #self.menubar.add_cascade(menu=self.menu3, label='Help', image=self.help_icon)
         self.menubar.add_cascade(menu=self.menu1, label='File')
         self.menubar.add_cascade(menu=self.menu2, label='Tools')
         self.menubar.add_cascade(menu=self.menu3, label='Help')
@@ -126,10 +124,10 @@ class View:
         self.labelframe_networks = LabelFrame(self.root, text="Available Networks")
         self.labelframe_networks.pack(fill="both", expand="yes")
 
-        # BUTTON - SELECT NETWORK
-        self.button_select_network = Button(self.root, text="Select network",
-                                            command=self.select_network)
-        self.button_select_network.pack(expand="yes")
+        # LABEL FRAME - SELECT NETWORK NETWORK
+        self.labelframe_sel_net = LabelFrame(self.root, text="")
+        self.labelframe_sel_net.pack(fill="both", expand="yes")
+        self.labelframe_sel_net.grid_columnconfigure(1, weight=1)
 
         # LABEL FRAME - ATTACK OPTIONS
         self.labelframe_attack_options = LabelFrame(self.root, text="Attack Options")
@@ -175,7 +173,7 @@ class View:
 
         # BUTTON - STOP SCAN
         self.button_stop_scan = Button(self.labelframe_analysis, text='Stop scan', state=DISABLED,
-                                           command=self.stop_scan)
+                                       command=self.stop_scan)
         self.button_stop_scan.grid(column=11, row=0, padx=5)
 
         # LABEL - CHANNELS
@@ -193,22 +191,22 @@ class View:
         # CHECKBOX - CLIENTS
         self.clients_status = BooleanVar()
         self.clients_checkbox = Checkbutton(self.labelframe_more_options, text="Only clients",
-                                                variable=self.clients_status)
+                                            variable=self.clients_status)
         self.clients_checkbox.grid(column=4, row=0, padx=5)
 
         # BUTTON - CHANGE MAC
-        self.button_mac_menu= Button(self.labelframe_more_options, text="MAC menu", state=ACTIVE,
-                                     command=self.mac_tools_window)
+        self.button_mac_menu = Button(self.labelframe_more_options, text="MAC menu", state=ACTIVE,
+                                      command=self.mac_tools_window)
         self.button_mac_menu.grid(column=6, row=0, padx=5)
 
         # BUTTON - CUSTOM WORDLIST
         self.custom_wordlist_path = Button(self.labelframe_more_options, text="Select wordlist",
-                                               command=self.select_custom_wordlist)
+                                           command=self.select_custom_wordlist)
         self.custom_wordlist_path.grid(column=8, row=0, padx=5)
 
         # BUTTON - GENERATE WORDLIST
         self.generate_wordlist = Button(self.labelframe_more_options, text="Generate wordlist",
-                                            command=self.generate_wordlists_window)
+                                        command=self.generate_wordlists_window)
         self.generate_wordlist.grid(column=10, row=0, padx=5)
 
         # TREEVIEW - NETWORKS
@@ -238,55 +236,53 @@ class View:
 
         self.networks_treeview.pack(fill=X)
 
+        # BUTTON - SELECT NETWORK
+        self.button_select_network = Button(self.labelframe_sel_net, text="Select network",
+                                            command=self.select_network)
+        self.button_select_network.grid(column=1, row=0, padx=5, pady=5, sticky=W + E + N + S)
+
+        # CHECKBUTTON - SILENT MODE
+        self.checkbutton_silent = Checkbutton(self.labelframe_sel_net, text="Silent Mode",
+                                              command=self.silent_mode)
+        self.checkbutton_silent.grid(column=2, row=0, padx=5, pady=5, sticky=W)
+
         # LABEL - NULL LABEL
         self.null_label = Label(self.labelframe_attack_options, text=" ")
         self.null_label.grid(column=0, row=0, padx=5)
 
-        # CHECKBUTTON - SILENT MODE WEP
-        self.silent_mode_status_wep = BooleanVar()
-        self.checkbutton_silent_wep = Checkbutton(self.labelframe_wep, text="Silent Mode",
-                                            variable=self.silent_mode_status_wep)
-        self.clients_checkbox.grid(column=0, row=0, padx=5)
+        # BUTTON - START ATTACK WEP
+        self.button_start_attack_wep = Button(self.labelframe_wep, text='Attack', command=self.start_attack)
+        self.button_start_attack_wep.grid(column=0, row=0, padx=5)
+
+        # BUTTON - STOP ATTACK WEP
+        self.button_stop_attack_wep = Button(self.labelframe_wep, text='Stop Attack', command=self.stop_attack)
+        self.button_stop_attack_wep.grid(column=1, row=0, padx=5)
 
         # BUTTON - TEMPORARY FILES BUTTON WEP
         self.temporary_files_button_wep = Button(self.labelframe_wep, text="Temporary files location",
                                                  command=self.temporary_files_location)
         self.temporary_files_button_wep.grid(column=2, row=0, padx=5)
 
-        # BUTTON - START ATTACK WEP
-        self.button_start_attack_wep = Button(self.labelframe_wep, text='Attack', command=self.start_attack)
-        self.button_start_attack_wep.grid(column=4, row=0, padx=5)
-
-        # BUTTON - STOP ATTACK WEP
-        self.button_stop_attack_wep = Button(self.labelframe_wep, text='Stop Attack', command=self.stop_attack)
-        self.button_stop_attack_wep.grid(column=6, row=0, padx=5)
-
-        # CHECKBUTTON - SILENT MODE WPA
-        self.silent_mode_status_wpa = BooleanVar()
-        self.checkbutton_silent_wpa = Checkbutton(self.labelframe_wpa, text="Silent Mode",
-                                              variable=self.silent_mode_status_wpa)
-        self.clients_checkbox.grid(column=0, row=0, padx=5)
-
         # BUTTON - SCAN WPA
         self.button_scan_wpa = Button(self.labelframe_wpa, text="Scan", command=self.start_scan_wpa)
-        self.button_scan_wpa.grid(column=1, row=0, padx=5)
+        self.button_scan_wpa.grid(column=0, row=0, padx=5)
 
         # BUTTON - STOP SCAN WPA
         self.button_scan_wpa = Button(self.labelframe_wpa, text="Stop scan", command=self.stop_scan_wpa)
-        self.button_scan_wpa.grid(column=2, row=0, padx=5)
+        self.button_scan_wpa.grid(column=1, row=0, padx=5)
+
+        # BUTTON - START ATTACK WPA
+        self.button_start_attack_wpa = Button(self.labelframe_wpa, text='Attack', command=self.start_attack)
+        self.button_start_attack_wpa.grid(column=2, row=0, padx=5)
+
+        # BUTTON - STOP ATTACK WPA
+        self.button_stop_attack_wpa = Button(self.labelframe_wpa, text='Stop Attack', command=self.stop_attack)
+        self.button_stop_attack_wpa.grid(column=3, row=0, padx=5)
 
         # BUTTON - TEMPORARY FILES BUTTON WPA
         self.temporary_files_button_wpa = Button(self.labelframe_wpa, text="Temporary files location",
                                                  command=self.temporary_files_location)
-        self.temporary_files_button_wpa.grid(column=3, row=0, padx=5)
-
-        # BUTTON - START ATTACK WPA
-        self.button_start_attack_wpa = Button(self.labelframe_wpa, text='Attack', command=self.start_attack)
-        self.button_start_attack_wpa.grid(column=4, row=0, padx=5)
-
-        # BUTTON - STOP ATTACK WPA
-        self.button_stop_attack_wpa = Button(self.labelframe_wpa, text='Stop Attack', command=self.stop_attack)
-        self.button_stop_attack_wpa.grid(column=5, row=0, padx=5)
+        self.temporary_files_button_wpa.grid(column=4, row=0, padx=5)
 
         if not headless:
             self.root.mainloop()
@@ -296,17 +292,19 @@ class View:
         network_enc = self.networks_treeview.item(current_item)['values'][3]
         network_id = self.networks_treeview.item(current_item)['values'][0]
         self.labelframe_attack_options.pack_forget()
-        if("WEP" in network_enc):
+        if ("WEP" in network_enc):
             self.labelframe_wpa.pack_forget()
             self.labelframe_wep.pack(fill="both", expand="yes")
-        elif("WPA" in network_enc):
+        elif ("WPA" in network_enc):
             self.labelframe_wep.pack_forget()
             self.labelframe_wpa.pack(fill="both", expand="yes")
-        elif(network_enc == "OPN"):
+        elif (network_enc == "OPN"):
             print("This is an open network")
-        else:
-            print("No network selected")
-        self.send_notify(Operation.SELECT_NETWORK, network_id)
+
+        try:
+            self.send_notify(Operation.SELECT_NETWORK, network_id)
+        except:
+            print("No interface selected")
 
     def start_scan(self):
         """
@@ -348,10 +346,9 @@ class View:
         self.clients_checkbox['state'] = DISABLED
         self.button_start_scan['state'] = DISABLED
         self.button_select_network['state'] = DISABLED
-        self.checkbutton_silent_wep['state'] = DISABLED
+        self.checkbutton_silent['state'] = DISABLED
         self.button_stop_attack_wep['state'] = DISABLED
         self.temporary_files_button_wep['state'] = DISABLED
-        self.checkbutton_silent_wpa['state'] = DISABLED
         self.button_scan_wpa['state'] = DISABLED
         self.button_stop_attack_wpa['state'] = DISABLED
         self.temporary_files_button_wpa['state'] = DISABLED
@@ -374,15 +371,13 @@ class View:
         self.clients_checkbox['state'] = ACTIVE
         self.button_start_scan['state'] = ACTIVE
         self.button_select_network['state'] = ACTIVE
-        self.checkbutton_silent_wep['state'] = ACTIVE
+        self.checkbutton_silent['state'] = ACTIVE
         self.button_stop_attack_wep['state'] = ACTIVE
         self.temporary_files_button_wep['state'] = ACTIVE
-        self.checkbutton_silent_wpa['state'] = ACTIVE
         self.button_scan_wpa['state'] = ACTIVE
         self.button_stop_attack_wpa['state'] = ACTIVE
         self.temporary_files_button_wpa['state'] = ACTIVE
         self.button_stop_scan['state'] = DISABLED
-
 
     def start_attack(self):
         """
@@ -401,6 +396,7 @@ class View:
 
         :author: Pablo Sanz Alguacil
         """
+
         self.send_notify(Operation.STOP_RUNNING, "")
 
     def reaper_calls(self):
@@ -492,7 +488,7 @@ class View:
         """
 
         if (self.interfaceVar.get() != ""):
-                self.send_notify(Operation.SPOOF_MAC, status)
+            self.send_notify(Operation.SPOOF_MAC, status)
         else:
             self.show_warning_notification("No interface selected. Close the window and select one")
 
@@ -514,6 +510,7 @@ class View:
     [2]CLIENTS (boolean)
     [3]CHANNEL (string)
     """
+
     def apply_filters(self):
         """
         [0]ENCRYPTION (string)
@@ -591,22 +588,22 @@ class View:
         :author: Pablo Sanz Alguacil
         """
 
-        if(operation == 0):
+        if (operation == 0):
             print("CUSTIMIZE MAC OPERATION")
             self.customize_mac(value)
-        elif(operation == 1):
+        elif (operation == 1):
             print("RANDOMIZE MAC OPERATION")
             self.randomize_mac()
-        elif(operation == 2):
+        elif (operation == 2):
             print("RESTORE MAC OPERATION")
             self.restore_mac()
-        elif(operation == 3):
+        elif (operation == 3):
             self.mac_spoofing_status = value
             print("MAC SPOOFING OPERATION: " + str(self.mac_spoofing_status))
             self.spoofing_mac(value)
-        elif(operation == 4):
+        elif (operation == 4):
             self.send_notify(Operation.PATH_GENERATED_LISTS, value)
-        elif(operation == 5):
+        elif (operation == 5):
             self.send_notify(Operation.GENERATE_LIST, value)
 
     def get_spoofing_status(self):
@@ -618,7 +615,6 @@ class View:
         """
 
         return self.mac_spoofing_status
-
 
     ##########################################
     # SET NOTIFICATIONS TITLES AS PARAMETERS #
@@ -670,10 +666,10 @@ class View:
         if value:
             self.disable_buttons()
             self.button_stop_scan['state'] = DISABLED
-            #self.button_start_attack['state'] = DISABLED
+            # self.button_start_attack['state'] = DISABLED
         elif not value:
             self.enable_buttons()
-            #self.button_start_attack['state'] = ACTIVE
+            # self.button_start_attack['state'] = ACTIVE
 
     def generate_wordlists_window(self):
         """
@@ -693,8 +689,8 @@ class View:
         """
 
         select_window = filedialog.askdirectory(parent=self.root,
-                                         initialdir='/home/$USER',
-                                         title='Choose directory')
+                                                initialdir='/home/$USER',
+                                                title='Choose directory')
         if select_window:
             try:
                 self.send_notify(Operation.SELECT_TEMPORARY_FILES_LOCATION, select_window)
@@ -729,5 +725,51 @@ class View:
 
         self.send_notify(Operation.STOP_SCAN_WPA, "")
 
+    def silent_mode(self):
+        """
+        Sends an order to control to set or unset the silent mode. Saves the status in a local variable.
+
+        :author: Pablo Sanz Alguacil
+        """
+
+        if self.silent_mode_status:
+            self.silent_mode_status = False
+            self.send_notify(Operation.SILENT_SCAN, False)
+        else:
+            self.silent_mode_status = True
+            self.send_notify(Operation.SILENT_SCAN, True)
+
+    def get_notify_buttons(self, buttons, state):
+        """
+        Gets a notification to enable or disable buttons from the wep and wpa labelframes.
+        :param buttons: Array[String] names of the buttons to be dissabled.
+        :param state: boolean
+
+        :author: Pablo Sanz Alguacil
+        """
+        if state:
+            status = ACTIVE
+        else:
+            status = DISABLED
+
+        for button in buttons:
+            if button == "scan":
+                self.button_scan_wpa['state'] = status
+            elif button == "stop_scan":
+                self.button_stop_attack_wpa['state'] = status
+            elif button == "attack_wpa":
+                self.button_start_attack_wpa['state'] = status
+            elif button == "stop_attack_wpa":
+                self.button_stop_attack_wpa['state'] = status
+            elif button == "temporary_files_location_wpa":
+                self.temporary_files_button_wpa['state'] = status
+            elif button == "temporary_files_location_wep":
+                self.temporary_files_button_wep['state'] = status
+            elif button == "attack_wep":
+                self.button_start_attack_wep['state'] = status
+            elif button == "stop_attack_wep":
+                self.button_stop_attack_wep['state'] = status
+
     def test_method(self):
-        messagebox.showinfo("funciona", "esta wea funciona")
+        pass
+
