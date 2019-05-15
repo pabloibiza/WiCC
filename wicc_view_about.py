@@ -55,9 +55,6 @@ class About:
                                      "\n\tAdam Chalkley (Research)")
         self.label_collaborators.pack(side=RIGHT)
 
-        self.label_link = Label(self.root, text="http://www.github.com/pabloibiza/WiCC", fg="cyan", cursor="hand2")
-        self.label_link.pack(side=BOTTOM)
-
     def open_link(event):
         url = "http://www.github.com/pabloibiza/WiCC"
-        webbrowser.open_new(url)
+        webbrowser.open_new_tab(url)

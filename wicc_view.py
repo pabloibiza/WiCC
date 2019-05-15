@@ -6,6 +6,7 @@
     Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
+import webbrowser
 from tkinter import *
 from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
     Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
@@ -106,7 +107,7 @@ class View:
 
         # MENU 3
         self.menu3.add_command(label='Help',
-                               command=self.show_help,
+                               command=self.open_link(),
                                underline=0,
                                compound=LEFT)
 
@@ -776,9 +777,7 @@ class View:
     def show_about(self):
         About()
 
-    def show_help(self):
-        pass
-
-    def test(self):
-        pass
+    def open_link(event):
+        url = "http://www.github.com/pabloibiza/WiCC"
+        webbrowser.open_new_tab(url)
 
