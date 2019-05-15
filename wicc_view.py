@@ -6,12 +6,11 @@
     Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
     Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
 """
+
 import webbrowser
 from tkinter import *
-from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
-    Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
-    HORIZONTAL, END, FALSE, IntVar, StringVar, messagebox, filedialog
-
+from tkinter import Tk, ttk, Frame, Button, Label, Checkbutton, Menu, RIGHT, N, E, S, W, END, StringVar,\
+    messagebox, filedialog
 from wicc_operations import Operation
 from wicc_view_crunch import GenerateWordlist
 from wicc_view_mac import ViewMac
@@ -619,7 +618,7 @@ class View:
     def disable_window(self, value):
         """
         Disables all buttons
-        :param value: boolean. True for disable, False for enable
+        :param value: boolean. True for disable, False for enable.
 
         :author: Pablo Sanz Alguacil
         """
@@ -627,10 +626,8 @@ class View:
         if value:
             self.set_buttons(False)
             self.button_stop_scan['state'] = DISABLED
-            # self.button_start_attack['state'] = DISABLED
         elif not value:
             self.set_buttons(True)
-            # self.button_start_attack['state'] = ACTIVE
 
     def generate_wordlists_window(self):
         """
@@ -640,7 +637,7 @@ class View:
         """
 
         self.disable_window(True)
-        wordlist_generator_window = GenerateWordlist(self)
+        GenerateWordlist(self)
 
     def temporary_files_location(self):
         """
@@ -650,7 +647,7 @@ class View:
         """
 
         select_window = filedialog.askdirectory(parent=self.root,
-                                                initialdir='/home/$USER',
+                                                initialdir='/home',
                                                 title='Choose directory')
         if select_window:
             try:
