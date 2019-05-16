@@ -27,7 +27,6 @@ class Splash:
         y = (hs / 2) - (self.height / 2)
         root.geometry('%dx%d+%d+%d' % (self.width, self.height, x, y))
 
-
         image = tk.PhotoImage(file=self.image_file)
         canvas = tk.Canvas(root, height=self.height, width=self.width, bg="brown")
         canvas.create_image(self.width/2, self.height/2, image=image)

@@ -9,7 +9,7 @@
 
 import webbrowser
 from tkinter import *
-from tkinter import Tk, ttk, Frame, Button, Label, Checkbutton, Menu, RIGHT, N, E, S, W, END, StringVar,\
+from tkinter import Tk, ttk, Frame, Button, Label, Checkbutton, Menu, RIGHT, N, E, S, W, END, StringVar, \
     messagebox, filedialog
 from wicc_operations import Operation
 from wicc_view_crunch import GenerateWordlist
@@ -233,7 +233,7 @@ class View:
 
         # CHECKBUTTON - SILENT MODE
         self.button_select_wordlist = Button(self.labelframe_sel_net, text=" Select wordlist",
-                                              command=self.select_custom_wordlist)
+                                             command=self.select_custom_wordlist)
         self.button_select_wordlist.grid(column=3, row=0, padx=5, pady=5, sticky=W)
 
         # LABEL - NULL LABEL
@@ -273,6 +273,7 @@ class View:
             network_enc = self.networks_treeview.item(current_item)['values'][3]
             network_id = self.networks_treeview.item(current_item)['values'][0]
             self.labelframe_attack_options.pack_forget()
+
             if "WEP" in network_enc:
                 self.labelframe_wpa.pack_forget()
                 self.labelframe_wep.pack(fill="both", expand="yes")
@@ -402,9 +403,9 @@ class View:
         :author: Pablo Sanz Alguacil
         """
         if self.interfaceVar.get() != "":
-            currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
-                                                   + "\n\nAre you sure you want to change it? ")
-            if currentmac_alert == True:
+            current_mac_alert = self.popup_gen.popup_yesno("", "Your current MAC is: " + self.current_mac()
+                                                           + "\n\nAre you sure you want to change it? ")
+            if current_mac_alert:
                 self.send_notify(Operation.RANDOMIZE_MAC, self.interfaceVar.get())
                 self.popup_gen.popup_info("", "Your new MAC is: " + self.current_mac())
         else:
@@ -420,10 +421,10 @@ class View:
         """
 
         if self.interfaceVar.get() != "":
-            currentmac_alert = self.popup_gen.popup_yesno("", "Your current MAC is: " + self.current_mac()
-                                                   + "\n\nAre you sure you want to change it for\n" +
-                                                   new_mac + " ?")
-            if currentmac_alert == True:
+            current_mac_alert = self.popup_gen.popup_yesno("", "Your current MAC is: " + self.current_mac()
+                                                           + "\n\nAre you sure you want to change it for\n" +
+                                                           new_mac + " ?")
+            if current_mac_alert:
                 self.send_notify(Operation.CUSTOMIZE_MAC, (self.interfaceVar.get(), new_mac))
                 self.popup_gen.popup_info("", "Your new MAC is: " + self.current_mac())
         else:
@@ -438,9 +439,9 @@ class View:
         """
 
         if self.interfaceVar.get() != "":
-            currentmac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
-                                                   + "\n\nAre you sure you want to restore original?")
-            if currentmac_alert == True:
+            current_mac_alert = messagebox.askyesno("", "Your current MAC is: " + self.current_mac()
+                                                    + "\n\nAre you sure you want to restore original?")
+            if current_mac_alert:
                 self.send_notify(Operation.RESTORE_MAC, self.interfaceVar.get())
                 self.popup_gen.popup_info("", "Your new MAC is: " + self.current_mac())
         else:
@@ -457,7 +458,7 @@ class View:
         if self.interfaceVar.get() != "":
             self.send_notify(Operation.SPOOF_MAC, status)
         else:
-            self.popup_gen.popup_warning("No interface selected. Close the window and select one")
+            self.popup_gen.popup_warning("", "No interface selected. Close the window and select one")
 
     def mac_tools_window(self):
         """
@@ -493,7 +494,7 @@ class View:
         filters_status = ["ALL", False, False, "ALL"]
         if self.encryptionVar.get() != "ALL":
             filters_status[0] = self.encryptionVar.get()
-        if self.clients_status.get() == True:
+        if self.clients_status.get():
             filters_status[2] = True
         if self.channelVar.get() != "ALL":
             filters_status[3] = self.channelVar.get()
@@ -652,6 +653,7 @@ class View:
         if select_window:
             try:
                 self.send_notify(Operation.SELECT_TEMPORARY_FILES_LOCATION, select_window)
+
             except:
                 messagebox.showerror("Error", "Failed to set directory \n'%s'" % select_window)
                 return
@@ -725,7 +727,8 @@ class View:
             elif button == "stop_attack_wep":
                 self.button_stop_attack_wep['state'] = status
 
-    def show_about(self):
+    @staticmethod
+    def show_about():
         """
         Creates a new About object
 
@@ -733,7 +736,8 @@ class View:
         """
         About()
 
-    def open_link(event):
+    @staticmethod
+    def open_link():
         """
         Opens the URL on a new tab in the default web browser.
 
