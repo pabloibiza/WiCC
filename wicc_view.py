@@ -265,7 +265,10 @@ class View:
         self.button_stop_attack_wpa.grid(column=3, row=0, padx=5)
 
         if not headless:
-            self.root.mainloop()
+            self.set_mainloop()
+
+    def set_mainloop(self):
+        self.root.mainloop()
 
     def select_network(self):
         try:
@@ -286,7 +289,7 @@ class View:
             self.send_notify(Operation.SELECT_NETWORK, network_id)
 
         except:
-            self.popup_gen.popup_error("Error", "No network selected")
+            self.send_notify(Operation.SELECT_NETWORK, "")
 
     def start_scan(self):
         """
@@ -500,6 +503,13 @@ class View:
             filters_status[3] = self.channelVar.get()
         return filters_status
 
+    def update(self):
+        #self.root.destroy()
+        self.update()
+        self.root.focus_force()
+        #self.root.mainloop()
+        #self.set_mainloop()
+
     def get_notify(self, interfaces, networks):
         """
         Introduces the interfaces and networks received in their respective structures.
@@ -522,7 +532,7 @@ class View:
             self.networks_treeview.delete(*self.networks_treeview.get_children())
             for item in networks:
                 self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6],
-                                                                              item[9] + " dbi", "yes", item[16]))
+                                                                              item[9] + " dbi", item[16]))
                 self.networks_treeview.update()
 
     def current_mac(self):

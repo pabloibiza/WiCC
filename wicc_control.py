@@ -57,6 +57,7 @@ class Control:
     __instance = None  # used for singleton check
     popup = None
     timestamp = 0
+    build_window_thread = None
 
     def __init__(self):
         if not Control.__instance:
@@ -79,7 +80,8 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        self.view.build_window(headless, show_image)
+        #self.view.build_window(headless, show_image)
+        self.run_view_window_thread(headless, show_image)
         self.headless = headless
 
     def execute_command(self, command):
@@ -274,7 +276,8 @@ class Control:
             self.stop_scan()
             self.selectedInterface = ""
             if not self.auto_select:
-                self.show_info_notification("Card already in monitor mode.\nPlease, re-select the wireless interface")
+                self.show_warning_notification("Card already in monitor mode.\n"
+                                               "Please, re-select the wireless interface")
                 self.show_message("Card already in monitor mode")
                 self.view.set_buttons(True)
             self.model.clear_interfaces()
@@ -283,8 +286,14 @@ class Control:
         self.check_monitor_mode()
 
         if not self.allows_monitor:
-            self.show_info_notification("The selected interface doesn't support monitor mode")
+            self.show_warning_notification("The selected interface doesn't support monitor mode")
             return False
+
+        if not self.auto_select:
+            scan_info_thread = threading.Thread(target=self.show_info_notification,
+                                                args=(" ~ Starting network scan ~\n\n"
+                                                "To select a network you will need to stop the scan",))
+            scan_info_thread.start()
 
         self.scan_stopped = False
 
@@ -392,6 +401,34 @@ class Control:
                 return False
                 # sys.exit(1)
 
+    def run_view_window_thread(self, headless, show_image):
+        print("run build window")
+        if self.build_window_thread and self.build_window_thread.is_alive():
+            print("alive")
+            del self.build_window_thread
+            print("killed")
+        else:
+            print("not alive")
+        try:
+            self.build_window_thread = threading.Thread(target=self.view.build_window, args=(headless, show_image,))
+            self.build_window_thread.start()
+            #self.build_window_thread.join(0)
+            print("built")
+        except:
+            print("not built")
+        try:
+            time.sleep(1)
+            self.view.update()
+            print("updated")
+        except:
+            print("not updated")
+            try:
+                time.sleep(1)
+                self.view.update()
+                print("updated 2")
+            except:
+                pass
+
     def set_networks(self, networks):
         """
         Using the model instance, sets the new scanned networks (all of them, overwriting the old ones)
@@ -483,6 +520,9 @@ class Control:
                 self.view.set_buttons(True)
                 self.show_info_notification("Please, select a network interface")
         elif operation == Operation.SELECT_NETWORK:
+            if value == "":
+                self.show_info_notification("Please select a network")
+                return
             self.selectedNetwork = value
             self.set_buttons_wpa_initial()
             self.set_buttons_wep_initial()
@@ -522,8 +562,10 @@ class Control:
             self.scan_wpa()
             pass
         elif operation == Operation.STOP_SCAN_WPA:
+            print("\n\tstop scan wpa")
             pass
         elif operation == Operation.SILENT_SCAN:
+            print(value)
             self.silent_attack = value
 
     def stop_running(self):
@@ -643,16 +685,25 @@ class Control:
 
         self.add_net_attack(network.get_bssid(), self.net_attack)
 
-        self.show_info_notification("Starting scan on WPA network:" + "\n\nName: " +
-                                    network.get_essid() + "\nBSSID: " + network.get_bssid() +
-                                    "\n\nPlease wait up to a few minutes until a handshake is captured")
+        show_info_thread = threading.Thread(target=self.show_info_notification,
+                                            args=("Starting scan on WPA network:" + "\n\nName: " +
+                                            network.get_essid() + "\nBSSID: " + network.get_bssid() +
+                                            "\n\nPlease wait up to a few minutes until a handshake is captured",))
+        show_info_thread.start()
+        test_thread = threading.Thread(target=self.run_view_window_thread, args=(True, True))
+        test_thread.start()
+        #self.run_view_window_thread(True, True)
+        print("\n\t*****window built******\n")
+        #self.view.update()
 
         self.show_message("start scanning")
         self.net_attack.scan_network()
         if not self.net_attack.get_injection_supported() and not self.silent_attack:
-            self.show_info_notification("The selected interface doesnt support packet injection."
-                                        "\nAutomatically switching to silent mode (no client de-authing)"
-                                        "\n\nThe attack will be slower")
+            show_info_thread = threading.Thread(target=self.show_info_notification,
+                                                args=("The selected interface doesnt support packet injection."
+                                                "\nAutomatically switching to silent mode (no client de-authing)"
+                                                "\n\nThe attack will be slower",))
+            show_info_thread.start()
         self.show_message("Scanned network - Handshake captured")
 
         self.show_info_notification("Handshake captured.\n\nYou can now start the attack (cracking process)")
@@ -888,7 +939,9 @@ class Control:
             command3 = ['ifconfig', values[0], 'up']
             self.execute_command(command1)
             time.sleep(2)
-            self.execute_command(command2)
+            out, err = self.execute_command(command2)
+            print(out.decode("utf-8"))
+            print(err.decode("utf-8"))
             self.execute_command(command3)
         except:
             self.show_warning_notification("Unable to set new MAC address")

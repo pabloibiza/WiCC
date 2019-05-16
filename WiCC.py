@@ -149,12 +149,14 @@ if __name__ == '__main__':
     else:
         show_message("All required software is installed")
 
-    if headless:
-        view_thread = threading.Thread(target=control.start_view, args=(True, splash_image,))
-    else:
-        view_thread = threading.Thread(target=control.start_view, args=(False, splash_image,))
-    view_thread.start()
-    view_thread.join(1)
+    #if headless:
+    #    view_thread = threading.Thread(target=control.start_view, args=(True, splash_image,))
+    #else:
+    #    view_thread = threading.Thread(target=control.start_view, args=(False, splash_image,))
+    #view_thread.start()
+    #view_thread.join(1)
+    control.start_view(headless, splash_image)
+    time.sleep(1)
 
     try:
         while not exit and not control.get_running_stopped():
