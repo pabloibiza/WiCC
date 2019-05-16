@@ -39,7 +39,7 @@ class About:
 
         self.label_info.pack()
 
-        self.button = Button(self.root, text="Github", command=self.open_link)
+        self.button = Button(self.root, text="Project page", command=self.open_link)
         self.button.pack()
 
         self.frame = Frame(self.root)

@@ -155,14 +155,15 @@ class View:
 
         # FRAME - START/STOP SCAN
         self.frame_start_stop = Frame(self.labelframe_scan)
-        self.frame_start_stop.grid(column=3, row=0, padx=380, pady=5)
+        self.frame_start_stop.grid(column=3, row=0, padx=230, pady=5)
 
         # BUTTON - START SCAN
-        self.button_start_scan = Button(self.frame_start_stop, text='Start scan', command=self.start_scan)
+        self.button_start_scan = Button(self.frame_start_stop, text='        Start scan        ',
+                                        command=self.start_scan)
         self.button_start_scan.grid(column=1, row=0, padx=5)
 
         # BUTTON - STOP SCAN
-        self.button_stop_scan = Button(self.frame_start_stop, text='Stop scan', state=DISABLED,
+        self.button_stop_scan = Button(self.frame_start_stop, text='        Stop scan        ', state=DISABLED,
                                        command=self.stop_scan)
         self.button_stop_scan.grid(column=2, row=0, padx=5)
 
@@ -237,8 +238,9 @@ class View:
         self.button_select_wordlist.grid(column=3, row=0, padx=5, pady=5, sticky=W)
 
         # LABEL - NULL LABEL
-        self.null_label = Label(self.labelframe_attack_options, text=" ")
-        self.null_label.grid(column=0, row=0, padx=5)
+        self.label_info_attack = Label(self.labelframe_attack_options,
+                                       text="Select a network to see the available options")
+        self.label_info_attack.grid(column=0, row=0, padx=5)
 
         # BUTTON - START ATTACK WEP
         self.button_start_attack_wep = Button(self.labelframe_wep, text='Attack', command=self.start_attack)
