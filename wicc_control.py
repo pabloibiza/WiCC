@@ -921,7 +921,6 @@ class Control:
             command2 = ['ifconfig', values[0], 'hw', 'ether', values[1]]
             command3 = ['ifconfig', values[0], 'up']
             self.execute_command(command1)
-            time.sleep(2)
             self.execute_command(command2)
             self.execute_command(command3)
         except:

