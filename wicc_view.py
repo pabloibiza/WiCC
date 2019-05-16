@@ -120,7 +120,7 @@ class View:
         self.labelframe_scan.pack(fill="both", expand="yes")
 
         # LABEL FRAME - FILTERS
-        self.labelframe_filters = LabelFrame(self.root, text="Filters")
+        self.labelframe_filters = LabelFrame(self.root, text="Optional Filters")
         self.labelframe_filters.pack(fill="both", expand="yes")
 
         # LABEL FRAME - AVAILABLE NETWORKS

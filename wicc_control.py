@@ -40,7 +40,7 @@ class Control:
     scan_filter_parameters = ["ALL", "ALL"]
     auto_select = False
     cracking_completed = False  # to know if the network cracking process has finished or not
-    selected_wordlist = ""
+    selected_wordlist = "/Resources/darkc0de.lst"
     cracking_network = False  # state of the network cracking process (if it has started or not)
     net_attack = ""  # EncryptionType generic object, used to store the specific instance of the running attack
     verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
@@ -72,6 +72,7 @@ class Control:
             directory, err = self.execute_command(['pwd'])
             self.main_directory = directory.decode('utf-8')[:-1]
             self.local_folder = self.main_directory + self.local_folder
+            self.selected_wordlist = self.main_directory + self.selected_wordlist
             self.__instance = self
         else:
             raise Exception("Singleton Class")
@@ -84,8 +85,8 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        self.view.build_window(headless, show_image)
         self.headless = headless
+        self.view.build_window(headless, show_image)
 
     def execute_command(self, command):
         """
@@ -417,7 +418,7 @@ class Control:
                     exception_msg += "\n\nThe error couldn't be fixed automatically. Please reconnect or reconfigure " \
                                      "your wireless card"
                     self.show_message(Exception.args)
-                self.view.show_warning_notification(exception_msg)
+                self.show_warning_notification(exception_msg)
                 self.view.set_buttons(True)
                 return False
                 # sys.exit(1)
@@ -704,7 +705,7 @@ class Control:
 
         password = self.check_cracked_networks("cracked_networks")
         if password != "":
-            self.view.show_info_notification("Network already cracked\n\nPassword: " + password +
+            self.show_info_notification("Network already cracked\n\nPassword: " + password +
                                              "\n\nYou can now restart the scanning process")
             self.cracking_completed = True
             self.stop_scan()
@@ -775,13 +776,14 @@ class Control:
         self.stop_scan()
 
         if password != "":
-            self.view.show_info_notification("Cracking process finished\n\nPassword: " + password +
+            self.show_info_notification("Cracking process finished\n\nPassword: " + password +
                                              "\n\nYou can now restart the scanning process")
             self.create_local_folder()
             bssid = self.model.search_network(self.selectedNetwork).get_bssid()
-            self.store_local_file("cracked_networks", bssid + " " + password)
+            essid = self.model.search_network(self.selectedNetwork).get_essid()
+            self.store_local_file("cracked_networks", bssid + " " + password + " " + essid)
         else:
-            self.view.show_info_notification("Cracking process finished\n\nNo password retrieved"
+            self.show_info_notification("Cracking process finished\n\nNo password retrieved"
                                              "\n\nYou can restart the scanning process")
         self.selectedNetwork = ""
 
@@ -818,6 +820,8 @@ class Control:
             with open(self.local_folder + "/" + file_name, "a") as file:
                 file.write(file_contents + "\n")
                 file.close()
+            chmod_cmd = ['chmod', '664', self.local_folder + "/" + file_name]
+            self.execute_command(chmod_cmd)
 
     def read_local_file(self, file_name):
         """
