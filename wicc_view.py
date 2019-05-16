@@ -717,7 +717,7 @@ class View:
             if button == "scan_wpa":
                 self.button_scan_wpa['state'] = status
             elif button == "stop_scan_wpa":
-                self.button_stop_attack_wpa['state'] = status
+                self.button_stop_scan_wpa['state'] = status
             elif button == "attack_wpa":
                 self.button_start_attack_wpa['state'] = status
             elif button == "stop_attack_wpa":

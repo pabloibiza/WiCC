@@ -893,6 +893,9 @@ class Control:
         except:
             self.show_warning_notification("Unable to set new MAC address")
 
+        if self.mac_checker(values[0]) != values[1]:
+            self.customize_mac(values)
+
     def restore_mac(self, interface):
         """
         Generates and executes the command to restore the original MAC address.
