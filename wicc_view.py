@@ -524,7 +524,7 @@ class View:
             self.networks_treeview.delete(*self.networks_treeview.get_children())
             for item in networks:
                 self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6],
-                                                                              item[9] + " dbi", "yes", item[16]))
+                                                                              item[9] + " dbi", item[16]))
                 self.networks_treeview.update()
 
     def current_mac(self):
@@ -575,35 +575,6 @@ class View:
         """
 
         return self.mac_spoofing_status
-
-    ##########################################
-    # SET NOTIFICATIONS TITLES AS PARAMETERS #
-    ##########################################
-    def show_warning_notification(self, message):
-        """
-        Shows a warning popup window with a custom message.
-        :param message: string containing the message
-
-        :author: Pablo Sanz Alguacil
-        """
-        warning_notification = messagebox.showwarning("Warning", message)
-        self.root.update()
-        print(warning_notification)
-
-    ##########################################
-    # SET NOTIFICATIONS TITLES AS PARAMETERS #
-    ##########################################
-    def show_info_notification(self, message):
-        """
-        Shows a info popup window with a custom message.
-        :param message: string containing the message
-
-        :author: Pablo Sanz Alguacil
-        """
-
-        info_notification = messagebox.showinfo("Info", message)
-        self.root.update()
-        print(info_notification)
 
     def send_notify(self, operation, value):
         """
@@ -657,7 +628,7 @@ class View:
                 self.send_notify(Operation.SELECT_TEMPORARY_FILES_LOCATION, select_window)
 
             except:
-                messagebox.showerror("Error", "Failed to set directory \n'%s'" % select_window)
+                self.popup_gen.error("Error", "Failed to set directory \n'%s'" % select_window)
                 return
 
     def stop_attack(self):
