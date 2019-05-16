@@ -88,6 +88,11 @@ class View:
                                underline=0,
                                compound=LEFT)
 
+        self.menu1.add_command(label='Generate wordlist',
+                               command=self.generate_wordlists_window,
+                               underline=0,
+                               compound=LEFT)
+
         # MENU 2
         self.menu2.add_command(label='MAC menu',
                                command=self.mac_tools_window,
@@ -96,11 +101,6 @@ class View:
 
         self.menu2.add_command(label='Select wordlist',
                                command=self.select_custom_wordlist,
-                               underline=0,
-                               compound=LEFT)
-
-        self.menu2.add_command(label='Generate wordlist',
-                               command=self.generate_wordlists_window,
                                underline=0,
                                compound=LEFT)
 
