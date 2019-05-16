@@ -54,6 +54,7 @@ class Control:
     path_directory_crunch = "/home"  # directory to save generated lists with crunch
     generated_wordlist_name = "wicc_wordlist"  # name of the generated files in generate_wordlist()
     hex_values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
+    hex_values_even = ['2', '4', '6', '8', 'a', 'c', 'e']
     __instance = None  # used for singleton check
     popup = None
     timestamp = 0
@@ -863,7 +864,11 @@ class Control:
         :author: Pablo Sanz Alguacil
         """
         generated_address = ""
-        for i in range(0, 5):
+
+        first_digit = self.hex_values[random.randint(0, 15)]
+        second_digit = self.hex_values_even[random.randint(0, 6)]
+        generated_address += first_digit + second_digit + ":"
+        for i in range(0, 4):
             first_digit = self.hex_values[random.randint(0, 15)]
             second_digit = self.hex_values[random.randint(0, 15)]
             generated_address += first_digit + second_digit + ":"
