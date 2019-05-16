@@ -83,7 +83,7 @@ class View:
                                underline=0,
                                compound=LEFT)
 
-        self.menu2.add_command(label='Select wordlist',
+        self.menu1.add_command(label='Select wordlist',
                                command=self.select_custom_wordlist,
                                underline=0,
                                compound=LEFT)
@@ -101,7 +101,7 @@ class View:
                                underline=0,
                                compound=LEFT)
 
-        self.menu1.add_command(label='Generate wordlist',
+        self.menu2.add_command(label='Generate wordlist',
                                command=self.generate_wordlists_window,
                                underline=0,
                                compound=LEFT)
