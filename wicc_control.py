@@ -44,7 +44,7 @@ class Control:
     cracking_network = False  # state of the network cracking process (if it has started or not)
     net_attack = ""  # EncryptionType generic object, used to store the specific instance of the running attack
     verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
-    allows_monitor = False  # to know if the wireless interface allows monitor mode
+    allows_monitor = True  # to know if the wireless interface allows monitor mode
     spoof_mac = False  # spoof a client's MAC address
     silent_attack = False  # if the netwrok attack should be runned in silent mode
     write_directory = "/tmp/WiCC"  # directory to store all generated dump files
@@ -55,6 +55,10 @@ class Control:
     generated_wordlist_name = "wicc_wordlist"  # name of the generated files in generate_wordlist()
     hex_values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
     hex_values_even = ['2', '4', '6', '8', 'a', 'c', 'e']
+    required_software = [["ifconfig", False], ["aircrack-ng", False], ["pyrit", False], ["cowpatty", False],
+                         ["pgrep", False], ["NetworkManager", False], ["genpmk", False], ["iw", False],
+                         ['crunch', False], ['macchanger', False]]
+    mandatory_software = ['ifconfig', 'aircrack-ng']
     __instance = None  # used for singleton check
     popup = None
     timestamp = 0
@@ -114,26 +118,51 @@ class Control:
         """
         Check whether the required software is installed or not.
         :return: list of software (array of booleans), and a boolean to say if any is missing
-
         :Author: Miguel Yanes Fernández
         """
-        # check installed software
-        # ifconfig, aircrack-ng, pyrit, cowpatty, pgrep, NetworkManager, genpmk, iw
-        software = [["ifconfig", False], ["aircrack-ng", False], ["pyrit", False], ["cowpatty", False],
-                    ["pgrep", False], ["NetworkManager", False], ["genpmk", False], ["iw", False]]
-        # the pair will become true if it's installed
+        """
+                Check whether the required software is installed or not.
+                :return: list of software (array of booleans), and a boolean to say if any is missing
+                :Author: Miguel Yanes Fernández
+                """
 
         some_missing = False
+        stop_execution = False
 
-        for i in range(0, len(software)):
-            out, err = self.execute_command(['which', software[i][0]])
+        info_msg = "You are missing some of the required software"
+        mandatory_msg = "The following tool(s) are required to be able to run the program:\n"
+        optional_msg = "The following tool(s) are not mandatory but highly recommended to run the software:\n"
+
+        for i in range(0, len(self.required_software)):
+            out, err = self.execute_command(['which', self.required_software[i][0]])
 
             if int.from_bytes(out, byteorder="big") != 0:
-                software[i][1] = True
+                self.required_software[i][1] = True
             else:
                 some_missing = True
+                missing_software = self.required_software[i][0]
 
-        return software, some_missing
+                for mand_software in self.mandatory_software:
+                    if mand_software == missing_software:
+                        stop_execution = True
+                        # Stops running if any mandatory software is missing
+
+                        mandatory_msg += " - " + missing_software + "\n"
+
+                if (missing_software not in optional_msg) and (missing_software not in mandatory_msg):
+                    optional_msg += " - " + missing_software + "\n"
+
+        if some_missing:
+            if mandatory_msg.count('\n') > 1:
+                info_msg += "\n\n" + mandatory_msg
+
+            if optional_msg.count('\n') > 1:
+                info_msg += "\n\n" + optional_msg
+
+            print(info_msg)  # replace print with show_info_notification
+            # self.show_info_notification(info_msg)
+
+        return self.required_software, some_missing, stop_execution
 
     def check_monitor_mode(self):
         """
@@ -584,16 +613,16 @@ class Control:
         return self.model.get_interfaces()
 
     def show_info_notification(self, message):
-        self.popup.popup_info("", message)
+        self.popup.info("", message)
 
     def show_warning_notification(self, message):
-        self.popup.popup_warning("Warning", message)
+        self.popup.warning("Warning", message)
 
     def show_error_notification(self, title, message):
-        self.popup.popup_error(title, message)
+        self.popup.error(title, message)
 
     def show_yesno_notification(self, title, question):
-        return self.popup.popup_yesno(title, question)
+        return self.popup.yesno(title, question)
 
     def apply_filters(self, value):
         """

@@ -137,15 +137,31 @@ if __name__ == '__main__':
     print(options_message)
     print(white)
 
-    software, some_missing = control.check_software()
+    install_required_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'python3-tk', 'iw', 'net-tools', 'aircrack-ng']
+    install_optional_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'pyrit', 'crunch', 'make', 'gcc']
+
+    software, some_missing, stop_execution = control.check_software()
+
     if some_missing:
         # variable 'software' is an array of pair [tool_name, boolean_if_its_installed]
-        print("The required software is not installed:\n")
+        print("The following software is not installed:\n")
         for i in range(0, len(software)):
             if not software[i][1]:
                 print("\t***Missing " + software[i][0])
         print("\n")
-        sys.exit(1)
+        if stop_execution:
+            install_required = input("Would you like to install the required mandatory software? (y): ")
+            if install_required == 'y':
+                control.execute_command(install_required_cmd)
+                install_optional = input("Would you also like to install the optional software? (y): ")
+                if install_optional == 'y':
+                    control.execute_command(install_optional_cmd)
+            else:
+                sys.exit(1)
+        else:
+            install_optional = input("Would you like to install the optional software? (y):")
+            if install_optional == 'y':
+                control.execute_command(install_optional_cmd)
     else:
         show_message("All required software is installed")
 
@@ -216,6 +232,7 @@ if __name__ == '__main__':
                 if control.get_interfaces() == "":
                     control.view.show_info_notification("No wireless interfaces found."
                                                         "\n\nPlease connect a wireless card.")
+        sys.exit(0)
     except:
         sys.exit(1)
     sys.exit(0)
