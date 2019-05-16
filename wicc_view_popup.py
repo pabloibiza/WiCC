@@ -13,16 +13,20 @@ from tkinter import messagebox
 
 class PopUpWindow:
 
-    def popup_info(self, subject, text):
+    @staticmethod
+    def info(subject, text):
         messagebox.showinfo(subject, text)
 
-    def popup_warning(self, subject, text):
+    @staticmethod
+    def warning(subject, text):
         messagebox.showwarning(subject, text)
 
-    def popup_error(self, subject, text):
+    @staticmethod
+    def error(subject, text):
         messagebox.showerror(subject, text)
 
-    def popup_yesno(self, subject, text):
+    @staticmethod
+    def yesno(subject, text):
         return messagebox.askyesno(subject, text)
 
 

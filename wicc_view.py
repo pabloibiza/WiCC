@@ -283,12 +283,12 @@ class View:
                 self.labelframe_wep.pack_forget()
                 self.labelframe_wpa.pack(fill="both", expand="yes")
             elif network_enc == "OPN":
-                self.popup_gen.popup_info("No valid", "This network is open")
+                self.popup_gen.info("No valid", "This network is open")
 
             self.send_notify(Operation.SELECT_NETWORK, network_id)
 
         except:
-            self.popup_gen.popup_error("Error", "No network selected")
+            self.popup_gen.error("Error", "No network selected")
 
     def start_scan(self):
         """
@@ -394,7 +394,7 @@ class View:
             try:
                 self.send_notify(Operation.SELECT_CUSTOM_WORDLIST, select_window)
             except:
-                self.popup_gen.popup_error("Open Source File", "Failed to read file \n'%s'" % select_window)
+                self.popup_gen.error("Open Source File", "Failed to read file \n'%s'" % select_window)
                 return
 
     def randomize_mac(self):
@@ -405,13 +405,13 @@ class View:
         :author: Pablo Sanz Alguacil
         """
         if self.interfaceVar.get() != "":
-            current_mac_alert = self.popup_gen.popup_yesno("", "Your current MAC is: " + self.current_mac()
-                                                           + "\n\nAre you sure you want to change it? ")
+            current_mac_alert = self.popup_gen.yesno("", "Your current MAC is: " + self.current_mac()
+                                                     + "\n\nAre you sure you want to change it? ")
             if current_mac_alert:
                 self.send_notify(Operation.RANDOMIZE_MAC, self.interfaceVar.get())
-                self.popup_gen.popup_info("", "Your new MAC is: " + self.current_mac())
+                self.popup_gen.info("", "Your new MAC is: " + self.current_mac())
         else:
-            self.popup_gen.popup_warning("", "No interface selected. Close the window and select one")
+            self.popup_gen.warning("", "No interface selected. Close the window and select one")
 
     def customize_mac(self, new_mac):
         """
@@ -423,14 +423,14 @@ class View:
         """
 
         if self.interfaceVar.get() != "":
-            current_mac_alert = self.popup_gen.popup_yesno("", "Your current MAC is: " + self.current_mac()
-                                                           + "\n\nAre you sure you want to change it for\n" +
-                                                           new_mac + " ?")
+            current_mac_alert = self.popup_gen.yesno("", "Your current MAC is: " + self.current_mac()
+                                                     + "\n\nAre you sure you want to change it for\n" +
+                                                     new_mac + " ?")
             if current_mac_alert:
                 self.send_notify(Operation.CUSTOMIZE_MAC, (self.interfaceVar.get(), new_mac))
-                self.popup_gen.popup_info("", "Your new MAC is: " + self.current_mac())
+                self.popup_gen.info("", "Your new MAC is: " + self.current_mac())
         else:
-            self.popup_gen.popup_warning("", "No interface selected. Close the window and select one")
+            self.popup_gen.warning("", "No interface selected. Close the window and select one")
 
     def restore_mac(self):
         """
@@ -445,9 +445,9 @@ class View:
                                                     + "\n\nAre you sure you want to restore original?")
             if current_mac_alert:
                 self.send_notify(Operation.RESTORE_MAC, self.interfaceVar.get())
-                self.popup_gen.popup_info("", "Your new MAC is: " + self.current_mac())
+                self.popup_gen.info("", "Your new MAC is: " + self.current_mac())
         else:
-            self.popup_gen.popup_warning("", "No interface selected. Close the window and select one")
+            self.popup_gen.warning("", "No interface selected. Close the window and select one")
 
     def spoofing_mac(self, status):
         """
@@ -460,7 +460,7 @@ class View:
         if self.interfaceVar.get() != "":
             self.send_notify(Operation.SPOOF_MAC, status)
         else:
-            self.popup_gen.popup_warning("", "No interface selected. Close the window and select one")
+            self.popup_gen.warning("", "No interface selected. Close the window and select one")
 
     def mac_tools_window(self):
         """

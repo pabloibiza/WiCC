@@ -138,7 +138,7 @@ class ViewMac:
         if boolean_fg and colon_count == 5:
             self.notify_view(0, self.entry_custom_mac.get())
         else:
-            self.popup_gen.popup_warning("Warning", "Address not valid")
+            self.popup_gen.warning("Warning", "Address not valid")
 
     def randomize_mac(self):
         """
