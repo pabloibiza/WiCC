@@ -52,7 +52,7 @@ class Control:
     main_directory = ""  # directory where the program is running
     local_folder = "/savefiles"  # folder to locally save files
     path_directory_crunch = "/home"  # directory to save generated lists with crunch
-    generated_wordlist_name = "wicc_wordlist" # name of the generated files in generate_wordlist()
+    generated_wordlist_name = "wicc_wordlist"  # name of the generated files in generate_wordlist()
     hex_values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
     __instance = None  # used for singleton check
     popup = None
@@ -276,7 +276,7 @@ class Control:
             if not self.auto_select:
                 self.show_info_notification("Card already in monitor mode.\nPlease, re-select the wireless interface")
                 self.show_message("Card already in monitor mode")
-                self.view.enable_buttons()
+                self.view.set_buttons(True)
             self.model.clear_interfaces()
             return False
 
@@ -296,7 +296,7 @@ class Control:
         interface = self.selectedInterface + 'mon'
         self.execute_command(airmon_cmd)
 
-        self.timestamp = int(datetime.datetime.now().timestamp()*1000000)
+        self.timestamp = int(datetime.datetime.now().timestamp() * 1000000)
         tempfile += str(self.timestamp)
 
         command = ['airodump-ng', interface, '--write', tempfile, '--output-format', 'csv']
@@ -352,6 +352,8 @@ class Control:
             self.set_clients(clients)
             self.notify_view()
             return True
+        except FileExistsError:
+            return
         except:
             try:
                 # check if the problem was because the interface was already in monitor mode, and try to fix it
@@ -366,7 +368,7 @@ class Control:
                                             "The selected wireless card may not support Monitor mode")
                 self.selectedInterface = ""
                 self.stop_scan()
-                self.view.enable_buttons()
+                self.view.set_buttons(True)
                 return False
             except Exception:
                 # Unknown exception. Tries to fix it by resetting the interface, but may not work
@@ -386,9 +388,9 @@ class Control:
                                      "your wireless card"
                     self.show_message(Exception.args)
                 self.view.show_warning_notification(exception_msg)
-                self.view.enable_buttons()
+                self.view.set_buttons(True)
                 return False
-                #sys.exit(1)
+                # sys.exit(1)
 
     def set_networks(self, networks):
         """
@@ -450,19 +452,21 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        if not self.headless:
+        if not self.headless and not self.get_running_stopped():
             # if the program is not running headless, we notify the view
             interfaces, networks = self.model.get_parameters()
             try:
                 self.view.get_notify(interfaces, networks)
             except:
-                self.show_message("Error while notifying view (try restarting the program)")
-                #msg_box_thread = threading.Thread(target=self.msg_box,
-                #                                  args=("Error connecting View and Control\nClosing the program...",))
-                #msg_box_thread.start()
-                #msg_box_thread.join(0)
-                self.get_notify(Operation.STOP_RUNNING, None)
-                #sys.exit(1)
+                try:
+                    self.show_message("Error communicating control with view, retrying...")
+                    self.view.get_notify(interfaces, networks)
+                    self.show_message("Success")
+                except:
+                    self.show_message("\t* Error while notifying view (try restarting the program)")
+                    self.show_error_notification("Fatal error", "Error communicating with the view.\n"
+                                                                "Try restarting the program")
+                    self.get_notify(Operation.STOP_RUNNING, None)
 
     def get_notify(self, operation, value):
         """
@@ -476,10 +480,13 @@ class Control:
         if operation == Operation.SELECT_INTERFACE:
             self.selectedInterface = value
             if self.selectedInterface == "":
-                self.view.enable_buttons()
+                self.view.set_buttons(True)
                 self.show_info_notification("Please, select a network interface")
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
+            self.set_buttons_wpa_initial()
+            self.set_buttons_wep_initial()
+            print("set to initial")
         elif operation == Operation.ATTACK_NETWORK:
             # USELESS right now
             self.stop_scan()
@@ -487,13 +494,7 @@ class Control:
         elif operation == Operation.STOP_SCAN:
             self.stop_scan()
         elif operation == Operation.STOP_RUNNING:
-            self.stop_scan()
-            self.view.reaper_calls()
-            self.show_message("\n\n\tClossing WiCC ...\n\n")
-            os.close(2)  # block writing to stdout
-            del self.view
-            self.running_stopped = True
-            # sys.exit(0)
+            self.stop_running()
         elif operation == Operation.SCAN_OPTIONS:
             self.apply_filters(value)
         elif operation == Operation.CUSTOMIZE_MAC:
@@ -525,6 +526,18 @@ class Control:
         elif operation == Operation.SILENT_SCAN:
             self.silent_attack = value
 
+    def stop_running(self):
+        try:
+            self.stop_scan()
+            self.view.reaper_calls()
+            self.show_message("\n\n\tClossing WiCC ...\n\n")
+            os.close(2)  # block writing to stderr
+            del self.view
+            self.running_stopped = True
+            exit(0)
+        except:
+            raise SystemExit
+
     def stop_scan(self):
         """
         Series of commands to be executed to stop the scan. Kills the process(es) realted with airodump, and then
@@ -553,6 +566,13 @@ class Control:
 
         self.scan_stopped = True
 
+        try:
+            out, err = self.execute_command(['rm', self.write_directory + '/net_scan_' + self.timestamp + '-01.csv'])
+            print(out)
+            print(err)
+        except:
+            pass
+
     def get_interfaces(self):
         """
         Return the list of interfaces from Model
@@ -564,6 +584,15 @@ class Control:
 
     def show_info_notification(self, message):
         self.popup.popup_info("", message)
+
+    def show_warning_notification(self, message):
+        self.popup.popup_warning("Warning", message)
+
+    def show_error_notification(self, title, message):
+        self.popup.popup_error(title, message)
+
+    def show_yesno_notification(self, title, question):
+        return self.popup.popup_yesno(title, question)
 
     def apply_filters(self, value):
         """
@@ -578,12 +607,39 @@ class Control:
         self.scan_filter_parameters[1] = value[3]
         self.model.set_filters(value[1], value[2])
 
+    def set_buttons_wpa_initial(self):
+        self.view.get_notify_buttons(["scan_wpa"], True)
+        self.view.get_notify_buttons(["stop_scan_wpa", "attack_wpa", "stop_attack_wpa",
+                                      "attack_wep", "stop_attack_wep"], False)
+
+    def set_buttons_wpa_scanning(self):
+        self.view.get_notify_buttons(["stop_scan_wpa"], True)
+        self.view.get_notify_buttons(["scan_wpa", "attack_wpa", "stop_attack_wpa"], False)
+
+    def set_buttons_wpa_scanned(self):
+        self.view.get_notify_buttons(["scan_wpa", "attack_wpa"], True)
+        self.view.get_notify_buttons(["stop_scan_wpa", "stop_attack_wpa"], False)
+
+    def set_buttons_wpa_attacking(self):
+        self.view.get_notify_buttons(["stop_attack_wpa"], True)
+        self.view.get_notify_buttons(["scan_wpa", "stop_scan_wpa", "attack_wpa"], False)
+
+    def set_buttons_wep_initial(self):
+        self.view.get_notify_buttons(["attack_wep"], True)
+        self.view.get_notify_buttons(["stop_attack_wep"], False)
+
+    def set_buttons_wep_attacking(self):
+        self.view.get_notify_buttons(["attack_wep"], False)
+        self.view.get_notify_buttons(["stop_attack_wep"], True)
+
     def scan_wpa(self):
+        self.set_buttons_wpa_scanning()
+
         network = self.model.search_network(self.selectedNetwork)
 
         self.show_message("create wpa instance")
         self.net_attack = WPA(network, self.selectedInterface, self.selected_wordlist,
-                         self.verbose_level, self.silent_attack, self.write_directory)
+                              self.verbose_level, self.silent_attack, self.write_directory)
 
         self.add_net_attack(network.get_bssid(), self.net_attack)
 
@@ -600,6 +656,7 @@ class Control:
         self.show_message("Scanned network - Handshake captured")
 
         self.show_info_notification("Handshake captured.\n\nYou can now start the attack (cracking process)")
+        self.set_buttons_wpa_scanned()
         return
 
         # <wicc_wpa.WPA object at 0x7fe7792c77b8>
@@ -612,6 +669,9 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
+        self.set_buttons_wep_attacking()
+        self.set_buttons_wpa_attacking()
+
         password = self.check_cracked_networks("cracked_networks")
         if password != "":
             self.view.show_info_notification("Network already cracked\n\nPassword: " + password +
@@ -619,11 +679,13 @@ class Control:
             self.cracking_completed = True
             self.stop_scan()
             self.selectedNetwork = ""
+            self.set_buttons_wep_initial()
+            self.set_buttons_wpa_initial()
             return
 
         network = self.model.search_network(self.selectedNetwork)
         password = ""
-        #try:
+        # try:
         network_encryption = network.get_encryption()
         time.sleep(0.01)
 
@@ -633,6 +695,8 @@ class Control:
             self.cracking_completed = True
             self.stop_scan()
             self.selectedNetwork = ""
+            self.set_buttons_wep_initial()
+            self.set_buttons_wpa_initial()
             return
 
         self.show_info_notification("Starting attack on" + network_encryption + " network:" + "\n\nName: " +
@@ -645,7 +709,7 @@ class Control:
                 attacker_mac = self.spoof_client_mac(self.selectedNetwork)
                 self.show_message("Spoofed client MAC: " + attacker_mac)
             else:
-                attacker_mac = self.mac_checker(self.selectedInterface,)
+                attacker_mac = self.mac_checker(self.selectedInterface, )
                 self.show_message("Attacker's MAC: " + attacker_mac)
 
             self.show_message("WEP attack")
@@ -660,6 +724,7 @@ class Control:
         elif network_encryption[:4] == " WPA":
             if self.selected_wordlist == "":
                 self.show_info_notification("You need to select a wordlist for the WPA attack")
+                self.set_buttons_wpa_scanned()
                 return
             self.show_message("create wpa instance")
             self.net_attack = self.get_net_attack(network.get_bssid())
@@ -670,7 +735,7 @@ class Control:
             password = self.net_attack.crack_network()
             self.show_message("finished cracking")
             self.cracking_network = False
-            #pass
+            # pass
 
         # ------------- Unsupported encryption -----------
         else:
@@ -690,7 +755,10 @@ class Control:
                                              "\n\nYou can restart the scanning process")
         self.selectedNetwork = ""
 
-        #except Exception:
+        self.set_buttons_wep_initial()
+        self.set_buttons_wpa_initial()
+
+        # except Exception:
         #    self.view.show_info_notification("Please select a valid target network")
         #    self.selectedNetwork = ""
         #    print(Exception)
@@ -823,7 +891,7 @@ class Control:
             self.execute_command(command2)
             self.execute_command(command3)
         except:
-            self.view.show_warning_notification("Unable to set new MAC address")
+            self.show_warning_notification("Unable to set new MAC address")
 
     def restore_mac(self, interface):
         """
@@ -833,16 +901,16 @@ class Control:
         :author: Pablo Sanz Alguacil
         """
         try:
-            command1 = ['ifconfig', interface, 'down']  #Turns down the interface
+            command1 = ['ifconfig', interface, 'down']  # Turns down the interface
             self.execute_command(command1)
-            command2 = ['ethtool', '-P', interface] #Gets permanent(original) MAC address
+            command2 = ['ethtool', '-P', interface]  # Gets permanent(original) MAC address
             original_mac = self.execute_command(command2)[0].decode("utf-8").split(" ")[-1]
-            command3 = ['ifconfig', interface, 'hw', 'ether', original_mac] #Sets the original MAC as current MAC
+            command3 = ['ifconfig', interface, 'hw', 'ether', original_mac]  # Sets the original MAC as current MAC
             self.execute_command(command3)
-            command4 = ['ifconfig', interface, 'up']    #Turns on the interface
+            command4 = ['ifconfig', interface, 'up']  # Turns on the interface
             self.execute_command(command4)
         except:
-            self.view.show_warning_notification("Unable to restore original MAC address")
+            self.show_warning_notification("Unable to restore original MAC address")
 
     def mac_checker(self, interface):
         """
@@ -857,11 +925,11 @@ class Control:
             current_mac = self.execute_command(command)[0].decode("utf-8").split(" ")
             for i in range(0, len(current_mac)):
                 if current_mac[i] == "ether":
-                    current_mac = current_mac[i+1]
+                    current_mac = current_mac[i + 1]
                     return current_mac
             return None
         except:
-            self.view.show_warning_notification("Unable to get current MAC address")
+            self.show_warning_notification("Unable to get current MAC address")
             return False
 
     def get_running_stopped(self):
@@ -886,7 +954,7 @@ class Control:
 
             file_path = self.path_directory_crunch + "/" + file_name
             exists = os.path.isfile(file_path)
-            index+=1
+            index += 1
 
         output_list = self.path_directory_crunch + "/" + file_name
         command = ['crunch', '0', '0', '-o', output_list, '-p']

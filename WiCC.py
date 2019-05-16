@@ -168,7 +168,7 @@ if __name__ == '__main__':
                     while not control.selectedNetwork and control.running_scan() and not control.get_running_stopped():
                         time.sleep(1)
                         show_message("\t... Scanning networks ...")
-                        if not control.filter_networks():
+                        if not control.filter_networks() and not control.get_running_stopped():
                             time.sleep(1)
                             control.stop_scan()
                             time.sleep(1)
