@@ -119,8 +119,7 @@ class EncryptionType:
         return ""
         #print(file.decode('utf-8'))
 
-    @staticmethod
-    def filter_aircrack(output):
+    def filter_aircrack(self, output):
         """
         Filter the aircrack output to read the password (if any is found)
         :param output: output from the aicrack command
@@ -139,4 +138,6 @@ class EncryptionType:
                     next_2 = True
                 else:
                     return word
+        print(output)
+        self.show_message("No password found in the capture file")
         return ""
