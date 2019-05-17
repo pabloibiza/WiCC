@@ -28,4 +28,5 @@ class Operation:
     START_SCAN_WPA = "Start scan wpa"
     STOP_SCAN_WPA = "Stop scan wpa"
     SILENT_SCAN = "Silent Scan"
+    OPEN_CRACKED = "open cracked"
 

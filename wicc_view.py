@@ -78,6 +78,11 @@ class View:
         self.menubar.add_cascade(menu=self.menu3, label='Help')
 
         # MENU 1
+        self.menu1.add_command(label='Show cracked passwords',
+                               command=self.show_cracked_passwords,
+                               underline=13,
+                               compound=LEFT)
+
         self.menu1.add_command(label='Temporary files location',
                                command=self.temporary_files_location,
                                underline=0,
@@ -85,7 +90,7 @@ class View:
 
         self.menu1.add_command(label='Select wordlist',
                                command=self.select_custom_wordlist,
-                               underline=0,
+                               underline=7,
                                compound=LEFT)
 
         self.menu1.add_command(label='Exit',
@@ -703,7 +708,7 @@ class View:
                 self.button_stop_attack_wep['state'] = status
 
     @staticmethod
-    def show_about():
+    def show_about(self):
         """
         Creates a new About object
 
@@ -712,7 +717,7 @@ class View:
         About()
 
     @staticmethod
-    def open_link():
+    def open_link(self):
         """
         Opens the URL on a new tab in the default web browser.
 
@@ -721,3 +726,11 @@ class View:
 
         url = "http://www.github.com/pabloibiza/WiCC"
         webbrowser.open_new_tab(url)
+
+    def show_cracked_passwords(self):
+        """
+        Sends a notification to Control to open the cracked passwords file.
+
+        :author: Pablo Sanz Alguacil
+        """
+        self.send_notify(Operation.OPEN_CRACKED, "")
