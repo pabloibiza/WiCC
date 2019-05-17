@@ -161,12 +161,12 @@ class View:
         self.frame_start_stop.grid(column=3, row=0, padx=230, pady=5)
 
         # BUTTON - START SCAN
-        self.button_start_scan = Button(self.frame_start_stop, text='        Start scan        ',
+        self.button_start_scan = Button(self.frame_start_stop, text='      Scan networks      ',
                                         command=self.start_scan)
         self.button_start_scan.grid(column=1, row=0, padx=5)
 
         # BUTTON - STOP SCAN
-        self.button_stop_scan = Button(self.frame_start_stop, text='        Stop scan        ', state=DISABLED,
+        self.button_stop_scan = Button(self.frame_start_stop, text='      Stop scanning      ', state=DISABLED,
                                        command=self.stop_scan)
         self.button_stop_scan.grid(column=2, row=0, padx=5)
 
@@ -227,8 +227,8 @@ class View:
         self.networks_treeview.pack(fill=X)
 
         # BUTTON - SELECT NETWORK
-        self.button_select_network = Button(self.labelframe_sel_net, text="Select network",
-                                            command=self.select_network)
+        self.button_select_network = Button(self.labelframe_sel_net, text="1 - Select network",
+                                            command=self.select_network, state=DISABLED)
         self.button_select_network.grid(column=1, row=0, padx=5, pady=5, sticky=W + E + N + S)
 
         # CHECKBUTTON - SILENT MODE
@@ -247,7 +247,7 @@ class View:
         self.label_info_attack.grid(column=0, row=0, padx=5)
 
         # BUTTON - START ATTACK WEP
-        self.button_start_attack_wep = Button(self.labelframe_wep, text='Attack', command=self.start_attack)
+        self.button_start_attack_wep = Button(self.labelframe_wep, text='2 - Attack', command=self.start_attack)
         self.button_start_attack_wep.grid(column=0, row=0, padx=5)
 
         # BUTTON - STOP ATTACK WEP
@@ -255,20 +255,20 @@ class View:
         self.button_stop_attack_wep.grid(column=1, row=0, padx=5)
 
         # BUTTON - SCAN WPA
-        self.button_scan_wpa = Button(self.labelframe_wpa, text="Scan", command=self.start_scan_wpa)
+        self.button_scan_wpa = Button(self.labelframe_wpa, text="2 - Capture handshake", command=self.start_scan_wpa)
         self.button_scan_wpa.grid(column=0, row=0, padx=5)
 
         # BUTTON - STOP SCAN WPA
-        self.button_stop_scan_wpa = Button(self.labelframe_wpa, text="Stop scan", command=self.stop_scan_wpa)
-        self.button_stop_scan_wpa.grid(column=1, row=0, padx=5)
+        #self.button_stop_scan_wpa = Button(self.labelframe_wpa, text="Stop scan", command=self.stop_scan_wpa)
+        #self.button_stop_scan_wpa.grid(column=1, row=0, padx=5)
 
         # BUTTON - START ATTACK WPA
-        self.button_start_attack_wpa = Button(self.labelframe_wpa, text='Attack', command=self.start_attack)
+        self.button_start_attack_wpa = Button(self.labelframe_wpa, text="3 - Attack", command=self.start_attack)
         self.button_start_attack_wpa.grid(column=2, row=0, padx=5)
 
         # BUTTON - STOP ATTACK WPA
-        self.button_stop_attack_wpa = Button(self.labelframe_wpa, text='Stop Attack', command=self.stop_attack)
-        self.button_stop_attack_wpa.grid(column=3, row=0, padx=5)
+        #self.button_stop_attack_wpa = Button(self.labelframe_wpa, text='Stop Attack', command=self.stop_attack)
+        #self.button_stop_attack_wpa.grid(column=3, row=0, padx=5)
 
         self.root.mainloop()
 
@@ -351,9 +351,9 @@ class View:
         self.button_start_attack_wep['state'] = state
         self.button_stop_attack_wep['state'] = state
         self.button_scan_wpa['state'] = state
-        self.button_stop_scan_wpa['state'] = state
+        #self.button_stop_scan_wpa['state'] = state
         self.button_start_attack_wpa['state'] = state
-        self.button_stop_attack_wpa['state'] = state
+        #self.button_stop_attack_wpa['state'] = state
         self.checkbutton_silent['state'] = state
         self.button_select_wordlist['state'] = state
 
@@ -697,12 +697,12 @@ class View:
         for button in buttons:
             if button == "scan_wpa":
                 self.button_scan_wpa['state'] = status
-            elif button == "stop_scan_wpa":
-                self.button_stop_scan_wpa['state'] = status
+            #elif button == "stop_scan_wpa":
+                #self.button_stop_scan_wpa['state'] = status
             elif button == "attack_wpa":
                 self.button_start_attack_wpa['state'] = status
-            elif button == "stop_attack_wpa":
-                self.button_stop_attack_wpa['state'] = status
+            #elif button == "stop_attack_wpa":
+                #self.button_stop_attack_wpa['state'] = status
             elif button == "attack_wep":
                 self.button_start_attack_wep['state'] = status
             elif button == "stop_attack_wep":

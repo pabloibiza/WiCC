@@ -8,11 +8,11 @@
 """
 import webbrowser
 from tkinter import *
-from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
-    Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
-    HORIZONTAL, END, FALSE, IntVar, StringVar, messagebox, filedialog, LabelFrame
+from tkinter import Tk, ttk, Frame, Button, Label, RIGHT
+
 
 class About:
+    logo = "resources/icon_medium.png"
 
     def __init__(self):
         self.build_window()
@@ -45,7 +45,7 @@ class About:
         self.frame = Frame(self.root)
         self.frame.pack()
 
-        photo = PhotoImage(file="resources/icon_small.png")
+        photo = PhotoImage(file=self.logo)
         photo_label = Label(self.frame, image=photo)
         photo_label.image = photo
         photo_label.pack(side=LEFT)

@@ -159,7 +159,9 @@ if __name__ == '__main__':
     view_thread.start()
     view_thread.join(1)
 
-    control.show_info_notification("       Welcome to WiCC\n\nSelect an interface to begin the process")
+    control.show_info_notification("       Welcome to WiCC\n\nSelect an interface and press \"Scan networks\""
+                                   "to begin the process. \n\nIf you need help to use the application go the \"Help\" "
+                                   "section.")
 
     show_message("Select an interface")
     while not control.get_running_stopped():
