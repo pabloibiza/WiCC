@@ -62,6 +62,7 @@ class Control:
     __instance = None  # used for singleton check
     popup = None
     timestamp = 0
+    passwords_file_path = "/home/default/PycharmProjects/WiCC/savefiles/cracked_passwords"
 
     # Semaphores
 
@@ -572,6 +573,8 @@ class Control:
             pass
         elif operation == Operation.SILENT_SCAN:
             self.silent_attack = value
+        elif operation == Operation.OPEN_CRACKED:
+            self.open_cracked_passwords()
 
     def stop_running(self):
         try:
@@ -1023,3 +1026,12 @@ class Control:
 
     def set_wordlist(self, wordlist):
         self.selected_wordlist = wordlist
+
+    def open_cracked_passwords(self):
+        try:
+            self.show_message("Opening passwords file")
+            command = ['xdg-open', self.passwords_file_path]
+            (stderr, stdout) = self.execute_command(command)
+            print(stderr)
+        except:
+            self.show_error_notification("Error while opening", "No such file or directory")
