@@ -62,7 +62,7 @@ class Control:
     __instance = None  # used for singleton check
     popup = None
     timestamp = 0
-    passwords_file_path = "/home/default/PycharmProjects/WiCC/savefiles/cracked_passwords"
+    passwords_file_name = "cracked_networks"
 
     # Semaphores
 
@@ -1030,8 +1030,10 @@ class Control:
     def open_cracked_passwords(self):
         try:
             self.show_message("Opening passwords file")
-            command = ['xdg-open', self.passwords_file_path]
-            (stderr, stdout) = self.execute_command(command)
-            print(stderr)
+            passwords = self.local_folder + "/" + self.passwords_file_name
+            command = ['xdg-open', passwords]
+            thread = threading.Thread(target=self.execute_command, args=(command,))
+            thread.start()
+            thread.join(1)
         except:
             self.show_error_notification("Error while opening", "No such file or directory")
