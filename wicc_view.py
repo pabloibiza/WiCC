@@ -282,16 +282,15 @@ class View:
             current_item = self.networks_treeview.focus()
             network_enc = self.networks_treeview.item(current_item)['values'][3]
             network_id = self.networks_treeview.item(current_item)['values'][0]
-            self.labelframe_attack_options.pack_forget()
 
             if "WEP" in network_enc:
+                self.labelframe_attack_options.pack_forget()
                 self.labelframe_wpa.pack_forget()
                 self.labelframe_wep.pack(fill="both", expand="yes")
             elif "WPA" in network_enc:
+                self.labelframe_attack_options.pack_forget()
                 self.labelframe_wep.pack_forget()
                 self.labelframe_wpa.pack(fill="both", expand="yes")
-            elif network_enc == "OPN":
-                self.popup_gen.info("No valid", "This network is open")
 
             self.send_notify(Operation.SELECT_NETWORK, network_id)
 
