@@ -22,7 +22,6 @@ import os
 import csv
 from subprocess import Popen, PIPE
 import threading
-from tkinter import messagebox
 from wicc_view_popup import PopUpWindow
 import datetime
 
@@ -34,7 +33,7 @@ class Control:
     last_selectedInterface = ""
     selectedNetwork = ""
     operations = ""
-    headless = False
+    informational_popups = True  # set by main, used to check if the program needs to show informational popups
     scan_stopped = False  # to know if the network scan is running
     running_stopped = False  # to know if the program is running (or if the view has been closed)
     scan_filter_parameters = ["ALL", "ALL"]
@@ -89,16 +88,14 @@ class Control:
         else:
             raise Exception("Singleton Class")
 
-    def start_view(self, headless, show_image):
+    def start_view(self):
         """
         Start the view windows
-        :param headless: indicates whether the program will run headless
         :return:
 
         :Author: Miguel Yanes Fernández
         """
-        self.headless = headless
-        self.view.build_window(headless, show_image)
+        self.view.build_window()
 
     def execute_command(self, command):
         """
@@ -126,6 +123,12 @@ class Control:
 
     def set_ignore_savefiles(self, ignore_savefiles):
         self.ignore_local_savefiles = ignore_savefiles
+
+    def set_informational_popups(self, info_popups):
+        self.informational_popups = info_popups
+
+    def set_auto_select(self, auto_select):
+        self.auto_select = auto_select
 
     def set_semaphores_state(self, state):
         if state == "Select interface":
@@ -218,7 +221,7 @@ class Control:
                     self.allows_monitor = True
                     return
 
-    def scan_interfaces(self, auto_select):
+    def scan_interfaces(self):
         """
         Scans all network interfaces. After filtering them (method filter_interfaces,
         scans available wireless interfaces. Finally calls the method filter_w_interface
@@ -251,10 +254,11 @@ class Control:
             # if there is no error, it is a wireless interface
             if iw_output:
                 interfaces.append(self.filter_w_interface(iw_output))
-                if auto_select:
+                if self.auto_select:
                     self.selectedInterface = self.filter_w_interface(iw_output)[0]
                     self.last_selectedInterface = self.selectedInterface
-                    self.auto_select = auto_select
+                    self.set_semaphores_state("Start scan")
+                    self.view.set_buttons(False)
                 elif self.last_selectedInterface != "":
                     self.selectedInterface = self.last_selectedInterface
         self.set_interfaces(interfaces)
@@ -361,7 +365,7 @@ class Control:
 
         tempfile = self.write_directory + "/net_scan_"
 
-        out, err = self.execute_command(['mkdir', self.write_directory])
+        self.execute_command(['mkdir', self.write_directory])
 
         airmon_cmd = ['airmon-ng', 'start', self.selectedInterface]
         interface = self.selectedInterface + 'mon'
@@ -511,12 +515,6 @@ class Control:
     def get_net_attack(self, mac):
         return self.model.get_net_attack(mac)
 
-    def warning_box(self, message):
-        messagebox.showerror("", message)
-
-    def info_box(self, message):
-        messagebox.showinfo("", message)
-
     def notify_view(self):
         """
         Send notify to update the view with the list of interfaces and networks
@@ -524,8 +522,7 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        if not self.headless and not self.get_running_stopped():
-            # if the program is not running headless, we notify the view
+        if not self.get_running_stopped():
             interfaces, networks = self.model.get_parameters()
             try:
                 self.view.get_notify(interfaces, networks)
@@ -661,7 +658,8 @@ class Control:
         return self.model.get_interfaces()
 
     def show_info_notification(self, message):
-        self.popup.info("", message)
+        if self.informational_popups:
+            self.popup.info("", message)
 
     def show_warning_notification(self, message):
         self.popup.warning("Warning", message)

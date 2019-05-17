@@ -68,11 +68,10 @@ if __name__ == '__main__':
     print("")
     print("Project page: https://github.com/pabloibiza/WiCC")
 
-    headless = False  # run the program without the front-end
     auto_select = False  # auto-select the network interface
-    splash_image = True  # show splash image during startup
     ignore_savefiles = False  # ignore the generated local savefiles
     verbose_level = 0
+    popups = True
     args = sys.argv[1:]
 
     options_message = ""
@@ -89,30 +88,26 @@ if __name__ == '__main__':
                 elif arg == '-vvv':
                     verbose_level = 3
                     options_message += " *** Verbose level set to " + str(verbose_level) + "\n"
-        elif arg == '-h':
-            if not headless:
-                headless = True
-                options_message += " *** Running program headless\n"
         elif arg == '-a':
             if not auto_select:
                 auto_select = True
                 options_message += " *** Auto-select network interface\n"
-        elif arg == '-s':
-            if splash_image:
-                splash_image = False
-                options_message += " *** Not showing splash image\n"
         elif arg == '-i':
             if not ignore_savefiles:
                 ignore_savefiles = True
                 options_message += " *** Ignoring local savefiles\n"
-        elif arg == '--help':
+        elif arg == '-p':
+            if popups:
+                popups = False
+                options_message += " *** Not showing informational popups\n"
+        elif arg == '--help' or arg == '-h':
             print("Viewing help")
             print("Usage: # python3 WiCC.py [option(s)]\n")
             print("Options (mainly for debugging purposes):")
             print("   -h | --help \tshow the help")
             print("   -a \t\tauto-select the first available network interface")
-            print("   -s \t\tavoid showing the splash image during startup")
             print("   -i \t\tignore local save files")
+            print("   -p \t\tnot show informational popups")
             print("   -v \t\tselect the verbose level for the program (default: 0, no output)")
             print("\t-v  \tlevel 1 (basic output)")
             print("\t-vv \tlevel 2 (advanced output)")
@@ -129,6 +124,8 @@ if __name__ == '__main__':
 
     control.set_verbose_level(verbose_level)
     control.set_ignore_savefiles(ignore_savefiles)
+    control.set_informational_popups(popups)
+    control.set_auto_select(auto_select)
 
     install_required_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'python3-tk', 'iw', 'net-tools', 'aircrack-ng']
     install_optional_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'pyrit', 'crunch', 'make', 'gcc']
@@ -158,10 +155,7 @@ if __name__ == '__main__':
     else:
         show_message("All required software is installed")
 
-    if headless:
-        view_thread = threading.Thread(target=control.start_view, args=(True, splash_image,))
-    else:
-        view_thread = threading.Thread(target=control.start_view, args=(False, splash_image,))
+    view_thread = threading.Thread(target=control.start_view)
     view_thread.start()
     view_thread.join(1)
 
@@ -171,7 +165,7 @@ if __name__ == '__main__':
     while not control.get_running_stopped():
         if control.semSelectInterface.acquire(False):
             control.semSelectInterface.release()
-            control.scan_interfaces(auto_select)
+            control.scan_interfaces()
         elif control.semStartScan.acquire(False):
             show_message("Start scan")
             control.scan_networks()
@@ -183,6 +177,5 @@ if __name__ == '__main__':
         elif control.semStoppedScan.acquire(False):
             show_message("Scan stopped\nSelect a network or start a new scan")
         time.sleep(1)
-
 
     sys.exit(0)

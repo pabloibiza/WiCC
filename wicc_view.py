@@ -39,11 +39,9 @@ class View:
         self.splash = Splash()
         self.popup_gen = PopUpWindow()
 
-    def build_window(self, headless=False, splash_image=True):
+    def build_window(self):
         """
         Generates the window.
-        :param headless:
-        :param splash_image: False to don't show the splash image
 
         :author: Pablo Sanz Alguacil
         """
@@ -272,8 +270,7 @@ class View:
         self.button_stop_attack_wpa = Button(self.labelframe_wpa, text='Stop Attack', command=self.stop_attack)
         self.button_stop_attack_wpa.grid(column=3, row=0, padx=5)
 
-        if not headless:
-            self.root.mainloop()
+        self.root.mainloop()
 
     def select_network(self):
         """
