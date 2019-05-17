@@ -1055,6 +1055,12 @@ class Control:
         self.selected_wordlist = wordlist
 
     def open_cracked_passwords(self):
+        """
+        Opens the cracked passwords file.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         try:
             self.show_message("Opening passwords file")
             passwords = self.local_folder + "/" + self.passwords_file_name
