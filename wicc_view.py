@@ -32,9 +32,7 @@ class View:
     mac_spoofing_status = False
     silent_mode_status = False
     icon_path = "resources/icon.png"
-    file_icon_path = "resources/file_icon.png"
-    tools_icon_path = "resources/tools_icon.png"
-    help_icon_path = "resources/help_icon.png"
+    icon_path_small = "resources/icon_small.png"
 
     def __init__(self, control):
         self.control = control
@@ -63,7 +61,7 @@ class View:
         self.root.geometry('%dx%d+%d+%d' % (self.width, self.height, x, y))
         self.root.resizable(width=False, height=False)
         self.root.title('WiCC - Wifi Cracking Camp')
-        icon = Image("photo", file=self.icon_path)
+        icon = Image("photo", file=self.icon_path_small)
         self.root.call('wm', 'iconphoto', self.root._w, icon)
 
         # MENU BAR
@@ -278,6 +276,12 @@ class View:
             self.root.mainloop()
 
     def select_network(self):
+        """
+        Changes the attack labelframe to WEP or WPA depending on the selected network. Then ends the selected network to
+        Control.
+
+        :author: Pablo Sanz Alguacil
+        """
         try:
             current_item = self.networks_treeview.focus()
             network_enc = self.networks_treeview.item(current_item)['values'][3]
