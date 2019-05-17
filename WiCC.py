@@ -167,7 +167,45 @@ if __name__ == '__main__':
     view_thread.start()
     view_thread.join(1)
 
-    control.show_info_notification("Welcome to WiCC\n\nSelect an interface to begin the process")
+    # control.show_info_notification("Welcome to WiCC\n\nSelect an interface to begin the process")
+
+    while not exit:
+        if control.semSelectInterface.acquire(False):
+            control.scan_interfaces(auto_select)
+            show_message("Scanning interfaces")
+            control.semSelectInterface.release()
+        elif control.semStartScan.acquire(True):
+            show_message("Scanning networks")
+            control.scan_networks()
+            while control.semRunningScan.acquire(False):
+                control.semRunningScan.release()
+                show_message(" ... Filtering networks ...")
+                control.filter_networks()
+                time.sleep(1)
+            print("end while")
+            control.semStartScan.acquire(False)
+            while control.semStoppedScan.acquire(False):
+                control.semStoppedScan.release()
+                show_message("Scan stopped")
+                while control.semSelectNetwork.acquire(False):
+                    control.semSelectNetwork.release()
+                    print("sel network")
+                    time.sleep(1)
+                else:
+                    print(1)
+                    if control.semStartScan.acquire(False):
+                        print(2)
+                        control.semSelectNetwork.acquire(False)
+                        control.semStoppedScan.acquire(False)
+                        control.semStartScan.release()
+                        control.semRunningScan.release()
+                    else:
+                        time.sleep(1)
+            else:
+                print("wtf")
+        time.sleep(1)
+
+    exit(0)
 
     try:
         while not exit and not control.get_running_stopped():

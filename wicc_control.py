@@ -63,6 +63,14 @@ class Control:
     popup = None
     timestamp = 0
 
+    # Semaphores
+
+    semSelectInterface = threading.Semaphore()
+    semStartScan = threading.Semaphore()
+    semRunningScan = threading.Semaphore()
+    semStoppedScan = threading.Semaphore()
+    semSelectNetwork = threading.Semaphore()
+
     def __init__(self):
         if not Control.__instance:
             self.model = ""
@@ -74,6 +82,8 @@ class Control:
             self.local_folder = self.main_directory + self.local_folder
             self.selected_wordlist = self.main_directory + self.selected_wordlist
             self.__instance = self
+
+            self.semSelectNetwork.acquire(False)
         else:
             raise Exception("Singleton Class")
 
@@ -513,17 +523,23 @@ class Control:
             if self.selectedInterface == "":
                 self.view.set_buttons(True)
                 self.show_info_notification("Please, select a network interface")
+            else:
+                self.semSelectInterface.acquire(False)
+                self.semStartScan.release()
+                print("released")
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
             self.set_buttons_wpa_initial()
             self.set_buttons_wep_initial()
-            print("set to initial")
+            self.semSelectNetwork.release()
         elif operation == Operation.ATTACK_NETWORK:
             # USELESS right now
             self.stop_scan()
             self.attack_network()
         elif operation == Operation.STOP_SCAN:
             self.stop_scan()
+            self.semRunningScan.acquire(False)
+            self.semStoppedScan.release()
         elif operation == Operation.STOP_RUNNING:
             self.stop_running()
         elif operation == Operation.SCAN_OPTIONS:
