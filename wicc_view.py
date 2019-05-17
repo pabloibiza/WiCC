@@ -155,7 +155,7 @@ class View:
 
         # COMBO BOX - NETWORK INTERFACES
         self.interfaceVar = StringVar()
-        self.interfaces_combobox = ttk.Combobox(self.labelframe_scan, textvariable=self.interfaceVar)
+        self.interfaces_combobox = ttk.Combobox(self.labelframe_scan, textvariable=self.interfaceVar, state="readonly")
         self.interfaces_combobox['values'] = self.interfaces
         self.interfaces_combobox.bind("<<ComboboxSelected>>")
         self.interfaces_combobox.grid(column=2, row=0)
@@ -180,7 +180,7 @@ class View:
 
         # COMBO BOX - CHANNELS
         self.channelVar = StringVar()
-        self.channels_combobox = ttk.Combobox(self.labelframe_filters, textvariable=self.channelVar)
+        self.channels_combobox = ttk.Combobox(self.labelframe_filters, textvariable=self.channelVar, state="readonly")
         self.channels_combobox['values'] = self.channels
         self.channels_combobox.bind("<<ComboboxSelected>>")
         self.channels_combobox.current(0)
@@ -192,7 +192,8 @@ class View:
 
         # COMBO BOX - ENCRYPTOION
         self.encryptionVar = StringVar()
-        self.encryption_combobox = ttk.Combobox(self.labelframe_filters, textvariable=self.encryptionVar)
+        self.encryption_combobox = ttk.Combobox(self.labelframe_filters, textvariable=self.encryptionVar,
+                                                state="readonly")
         self.encryption_combobox['values'] = self.encryption_types
         self.encryption_combobox.current(0)
         self.encryption_combobox.bind("<<ComboboxSelected>>")
