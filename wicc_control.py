@@ -40,7 +40,7 @@ class Control:
     scan_filter_parameters = ["ALL", "ALL"]
     auto_select = False
     cracking_completed = False  # to know if the network cracking process has finished or not
-    selected_wordlist = "/Resources/darkc0de.lst"
+    selected_wordlist = "/resources/darkc0de.lst"
     cracking_network = False  # state of the network cracking process (if it has started or not)
     net_attack = ""  # EncryptionType generic object, used to store the specific instance of the running attack
     verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
@@ -57,7 +57,7 @@ class Control:
     hex_values_even = ['2', '4', '6', '8', 'a', 'c', 'e']
     required_software = [["ifconfig", False], ["aircrack-ng", False], ["pyrit", False], ["cowpatty", False],
                          ["pgrep", False], ["NetworkManager", False], ["genpmk", False], ["iw", False],
-                         ['crunch', False], ['macchanger', False]]
+                         ['crunch', False]]
     mandatory_software = ['ifconfig', 'aircrack-ng']
     __instance = None  # used for singleton check
     popup = None
@@ -70,7 +70,6 @@ class Control:
     semStartScan = threading.Semaphore()
     semRunningScan = threading.Semaphore()
     semStoppedScan = threading.Semaphore()
-    semSelectNetwork = threading.Semaphore()
 
     def __init__(self):
         if not Control.__instance:
@@ -84,7 +83,9 @@ class Control:
             self.selected_wordlist = self.main_directory + self.selected_wordlist
             self.__instance = self
 
-            self.semSelectNetwork.acquire(False)
+            self.semStartScan.acquire(False)
+            self.semRunningScan.acquire(False)
+            self.semStoppedScan.acquire(False)
         else:
             raise Exception("Singleton Class")
 
@@ -125,6 +126,28 @@ class Control:
 
     def set_ignore_savefiles(self, ignore_savefiles):
         self.ignore_local_savefiles = ignore_savefiles
+
+    def set_semaphores_state(self, state):
+        if state == "Select interface":
+            self.semSelectInterface.release()
+            self.semStartScan.acquire(False)
+            self.semRunningScan.acquire(False)
+            self.semStoppedScan.acquire(False)
+        elif state == "Start scan":
+            self.semSelectInterface.acquire(False)
+            self.semStartScan.release()
+            self.semRunningScan.acquire(False)
+            self.semStoppedScan.acquire(False)
+        elif state == "Running scan":
+            self.semSelectInterface.acquire(False)
+            self.semStartScan.acquire(False)
+            self.semRunningScan.release()
+            self.semStoppedScan.acquire(False)
+        elif state == "Stop scan":
+            self.semSelectInterface.acquire(False)
+            self.semStartScan.acquire(False)
+            self.semRunningScan.acquire(False)
+            self.semStoppedScan.release()
 
     def check_software(self):
         """
@@ -319,6 +342,7 @@ class Control:
                 self.show_info_notification("Card already in monitor mode.\nPlease, re-select the wireless interface")
                 self.show_message("Card already in monitor mode")
                 self.view.set_buttons(True)
+                self.set_semaphores_state("Select interface")
             self.model.clear_interfaces()
             return False
 
@@ -326,6 +350,7 @@ class Control:
 
         if not self.allows_monitor:
             self.show_info_notification("The selected interface doesn't support monitor mode")
+            self.set_semaphores_state("Select interface")
             return False
 
         self.scan_stopped = False
@@ -411,6 +436,7 @@ class Control:
                 self.selectedInterface = ""
                 self.stop_scan()
                 self.view.set_buttons(True)
+                self.set_semaphores_state("Select interface")
                 return False
             except Exception:
                 # Unknown exception. Tries to fix it by resetting the interface, but may not work
@@ -525,14 +551,12 @@ class Control:
                 self.view.set_buttons(True)
                 self.show_info_notification("Please, select a network interface")
             else:
-                self.semSelectInterface.acquire(False)
-                self.semStartScan.release()
-                print("released")
+                self.set_semaphores_state("Start scan")
         elif operation == Operation.SELECT_NETWORK:
             self.selectedNetwork = value
             self.set_buttons_wpa_initial()
             self.set_buttons_wep_initial()
-            self.semSelectNetwork.release()
+            self.set_semaphores_state("Runnign scan")
         elif operation == Operation.ATTACK_NETWORK:
             # USELESS right now
             self.stop_scan()
@@ -1031,9 +1055,9 @@ class Control:
         try:
             self.show_message("Opening passwords file")
             passwords = self.local_folder + "/" + self.passwords_file_name
+            open(passwords, 'r').close()  # just to raise an exception if the file doesn't exists
             command = ['xdg-open', passwords]
             thread = threading.Thread(target=self.execute_command, args=(command,))
             thread.start()
-            thread.join(1)
-        except:
-            self.show_error_notification("Error while opening", "No such file or directory")
+        except FileNotFoundError:
+            self.show_warning_notification("No stored cracked networks. You need to do and finish an attack")

@@ -9,7 +9,7 @@
 import tkinter as tk
 
 class Splash:
-    image_file = "Resources/splash.png"
+    image_file = "resources/splash.png"
     width = 600
     height = 400
 

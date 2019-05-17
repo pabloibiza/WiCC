@@ -19,14 +19,6 @@ light_blue = "\033[1;34m"
 light_cyan = "\033[1;36m"
 
 
-def print_ascii(file):
-    output = ""
-    with open(file, "r") as art:
-        for line in art:
-            output += line
-    print(output)
-
-
 def show_message(message):
     """
     Method to print a message if the verbose level is higher or equal to 1
@@ -58,7 +50,6 @@ if __name__ == '__main__':
 
     exit = False
 
-    # print_ascii("Resources/ascii_art.txt")
     print(cyan + "=============================================")
     print(light_blue + "      __      __ ___________  ________   ")
     print("     /  \    /  \__\_   ___ \|_   ___ \  ")
@@ -167,128 +158,24 @@ if __name__ == '__main__':
     view_thread.start()
     view_thread.join(1)
 
-    # control.show_info_notification("Welcome to WiCC\n\nSelect an interface to begin the process")
-    #
-    # while not exit:
-    #     if control.semSelectInterface.acquire(False):
-    #         # Scan interfaces
-    #         # Semaphores:
-    #         #  - semSelectInterface -> acquired and released, first semaphore, previous to the net scan
-    #         show_message("Scanning interfaces")
-    #         control.scan_interfaces(auto_select)
-    #         control.semSelectInterface.release()
-    #     elif control.semStartScan.acquire(True):
-    #         # Scan networks
-    #         # Semaphores:
-    #         #  - semStartScan -> to know when the user selects to start the scan
-    #         show_message("Scanning networks")
-    #         control.scan_networks()
-    #         while control.semRunningScan.acquire(False):
-    #             # Filter networks
-    #             # Semaphore:
-    #             #  - semRunnningScan -> if the scan is running (if not, the semaphore semStopped scan will be used)
-    #             control.semRunningScan.release()
-    #             show_message(" ... Filtering networks ...")
-    #             control.filter_networks()
-    #             time.sleep(1)
-    #         print("end while")
-    #         control.semStartScan.acquire(False)
-    #         while control.semStoppedScan.acquire(False):
-    #             # Stopped scan
-    #             # Semaphore:
-    #             #  - semStoppedScan -> if the scan has stopped
-    #             control.semStoppedScan.release()
-    #             show_message("Scan stopped")
-    #             while control.semSelectNetwork.acquire(False):
-    #                 # Select network
-    #                 # Semaphore
-    #                 #  - semSelectNetwork -> if a network has been selected (no Control action)
-    #                 control.semSelectNetwork.release()
-    #                 print("sel network")
-    #                 time.sleep(1)
-    #             else:
-    #                 print(1)
-    #                 if control.semStartScan.acquire(False):
-    #                     # Restart scan (after stopped scan)
-    #                     # Semaphore
-    #                     #  - semStartScan -> released to that the user wants to restart the scan
-    #                     #  - semStoppedScan -> acquired to prevent the stopped scan process
-    #                     #  - semSelectNetwork -> acquired to prevent the network selection process
-    #                     #  - semRunningScan -> released to be able to restart the scan
-    #                     print(2)
-    #                     control.semSelectNetwork.acquire(False)
-    #                     control.semStoppedScan.acquire(False)
-    #                     control.semStartScan.release()
-    #                     control.semRunningScan.release()
-    #                 else:
-    #                     time.sleep(1)
-    #         else:
-    #             print("wtf")
-    #     time.sleep(1)
-    #
-    # exit(0)
+    control.show_info_notification("Welcome to WiCC\n\nSelect an interface to begin the process")
 
-    try:
-        while not exit and not control.get_running_stopped():
-            if control.has_selected_interface():
-                if auto_select:
-                    control.view.disable_buttons()
-                show_message("Selected interface: " + control.selectedInterface)
-                if control.scan_networks():
-                    show_message("Start scanning available networks...")
-                    time.sleep(3)
-                    while not control.selectedNetwork and control.running_scan() and not control.get_running_stopped():
-                        time.sleep(1)
-                        show_message("\t... Scanning networks ...")
-                        if not control.filter_networks() and not control.get_running_stopped():
-                            time.sleep(1)
-                            control.stop_scan()
-                            time.sleep(1)
-                            show_message(" * An error ocurred, please, re-select the interface")
-                            control.selectedInterface = ""
-                            control.last_selectedInterface = ""
-                            control.model.interfaces = []
-                            while not control.has_selected_interface() and not control.get_running_stopped():
-                                control.scan_interfaces(auto_select)
-                                show_message("Scanning interfaces")
-                                time.sleep(1)
-                            show_message("Selected interface: " + control.selectedInterface)
-                            control.scan_networks()
-                            show_message("Start scanning available networks...")
-                            time.sleep(3)
-                    show_message("\n * Network scanning stopped * \n")
-                    if not control.get_running_stopped():
-                        while not control.selectedNetwork and not control.get_running_stopped():
-                            # waits until a network is selected
-                            time.sleep(1)
-                        show_message("Selected network: " + str(control.selectedNetwork))
-                        show_message("\nStarting attack...\n")
+    show_message("Select an interface")
+    while not control.get_running_stopped():
+        if control.semSelectInterface.acquire(False):
+            control.semSelectInterface.release()
+            control.scan_interfaces(auto_select)
+        elif control.semStartScan.acquire(False):
+            show_message("Start scan")
+            control.scan_networks()
+            control.semRunningScan.release()
+            show_message("Stop the scan to select a network")
+        elif control.semRunningScan.acquire(False):
+            control.semRunningScan.release()
+            control.filter_networks()
+        elif control.semStoppedScan.acquire(False):
+            show_message("Scan stopped\nSelect a network or start a new scan")
+        time.sleep(1)
 
-                        while not control.cracking_completed and not control.is_cracking_network() \
-                                and not control.get_running_stopped():
-                            show_message("\t... Cracking network ...")
-                            time.sleep(1)
 
-                        while control.is_cracking_network() and not control.get_running_stopped():
-                            show_message("\t... Cracking password ...")
-                            # print(control.check_cracking_status())
-                            time.sleep(1)
-
-                        show_message("Cracking process finished.")
-                        # sys.exit(0)
-                    control.selectedInterface = ""
-                else:
-                    control.stop_scan()
-                    control.selectedInterface = ""
-
-            else:
-                show_message("Scanning interfaces")
-                control.scan_interfaces(auto_select)
-                time.sleep(1)
-                if control.get_interfaces() == "":
-                    control.view.show_info_notification("No wireless interfaces found."
-                                                        "\n\nPlease connect a wireless card.")
-        sys.exit(0)
-    except:
-        sys.exit(1)
     sys.exit(0)

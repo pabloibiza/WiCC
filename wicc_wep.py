@@ -111,10 +111,15 @@ class WEP(EncryptionType):
         self.execute_command(['rm', self.write_directory + '/aircrack_out_' + str(self.timestamp)])
         self.execute_command(['touch', self.write_directory + '/aircrack_out_' + str(self.timestamp)])
         aircrack_cmd = ['timeout', '10', 'aircrack-ng',
-                        self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap']
+                        self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap',
+                        '>', self.write_directory + '/aircrack_out_' + str(self.timestamp)]
         self.show_message("Running aircrack thread")
-        out, err = self.execute_command(aircrack_cmd)
-        password= self.filter_aircrack(out.decode("utf-8"))
+        self.execute_command(aircrack_cmd)
+        time.sleep(1)
+        print("executed aircrack")
+        with open(self.write_directory + '/aircrack_out_' + str(self.timestamp), 'r') as file:
+            password = self.filter_aircrack(file.read())
+
         self.running_aircrack = False
 
         self.password = password

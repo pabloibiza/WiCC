@@ -45,7 +45,7 @@ class About:
         self.frame = Frame(self.root)
         self.frame.pack()
 
-        photo = PhotoImage(file="Resources/icon_small.png")
+        photo = PhotoImage(file="resources/icon_small.png")
         photo_label = Label(self.frame, image=photo)
         photo_label.image = photo
         photo_label.pack(side=LEFT)

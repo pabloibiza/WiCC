@@ -26,7 +26,6 @@ class ViewMac:
         self.build_window()
         self.popup_gen = PopUpWindow()
         self.set_spoofing_checkbutton()
-        self.root.attributes('-topmost', True)
         self.root.mainloop()
 
     def build_window(self):

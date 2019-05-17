@@ -31,10 +31,10 @@ class View:
     channels = ('ALL', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14')
     mac_spoofing_status = False
     silent_mode_status = False
-    icon_path = "Resources/icon.png"
-    file_icon_path = "Resources/file_icon.png"
-    tools_icon_path = "Resources/tools_icon.png"
-    help_icon_path = "Resources/help_icon.png"
+    icon_path = "resources/icon.png"
+    file_icon_path = "resources/file_icon.png"
+    tools_icon_path = "resources/tools_icon.png"
+    help_icon_path = "resources/help_icon.png"
 
     def __init__(self, control):
         self.control = control
