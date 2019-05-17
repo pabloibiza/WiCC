@@ -40,7 +40,7 @@ class Control:
     scan_filter_parameters = ["ALL", "ALL"]
     auto_select = False
     cracking_completed = False  # to know if the network cracking process has finished or not
-    selected_wordlist = "/resources/darkc0de.lst"
+    selected_wordlist = "/usr/share/wordlists/rockyou.txt"
     cracking_network = False  # state of the network cracking process (if it has started or not)
     net_attack = ""  # EncryptionType generic object, used to store the specific instance of the running attack
     verbose_level = 1  # level 1: minimal output, level 2: advanced output, level 3: advanced output and commands
@@ -80,7 +80,7 @@ class Control:
             directory, err = self.execute_command(['pwd'])
             self.main_directory = directory.decode('utf-8')[:-1]
             self.local_folder = self.main_directory + self.local_folder
-            self.selected_wordlist = self.main_directory + self.selected_wordlist
+            # self.selected_wordlist = self.main_directory + self.selected_wordlist
             self.__instance = self
 
             self.semStartScan.acquire(False)
@@ -345,6 +345,10 @@ class Control:
                 self.set_semaphores_state("Select interface")
             self.model.clear_interfaces()
             return False
+
+        scan_info_thread = threading.Thread(target=self.show_info_notification,
+                                            args=(" - Scanning networks -\nStop the scan to select a network",))
+        scan_info_thread.start()
 
         self.check_monitor_mode()
 
@@ -773,8 +777,7 @@ class Control:
             self.set_buttons_wpa_initial()
             return
 
-        self.show_info_notification("Starting attack on" + network_encryption + " network:" + "\n\nName: " +
-                                    network.get_essid() + "\nBSSID: " + network.get_bssid() +
+        self.show_info_notification("Cracking password for the selected network"
                                     "\n\nPlease wait up to a few minutes until the process is finished")
 
         # ------------- WEP Attack ----------------
