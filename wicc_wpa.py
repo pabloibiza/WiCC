@@ -192,3 +192,25 @@ class WPA(EncryptionType):
                 self.show_message("Cowpatty handshake detected")
                 return True
         return False
+
+    def filter_aircrack(self, output):
+        """
+        Filter the aircrack output to read the password (if any is found)
+        :param output: output from the aicrack command
+        :return: password (or "" if it wasn't found)
+
+        :Author: Miguel Yanes Fernández
+        """
+        words = output.split(" ")
+        next_1 = False
+        next_2 = False
+        for word in words:
+            if word[:6] == "FOUND!":
+                next_1 = True
+            elif next_1:
+                if not next_2:
+                    next_2 = True
+                else:
+                    return word
+        self.show_message("No password found in the capture file")
+        return ""

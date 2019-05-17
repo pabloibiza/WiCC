@@ -168,44 +168,65 @@ if __name__ == '__main__':
     view_thread.join(1)
 
     # control.show_info_notification("Welcome to WiCC\n\nSelect an interface to begin the process")
-
-    while not exit:
-        if control.semSelectInterface.acquire(False):
-            control.scan_interfaces(auto_select)
-            show_message("Scanning interfaces")
-            control.semSelectInterface.release()
-        elif control.semStartScan.acquire(True):
-            show_message("Scanning networks")
-            control.scan_networks()
-            while control.semRunningScan.acquire(False):
-                control.semRunningScan.release()
-                show_message(" ... Filtering networks ...")
-                control.filter_networks()
-                time.sleep(1)
-            print("end while")
-            control.semStartScan.acquire(False)
-            while control.semStoppedScan.acquire(False):
-                control.semStoppedScan.release()
-                show_message("Scan stopped")
-                while control.semSelectNetwork.acquire(False):
-                    control.semSelectNetwork.release()
-                    print("sel network")
-                    time.sleep(1)
-                else:
-                    print(1)
-                    if control.semStartScan.acquire(False):
-                        print(2)
-                        control.semSelectNetwork.acquire(False)
-                        control.semStoppedScan.acquire(False)
-                        control.semStartScan.release()
-                        control.semRunningScan.release()
-                    else:
-                        time.sleep(1)
-            else:
-                print("wtf")
-        time.sleep(1)
-
-    exit(0)
+    #
+    # while not exit:
+    #     if control.semSelectInterface.acquire(False):
+    #         # Scan interfaces
+    #         # Semaphores:
+    #         #  - semSelectInterface -> acquired and released, first semaphore, previous to the net scan
+    #         show_message("Scanning interfaces")
+    #         control.scan_interfaces(auto_select)
+    #         control.semSelectInterface.release()
+    #     elif control.semStartScan.acquire(True):
+    #         # Scan networks
+    #         # Semaphores:
+    #         #  - semStartScan -> to know when the user selects to start the scan
+    #         show_message("Scanning networks")
+    #         control.scan_networks()
+    #         while control.semRunningScan.acquire(False):
+    #             # Filter networks
+    #             # Semaphore:
+    #             #  - semRunnningScan -> if the scan is running (if not, the semaphore semStopped scan will be used)
+    #             control.semRunningScan.release()
+    #             show_message(" ... Filtering networks ...")
+    #             control.filter_networks()
+    #             time.sleep(1)
+    #         print("end while")
+    #         control.semStartScan.acquire(False)
+    #         while control.semStoppedScan.acquire(False):
+    #             # Stopped scan
+    #             # Semaphore:
+    #             #  - semStoppedScan -> if the scan has stopped
+    #             control.semStoppedScan.release()
+    #             show_message("Scan stopped")
+    #             while control.semSelectNetwork.acquire(False):
+    #                 # Select network
+    #                 # Semaphore
+    #                 #  - semSelectNetwork -> if a network has been selected (no Control action)
+    #                 control.semSelectNetwork.release()
+    #                 print("sel network")
+    #                 time.sleep(1)
+    #             else:
+    #                 print(1)
+    #                 if control.semStartScan.acquire(False):
+    #                     # Restart scan (after stopped scan)
+    #                     # Semaphore
+    #                     #  - semStartScan -> released to that the user wants to restart the scan
+    #                     #  - semStoppedScan -> acquired to prevent the stopped scan process
+    #                     #  - semSelectNetwork -> acquired to prevent the network selection process
+    #                     #  - semRunningScan -> released to be able to restart the scan
+    #                     print(2)
+    #                     control.semSelectNetwork.acquire(False)
+    #                     control.semStoppedScan.acquire(False)
+    #                     control.semStartScan.release()
+    #                     control.semRunningScan.release()
+    #                 else:
+    #                     time.sleep(1)
+    #         else:
+    #             print("wtf")
+    #     time.sleep(1)
+    #
+    # exit(0)
 
     try:
         while not exit and not control.get_running_stopped():
