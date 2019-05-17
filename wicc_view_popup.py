@@ -30,7 +30,7 @@ class PopUpWindow:
         return messagebox.askyesno(subject, text)
 
     @staticmethod
-    def okcancel(subject,text):
+    def okcancel(subject, text):
         return messagebox.askokcancel(subject, text)
 
 

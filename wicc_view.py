@@ -707,6 +707,8 @@ class View:
                 self.button_start_attack_wep['state'] = status
             elif button == "stop_attack_wep":
                 self.button_stop_attack_wep['state'] = status
+            elif button == "select network":
+                self.button_select_network['state'] = status
 
     @staticmethod
     def show_about(self):
