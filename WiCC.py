@@ -49,24 +49,30 @@ if __name__ == '__main__':
         sys.exit(1)
 
     exit = False
-
-    print(cyan + "=============================================")
-    print(light_blue + "      __      __ ___________  ________   ")
+    print(cyan)
+    print("=============================================" + light_blue)
+    print("      __      __ ___________  ________   ")
     print("     /  \    /  \__\_   ___ \|_   ___ \  ")
-    print("     \   \/\/   /  /    \  \//    \  \/ ")
-    print(blue +"      \        /|  \     \___\     \____ ")
+    print("     \   \/\/   /  /    \  \//    \  \/  " + blue)
+    print("      \        /|  \     \___\     \____ ")
     print("       \__/\__/ |__|\________/\________/ ")
     print("")
     print("")
-    print("              Wifi Cracking Camp")
-    print(cyan + "=============================================")
-
-    control = Control()
+    print("              Wifi Cracking Camp" + cyan)
+    print("=============================================")
+    print(blue)
+    print("Developed by:")
+    print("  - Pablo Sanz Alguacil")
+    print("  - Miguel Yanes Fernández")
+    print("  - Adam Chankley")
+    print("")
+    print("Project page: https://github.com/pabloibiza/WiCC")
 
     headless = False  # run the program without the front-end
     auto_select = False  # auto-select the network interface
     splash_image = True  # show splash image during startup
     ignore_savefiles = False  # ignore the generated local savefiles
+    verbose_level = 0
     args = sys.argv[1:]
 
     options_message = ""
@@ -75,15 +81,12 @@ if __name__ == '__main__':
         if '-v' in arg:
             if verbose_level == 0:
                 if arg == '-v':
-                    control.set_verbose_level(1)
                     verbose_level = 1
                     options_message += " *** Verbose level set to " + str(verbose_level) + "\n"
                 elif arg == '-vv':
-                    control.set_verbose_level(2)
                     verbose_level = 2
                     options_message += "*** Verbose level set to " + str(verbose_level) + "\n"
                 elif arg == '-vvv':
-                    control.set_verbose_level(3)
                     verbose_level = 3
                     options_message += " *** Verbose level set to " + str(verbose_level) + "\n"
         elif arg == '-h':
@@ -101,7 +104,6 @@ if __name__ == '__main__':
         elif arg == '-i':
             if not ignore_savefiles:
                 ignore_savefiles = True
-                control.set_ignore_savefiles(ignore_savefiles)
                 options_message += " *** Ignoring local savefiles\n"
         elif arg == '--help':
             print("Viewing help")
@@ -119,9 +121,14 @@ if __name__ == '__main__':
         else:
             print("*** Unrecognized option " + arg)
             print("*** Use option --help to view the help and finish execution. Only for debugging purposes\n")
-            break
+            sys.exit(0)
     print(options_message)
     print(white)
+
+    control = Control()
+
+    control.set_verbose_level(verbose_level)
+    control.set_ignore_savefiles(ignore_savefiles)
 
     install_required_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'python3-tk', 'iw', 'net-tools', 'aircrack-ng']
     install_optional_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'pyrit', 'crunch', 'make', 'gcc']

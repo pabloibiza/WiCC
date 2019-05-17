@@ -721,9 +721,13 @@ class Control:
 
         self.add_net_attack(network.get_bssid(), self.net_attack)
 
-        self.show_info_notification("Starting scan on WPA network:" + "\n\nName: " +
-                                    network.get_essid() + "\nBSSID: " + network.get_bssid() +
-                                    "\n\nPlease wait up to a few minutes until a handshake is captured")
+        choice = self.show_yesno_notification("Starting WPA scan",
+                                              "You are about to start the scanning process on the "
+                                              "WPA network:\n\n - " + network.get_essid() +
+                                              ".\n\n¿Do you want to start the scan?")
+        if not choice:
+            self.set_buttons_wpa_initial()
+            return
 
         self.show_message("start scanning")
         self.net_attack.scan_network()
@@ -736,9 +740,6 @@ class Control:
         self.show_info_notification("Handshake captured.\n\nYou can now start the attack (cracking process)")
         self.set_buttons_wpa_scanned()
         return
-
-        # <wicc_wpa.WPA object at 0x7fe7792c77b8>
-        # <wicc_wpa.WPA object at 0x7fe7792c77b8>
 
     def attack_network(self):
         """
@@ -777,8 +778,13 @@ class Control:
             self.set_buttons_wpa_initial()
             return
 
-        self.show_info_notification("Cracking password for the selected network"
-                                    "\n\nPlease wait up to a few minutes until the process is finished")
+        choice = self.show_yesno_notification("Starting cracking process",
+                                              "You are about to start the cracking process on the "
+                                              " network:\n - " + network.get_essid() +
+                                              ".\n\n¿Do you want to start the cracking process?")
+        if not choice:
+            self.set_buttons_wep_initial()
+            return
 
         # ------------- WEP Attack ----------------
         if network_encryption == " WEP":
