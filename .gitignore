@@ -103,5 +103,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-#IDE configurations
+# IDE configurations
 /.idea
+
+# Temp files
+/savefiles
