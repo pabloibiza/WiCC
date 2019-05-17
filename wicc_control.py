@@ -671,6 +671,9 @@ class Control:
 
     def show_yesno_notification(self, title, question):
         return self.popup.yesno(title, question)
+    
+    def show_okcancel_notification(self, title, question):
+        return self.popup.okcancel(title, question)
 
     def apply_filters(self, value):
         """
