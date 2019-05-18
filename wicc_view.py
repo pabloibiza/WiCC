@@ -251,25 +251,13 @@ class View:
         self.button_start_attack_wep = Button(self.labelframe_wep, text='2 - Attack', command=self.start_attack)
         self.button_start_attack_wep.grid(column=0, row=0, padx=5)
 
-        # BUTTON - STOP ATTACK WEP
-        self.button_stop_attack_wep = Button(self.labelframe_wep, text='Stop Attack', command=self.stop_attack)
-        self.button_stop_attack_wep.grid(column=1, row=0, padx=5)
-
         # BUTTON - SCAN WPA
         self.button_scan_wpa = Button(self.labelframe_wpa, text="2 - Capture handshake", command=self.start_scan_wpa)
         self.button_scan_wpa.grid(column=0, row=0, padx=5)
 
-        # BUTTON - STOP SCAN WPA
-        #self.button_stop_scan_wpa = Button(self.labelframe_wpa, text="Stop scan", command=self.stop_scan_wpa)
-        #self.button_stop_scan_wpa.grid(column=1, row=0, padx=5)
-
         # BUTTON - START ATTACK WPA
         self.button_start_attack_wpa = Button(self.labelframe_wpa, text="3 - Attack", command=self.start_attack)
-        self.button_start_attack_wpa.grid(column=2, row=0, padx=5)
-
-        # BUTTON - STOP ATTACK WPA
-        #self.button_stop_attack_wpa = Button(self.labelframe_wpa, text='Stop Attack', command=self.stop_attack)
-        #self.button_stop_attack_wpa.grid(column=3, row=0, padx=5)
+        self.button_start_attack_wpa.grid(column=1, row=0, padx=5)
 
         self.root.mainloop()
 
@@ -350,24 +338,19 @@ class View:
         self.button_select_network['state'] = state
         self.checkbutton_silent['state'] = state
         self.button_start_attack_wep['state'] = state
-        self.button_stop_attack_wep['state'] = state
         self.button_scan_wpa['state'] = state
-        #self.button_stop_scan_wpa['state'] = state
         self.button_start_attack_wpa['state'] = state
-        #self.button_stop_attack_wpa['state'] = state
         self.checkbutton_silent['state'] = state
         self.button_select_wordlist['state'] = state
 
     def start_attack(self):
         """
-        Sends the selected network id to Control, to start the attack.
+        Sends an order d to Control, to start the attack.
 
         :author: Pablo Sanz Alguacil
         """
 
-        current_item = self.networks_treeview.focus()
-        network_id = self.networks_treeview.item(current_item)['values'][0]
-        self.send_notify(Operation.ATTACK_NETWORK, network_id)
+        self.send_notify(Operation.ATTACK_NETWORK, "")
 
     def notify_kill(self):
         """
@@ -640,15 +623,6 @@ class View:
                 self.popup_gen.error("Error", "Failed to set directory \n'%s'" % select_window)
                 return
 
-    def stop_attack(self):
-        """
-        Sends a notification to control so stop the current attack.
-
-        :author: Pablo Sanz Alguacil
-        """
-
-        self.send_notify(Operation.STOP_ATTACK, "")
-
     def start_scan_wpa(self):
         """
         Sends a notification to start a WPA scan.
@@ -657,15 +631,6 @@ class View:
         """
 
         self.send_notify(Operation.START_SCAN_WPA, "")
-
-    def stop_scan_wpa(self):
-        """
-        Sends a notification to stop the WPA scan.
-
-        :author: Pablo Sanz Alguacil
-        """
-
-        self.send_notify(Operation.STOP_SCAN_WPA, "")
 
     def silent_mode(self):
         """
@@ -698,16 +663,10 @@ class View:
         for button in buttons:
             if button == "scan_wpa":
                 self.button_scan_wpa['state'] = status
-            #elif button == "stop_scan_wpa":
-                #self.button_stop_scan_wpa['state'] = status
             elif button == "attack_wpa":
                 self.button_start_attack_wpa['state'] = status
-            #elif button == "stop_attack_wpa":
-                #self.button_stop_attack_wpa['state'] = status
             elif button == "attack_wep":
                 self.button_start_attack_wep['state'] = status
-            #elif button == "stop_attack_wep":
-                #self.button_stop_attack_wep['state'] = status
             elif button == "select network":
                 self.button_select_network['state'] = status
 

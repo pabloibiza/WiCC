@@ -830,7 +830,8 @@ class Control:
         choice = self.show_yesno_notification("Starting WPA scan",
                                               "You are about to start the scanning process on the "
                                               "WPA network:\n\n - " + network.get_essid() +
-                                              "\n\n¿Do you want to start the scan?")
+                                              "\n\nThe process will take up to a few minutes."
+                                              "\n¿Do you want to start the scan?")
         if not choice:
             self.set_buttons_wpa_initial()
             return
@@ -888,7 +889,8 @@ class Control:
         choice = self.show_yesno_notification("Starting cracking process",
                                               "You are about to start the cracking process on the "
                                               " network:\n - " + network.get_essid() +
-                                              "\n\n¿Do you want to start the cracking process?")
+                                              "\n\nThe process will take up to a few minutes."
+                                              "\n¿Do you want to start the cracking process?")
         if not choice:
             self.set_buttons_wep_initial()
             return
