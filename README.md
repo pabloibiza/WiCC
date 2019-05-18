@@ -16,13 +16,10 @@ GUI tool for wireless WEP and WPA/WPA2 pentesting.
 <br/><br/>
 Developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adam Chalkley, as the Group Project for 3rd year of the 
 Bachelor of Science in Computing in Digital Forensics and Cyber Security at the **Technological University Dublin**.
-<br/><br/><br/>
-**Tool under development. Some features may not have been added yet.**
 
-**Correct operation is not guaranteed.**
 <br/><br/><br/>
 Wireless pentesting tool with functionalities such as password cracking (in WEP and WPA/WPA2 networks), DoS attacks, 
-client de-authentication, data decryption or fake base stations.
+client de-authentication, data decryption.
 <br/><br/>
 
 # Project insight
@@ -37,15 +34,14 @@ The utilised tools are the following:
 * pyrit
 * coWPAtty
 * pgrep
-* macchanger
 * crunch
 <br/><br/>
 
 # Requirements
 
-You will need to run the program with root privileges, and using some version of Python 3+. Also, you need to have installed all of the tools mentioned in the section *Project insight*. Of course, as this is a wireless pentesting tool, you will need some wireless card to perform the scans/attacks. In case you miss some of these requirements, you won't be able to initiate the tool. 
+You will need to run the application with root privileges, and using some version of Python 3+. Also, you need to have installed all of the tools mentioned in the section *Project insight*. If any of the mentioned tools is not installed, the application will ask you to automatically intall it. Of course, as this is a wireless pentesting tool, you will need some wireless card to perform the scans/attacks. In case you miss some of these requirements, you won't be able to initiate the tool. 
 
-Also, although it's not strictly necessary, it is highly recommended to use a wireless card that supports both monitor mode and packet injection. 
+Also it is highly recommended to use a wireless card that supports both monitor mode and packet injection. 
 In case your wireless card doesn't support them, you will be able to execute the attacks but may miss some advanced 
 functionalities to, for example, speed-up the network cracking process.
 <br/><br/>
@@ -55,14 +51,14 @@ functionalities to, for example, speed-up the network cracking process.
 The tool is a framework utility, but you need to run it from the command line. To do so, you need to run with root privileges and
 with Python 3+:
 
-> `$ sudo python3 WiCC.py [option(s)]`
+> `$ sudo python3 WiCC.py [options]`
 
 <br/><br/>
 There are also some advanced options that you can choose from the command line. These options are originaly meant for debugging
 purposes, but you may find some of them useful:
 * `-a` Auto-select the first available network interface.
-* `-s` Avoid showing the splash image during startup.
 * `-i` Ignore local save files.
+* `-p` Only basic pop-ups mode.
 * `-v` Select the verbose level for the output (default: 0, no output)
 
      * `-v`   Level 1 (basic output)
@@ -71,18 +67,18 @@ purposes, but you may find some of them useful:
        
      * `-vvv` Level 3 (advanced output and executed commands)
 
-You can always view the help with the option `--help`
+You can always view the help with the option `--help` or `-h'
 <br/><br/>
 
 # Final release
-The actual release is a development version. You can expect a final release of the project for the first fortnight of May. Once the final version is released, we will keep working in the project to fix possible upcoming bugs, or even add new interesintg features. 
-If you want to get in contact with us to notify us about some bug you encountered, or about some feature you want us to add, you can use the contact information showed on our GitHub profiles, listed below.
+The version 1.0 includes password cracking (in WEP and WPA/WPA2 networks), DoS attacks, client de-authentication, data decryption funtionalities.
+If you want to get in contact to notify us about some bug you encountered, or about some feature you thing could be interesting to add, you can use the contact information showed on our GitHub profiles listed below.
 <br/><br/>
 
 # Authors
 
-* **Miguel Yanes Fernández** - *Project Manager and back-end developer* - [MiguelYanes](https://github.com/MiguelYanes)
-* **Pablo Sanz Alguacil** - *UX designer and front-end developer* - [pabloibiza](https://github.com/pabloibiza)
+* **Miguel Yanes Fernández** - *Project Manager, back-end developer, and documentation* - [MiguelYanes](https://github.com/MiguelYanes)
+* **Pablo Sanz Alguacil** - *UX designer, front-end developer, and documentation* - [pabloibiza](https://github.com/pabloibiza)
 * **Adam Chalkley** - *Documentation and research* - [adamchalkley2019](https://github.com/adamchalkley2019)
 
 See also the list of [contributors](https://github.com/pabloibiza/WiCC/contributors) who participated in this project.
