@@ -13,7 +13,9 @@ from tkinter import *
 
 def rClicker(e):
     """
-    right click context menu for all Tk Entry and Text widgets
+    Right click context menu for all Tk Entry and Text widgets
+
+    :author: Pablo Sanz Alguacil
     """
 
     try:
@@ -32,7 +34,7 @@ def rClicker(e):
         rmenu = Menu(None, tearoff=0, takefocus=0)
         for (txt, cmd) in nclst:
             rmenu.add_command(label=txt, command=cmd)
-        rmenu.tk_popup(e.x_root+40, e.y_root+10,entry="0")
+        rmenu.tk_popup(e.x_root+40, e.y_root+10, entry="0")
     except TclError:
         print(' - rClick menu, something wrong')
         pass
@@ -40,6 +42,12 @@ def rClicker(e):
 
 
 def rClickbinder(r):
+    """
+    Objects  binder
+    :param r: object
+
+    :author: Pablo Sanz Alguacil
+    """
     try:
         for b in [ 'Text', 'Entry', 'Listbox', 'Label']:
             r.bind_class(b, sequence='<Button-3>',
