@@ -108,13 +108,3 @@ class EncryptionType:
     def get_injection_supported(self):
         return self.injection_supported
 
-    def check_cracking_status(self, file):
-        """
-        Checks the status of the password cracking process given a file with the output from aircrack
-        :param file: directory of the file with the aircrack output
-        :return: tbd
-
-        :Author: Miguel Yanes Fernández
-        """
-        return ""
-        #print(file.decode('utf-8'))

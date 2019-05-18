@@ -527,7 +527,7 @@ class View:
             self.interfaces_combobox['values'] = interfaces_list
             self.interfaces_combobox.update()
 
-        if self.networks_old != networks:
+        if networks:
             self.networks_old = networks
             self.networks_treeview.delete(*self.networks_treeview.get_children())
             for item in networks:
