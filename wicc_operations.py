@@ -28,9 +28,8 @@ class Operation:
     PATH_GENERATED_LISTS = "Path generated lists"
     GENERATE_LIST = "Generate list"
     SELECT_TEMPORARY_FILES_LOCATION = "Select temporary files location"
-    STOP_ATTACK = "Stop attack"
     START_SCAN_WPA = "Start scan wpa"
-    STOP_SCAN_WPA = "Stop scan wpa"
     SILENT_SCAN = "Silent Scan"
     OPEN_CRACKED = "open cracked"
+    DOS_ATTACK = "start dos attack"
 

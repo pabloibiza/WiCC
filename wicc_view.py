@@ -13,7 +13,8 @@ from tkinter import *
 from tkinter import Tk, ttk, Frame, Button, Label, Checkbutton, Menu, RIGHT, N, E, S, W, END, StringVar, \
     messagebox, filedialog
 from wicc_operations import Operation
-from wicc_view_crunch import GenerateWordlist
+from wicc_view_dos import DoS
+from wicc_view_wordlist import GenerateWordlist
 from wicc_view_mac import ViewMac
 from wicc_view_splash import Splash
 from wicc_view_popup import PopUpWindow
@@ -67,57 +68,57 @@ class View:
         self.menubar = Menu(self.root)
         self.root['menu'] = self.menubar
 
-        self.menu1 = Menu(self.menubar)
-        self.menu2 = Menu(self.menubar)
-        self.menu3 = Menu(self.menubar)
-        self.menubar.add_cascade(menu=self.menu1, label='File')
-        self.menubar.add_cascade(menu=self.menu2, label='Tools')
-        self.menubar.add_cascade(menu=self.menu3, label='Help')
+        self.file_menu = Menu(self.menubar)
+        self.tools_menu = Menu(self.menubar)
+        self.help_menu = Menu(self.menubar)
+        self.menubar.add_cascade(menu=self.file_menu, label='File')
+        self.menubar.add_cascade(menu=self.tools_menu, label='Tools')
+        self.menubar.add_cascade(menu=self.help_menu, label='Help')
 
         # MENU 1
-        self.menu1.add_command(label='Show cracked passwords',
-                               command=self.show_cracked_passwords,
-                               underline=13,
-                               compound=LEFT)
+        self.file_menu.add_command(label='Show cracked passwords',
+                                   command=self.show_cracked_passwords,
+                                   underline=13,
+                                   compound=LEFT)
 
-        self.menu1.add_command(label='Temporary files location',
-                               command=self.temporary_files_location,
-                               underline=0,
-                               compound=LEFT)
+        self.file_menu.add_command(label='Temporary files location',
+                                   command=self.temporary_files_location,
+                                   underline=0,
+                                   compound=LEFT)
 
-        self.menu1.add_command(label='Select wordlist',
-                               command=self.select_custom_wordlist,
-                               underline=7,
-                               compound=LEFT)
+        self.file_menu.add_command(label='Select wordlist',
+                                   command=self.select_custom_wordlist,
+                                   underline=7,
+                                   compound=LEFT)
 
-        self.menu1.add_command(label='Exit',
-                               command=self.notify_kill,
-                               underline=0,
-                               compound=LEFT)
+        self.file_menu.add_command(label='Exit',
+                                   command=self.notify_kill,
+                                   underline=0,
+                                   compound=LEFT)
 
 
 
         # MENU 2
-        self.menu2.add_command(label='MAC menu',
-                               command=self.mac_tools_window,
-                               underline=0,
-                               compound=LEFT)
+        self.tools_menu.add_command(label='MAC menu',
+                                    command=self.mac_tools_window,
+                                    underline=0,
+                                    compound=LEFT)
 
-        self.menu2.add_command(label='Generate wordlist',
-                               command=self.generate_wordlists_window,
-                               underline=0,
-                               compound=LEFT)
+        self.tools_menu.add_command(label='Generate wordlist',
+                                    command=self.generate_wordlists_window,
+                                    underline=0,
+                                    compound=LEFT)
 
         # MENU 3
-        self.menu3.add_command(label='Help',
-                               command=self.open_link,
-                               underline=0,
-                               compound=LEFT)
+        self.help_menu.add_command(label='Help',
+                                   command=self.open_link,
+                                   underline=0,
+                                   compound=LEFT)
 
-        self.menu3.add_command(label='About',
-                               command=self.show_about,
-                               underline=0,
-                               compound=LEFT)
+        self.help_menu.add_command(label='About',
+                                   command=self.show_about,
+                                   underline=0,
+                                   compound=LEFT)
 
         # LABEL FRAME - SCAN
         self.labelframe_scan = LabelFrame(self.root, text="Scan")
@@ -248,8 +249,12 @@ class View:
         self.label_info_attack.grid(column=0, row=0, padx=5)
 
         # BUTTON - START ATTACK WEP
-        self.button_start_attack_wep = Button(self.labelframe_wep, text='2 - Attack', command=self.start_attack)
+        self.button_start_attack_wep = Button(self.labelframe_wep, text="2 - Attack", command=self.start_attack)
         self.button_start_attack_wep.grid(column=0, row=0, padx=5)
+
+        # BUTTON - DOS ATTACK WEP
+        self.button_dos_wep = Button(self.labelframe_wep, text="DoS Attack", command=self.dos_attack)
+        self.button_dos_wep.grid(column=1, row=0, padx=5)
 
         # BUTTON - SCAN WPA
         self.button_scan_wpa = Button(self.labelframe_wpa, text="2 - Capture handshake", command=self.start_scan_wpa)
@@ -258,6 +263,10 @@ class View:
         # BUTTON - START ATTACK WPA
         self.button_start_attack_wpa = Button(self.labelframe_wpa, text="3 - Attack", command=self.start_attack)
         self.button_start_attack_wpa.grid(column=1, row=0, padx=5)
+
+        # BUTTON - DOS ATTACK WPA
+        self.button_dos_wpa = Button(self.labelframe_wpa, text="DoS Attack", command=self.dos_attack)
+        self.button_dos_wpa.grid(column=2, row=0, padx=5)
 
         self.root.mainloop()
 
@@ -342,6 +351,9 @@ class View:
         self.button_start_attack_wpa['state'] = state
         self.checkbutton_silent['state'] = state
         self.button_select_wordlist['state'] = state
+        self.button_dos_wep['state'] = state
+        self.button_dos_wpa['state'] = state
+
 
     def start_attack(self):
         """
@@ -465,14 +477,6 @@ class View:
         self.disable_window(True)
         ViewMac(self, self.mac_spoofing_status)
 
-    # Filters networks
-    """
-    [0]ENCRYPTION (string)
-    [1]WPS (boolean)
-    [2]CLIENTS (boolean)
-    [3]CHANNEL (string)
-    """
-
     def apply_filters(self):
         """
         [0]ENCRYPTION (string)
@@ -536,6 +540,7 @@ class View:
         [3] MAC spoofing
         [4] Save directory to generated wordlists
         [5] Generate wordlist
+        [6] DoS Attack
         Manages the operations received by the child windows (MAC tools, Crunch window)
         :param operation: integer. Is the id of the operation.
         :param value: value of the operation
@@ -556,6 +561,8 @@ class View:
             self.send_notify(Operation.PATH_GENERATED_LISTS, value)
         elif operation == 5:
             self.send_notify(Operation.GENERATE_LIST, value)
+        elif operation == 6:
+            self.send_notify(Operation.DOS_ATTACK, value)
 
     def get_spoofing_status(self):
         """
@@ -694,3 +701,12 @@ class View:
         :author: Pablo Sanz Alguacil
         """
         self.send_notify(Operation.OPEN_CRACKED, "")
+
+    def dos_attack(self):
+        """
+        Sends an order to control to start a DoS Attack.
+
+        :author: Pablo Sanz Alguacil
+        """
+        self.disable_window(True)
+        DoS(self)
