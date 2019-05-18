@@ -28,7 +28,7 @@ Tool developed in Python 3.7, developed and tested under Debian distributions (U
 This tool is a frontend toolkit that integrates different open source tools for wireless pentesting. 
 The utilised tools are the following:
 
-* Aircrack-ng suite (including airdecap)
+* aircrack-ng suite (including airdecap)
 * ifconfig
 * genpmk
 * pyrit
@@ -39,7 +39,7 @@ The utilised tools are the following:
 
 # Requirements
 
-You will need to run the application with root privileges, and using some version of Python 3+. Also, you need to have installed all of the tools mentioned in the section *Project insight*. If any of the mentioned tools is not installed, the application will ask you to automatically intall it. Of course, as this is a wireless pentesting tool, you will need some wireless card to perform the scans/attacks. In case you miss some of these requirements, you won't be able to initiate the tool. 
+You will need to run the application with root privileges, and using some version of Python 3+. Also, you need to have installed *aircrack-ng suite* and *ifconfig*, the rest of the tools mentioned in the section *Project insight* are optional. If any of the mentioned tools is not installed, the application will ask you to automatically install it. Of course, as this is a wireless pentesting tool, you will need some wireless card to perform the scans/attacks. In case you miss some of these requirements, you won't be able to initiate the tool. 
 
 Also it is highly recommended to use a wireless card that supports both monitor mode and packet injection. 
 In case your wireless card doesn't support them, you will be able to execute the attacks but may miss some advanced 
@@ -73,18 +73,18 @@ purposes, but you may find some of them useful:
        
      * `-vvv` Level 3 (advanced output and executed commands)
 
-You can always view the help with the option `--help` or `-h'
+You can always view the help with the option `--help` or `-h
 <br/><br/>
 
 # Final release
-The version 1.0 includes password cracking (in WEP and WPA/WPA2 networks), DoS attacks, client de-authentication, data decryption funtionalities.
-If you want to get in contact to notify us about some bug you encountered, or about some feature you thing could be interesting to add, you can use the contact information showed on our GitHub profiles listed below.
+The version 1.0 includes password cracking (in WEP and WPA/WPA2 networks), DoS attacks, client de-authentication, and data decryption funtionalities.
+If you want to get in contact to notify us about some bugs you encountered, or about some feature you thing could be interesting to add, you can use the contact information showed on our GitHub profiles listed below.
 <br/><br/>
 
 # Authors
 
-* **Miguel Yanes Fernández** - *Project Manager, back-end developer, and documentation* - [MiguelYanes](https://github.com/MiguelYanes)
-* **Pablo Sanz Alguacil** - *UX designer, front-end developer, and documentation* - [pabloibiza](https://github.com/pabloibiza)
+* **Miguel Yanes Fernández** - *Project Manager, back-end developer, and documentation* - Github: [MiguelYanes](https://github.com/MiguelYanes)
+* **Pablo Sanz Alguacil** - *UX designer, front-end developer, and documentation* - Github: [pabloibiza](https://github.com/pabloibiza)
 * **Adam Chalkley** - *Documentation and research* - [adamchalkley2019](https://github.com/adamchalkley2019)
 
 See also the list of [contributors](https://github.com/pabloibiza/WiCC/contributors) who participated in this project.
