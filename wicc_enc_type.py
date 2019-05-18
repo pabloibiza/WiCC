@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    WiCC (Wireless Cracking Camp)
-    GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
-    Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
-    Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
 """
 from subprocess import Popen, PIPE
 import threading
@@ -22,6 +23,8 @@ class EncryptionType:
         :param network: target network
         :param interface: selected wireless interface
         :param verbose_level: verbose level set by main
+        :param silent_attack: if the attack/scan should be in silent mode
+        :param write_directory: directory to write the files
 
         :Author: Miguel Yanes Fernández
         """
@@ -32,7 +35,6 @@ class EncryptionType:
         self.channel = str(int(self.target_network.get_channel()))
         self.verbose_level = verbose_level
         self.silent_attack = silent_attack
-        print(silent_attack)
         self.write_directory = write_directory
         self.password = ""
 
@@ -67,16 +69,12 @@ class EncryptionType:
     def scan_network(self):
         """
         Scans the target network and writes the dump file in the selected directory
-        :param write_directory: directory to write the dump file
         :return: none
 
         :Author: Miguel Yanes Fernández
         """
         self.timestamp = int(datetime.datetime.now().timestamp()*1000000)
 
-        #if self.write_directory[:5] == '/tmp/':
-        #    self.execute_command(['rm', '-r', self.write_directory])
-        #self.execute_command(['mkdir', self.write_directory])
         airmon_start_cmd = ['airmon-ng', 'start', self.interface, self.channel]
         self.interface += 'mon'
         airmon_check_cmd = ['airmon-ng', 'check', 'kill']
@@ -106,5 +104,11 @@ class EncryptionType:
         return False
 
     def get_injection_supported(self):
+        """
+        Returns if the interface supports packet injection
+        :return: if the interface supports packet injection
+
+        :Author: Miguel Yanes Fernández
+        """
         return self.injection_supported
 

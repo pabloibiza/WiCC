@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    WiCC (Wireless Cracking Camp)
-    GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
-    Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
-    Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
 """
 
 from wicc_enc_type import EncryptionType
-from wicc_network import Network
-from subprocess import Popen,PIPE
 import threading
-import time,sys
-import csv
+import time
 
 
 class WPA(EncryptionType):
@@ -24,6 +22,8 @@ class WPA(EncryptionType):
         :param interface: name of the wireless interface
         :param wordlist: password wordlist directory
         :param verbose_level: verbose level set by main
+        :param silent_attack: option to do a silent scan
+        :param write_directory: directory to write the generated files
 
         :Author: Miguel Yanes Fernández
         """
@@ -35,7 +35,6 @@ class WPA(EncryptionType):
         """
         Scans the target network (calls the parent method to scan the network) and every 6 attemtpts, de-auths all
         clients on the network. Finishes once pyrit or cowpatty find a valid handshake
-        :param write_directory: directory to write the dump file
         :return: none
 
         :Author: Miguel Yanes Fernández
@@ -91,6 +90,13 @@ class WPA(EncryptionType):
                     self.show_message("killed pid " + pid)
 
     def add_wordlist(self, wordlist):
+        """
+        Sets the object variable wordlist
+        :param wordlist: selected wordlist
+        :return: none
+
+        :author: Miguel Yanes Fernández
+        """
         self.wordlist = wordlist
 
     def crack_network(self):
@@ -123,9 +129,8 @@ class WPA(EncryptionType):
         return self.password
 
     def calculate_pmk(self):
-        """z
+        """
         Executes a thread with the genpmk command to pre-calculate PMK values with the selected wordlist and network.
-        :param write_directory: directory to write the pmk values file
         :return: none
 
         :Author: Miguel Yanes Fernández

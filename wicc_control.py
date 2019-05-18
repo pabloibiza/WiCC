@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    WiCC (Wireless Cracking Camp)
-    GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
     Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
     as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
     at TU Dublin - Blanchardstown Campus
@@ -49,7 +49,7 @@ class Control:
     ignore_local_savefiles = False  # option to ignore the local files, for both creating and reading them
     scan_filter_parameters = ["ALL", "ALL"]  # filter parameters to apply during the scan, [encryption, channel]
     main_directory = ""  # directory where the program is running
-    selected_wordlist = "/usr/share/wordlists/rockyou.txt"  # default project wordlist
+    selected_wordlist = "/rockyou.txt"  # default project wordlist
     write_directory = "/tmp/WiCC"  # directory to store all generated dump files, can be modified by the user
     local_folder = "/savefiles"  # folder to locally save files
     path_directory_crunch = ""  # directory to save generated lists with crunch
@@ -86,7 +86,7 @@ class Control:
             directory, err = self.execute_command(['pwd'])
             self.main_directory = directory.decode('utf-8')[:-1]
             self.local_folder = self.main_directory + self.local_folder
-            # self.selected_wordlist = self.main_directory + self.selected_wordlist
+            self.selected_wordlist = self.local_folder + self.selected_wordlist
             self.__instance = self
 
             self.semStartScan.acquire(False)
@@ -603,7 +603,7 @@ class Control:
             self.selected_network = value
             self.set_buttons_wpa_initial()
             self.set_buttons_wep_initial()
-            self.set_semaphores_state("Running scan")
+            self.set_semaphores_state("Stop scan")
         elif operation == Operation.ATTACK_NETWORK:
             self.stop_scan()
             self.attack_network()
@@ -819,8 +819,11 @@ class Control:
         network = self.model.search_network(self.selected_network)
 
         self.show_message("create wpa instance")
-        self.net_attack = WPA(network, self.selected_interface, self.selected_wordlist,
-                              self.verbose_level, self.silent_attack, self.write_directory)
+
+        self.net_attack = self.get_net_attack(network.get_bssid())
+        if not self.net_attack:
+            self.net_attack = WPA(network, self.selected_interface, self.selected_wordlist,
+                                  self.verbose_level, self.silent_attack, self.write_directory)
 
         self.add_net_attack(network.get_bssid(), self.net_attack)
 
@@ -842,6 +845,7 @@ class Control:
 
         self.show_info_notification("Handshake captured.\n\nYou can now start the attack (cracking process)")
         self.set_buttons_wpa_scanned()
+        self.set_semaphores_state("Stop scan")
         return
 
     def attack_network(self):
@@ -940,7 +944,6 @@ class Control:
         else:
             self.show_info_notification("Cracking process finished\n\nNo password retrieved"
                                              "\n\nYou can restart the scanning process")
-        self.selected_network = ""
 
         self.set_buttons_wep_initial()
         self.set_buttons_wpa_initial()

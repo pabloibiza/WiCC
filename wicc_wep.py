@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    WiCC (Wireless Cracking Camp)
-    GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
-    Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
-    Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
 """
 
 from wicc_enc_type import EncryptionType
@@ -20,11 +21,12 @@ class WEP(EncryptionType):
         :param interface: selected wireless interface
         :param mac: attacker mac address
         :param verbose_level: verbose level set by main
+        :param silent_attack: option to do a silent scan
+        :param write_directory: directory to write the generated files
 
         :Author: Miguel Yanes Fernández
         """
         EncryptionType.__init__(self, network, interface, verbose_level, silent_attack, write_directory)
-        # super().__init__(self, network, interface)
         self.mac = mac
         self.running_with_wordlist = False
         self.running_aircrack = False
@@ -32,8 +34,7 @@ class WEP(EncryptionType):
     def scan_network(self):
         """
         Method to scan the target network. With the selected attacker's mac, makes a fake authentication to the network
-        to then send arp responses to generate data.
-        :param write_directory: directory to write the scan files
+        to then send arp responses to generate data (if it's not in silent mode).
         :return: none
 
         :Author: Miguel Yanes Fernández
@@ -125,6 +126,12 @@ class WEP(EncryptionType):
         self.password = password
 
     def aircrack_wordlist(self):
+        """
+        Cracks the capture file with the selected wordlist
+        :return: password key (if found in the wordlist)
+
+        :Author: Miguel Yanes Fernández
+        """
         self.show_message("running with wordlist")
         self.running_with_wordlist = True
         aircrack_wordlist_cmd = ['aircrack-ng', self.write_directory + '/net_attack_' + str(self.timestamp) + '-01.cap',
