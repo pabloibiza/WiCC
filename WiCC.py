@@ -14,7 +14,6 @@ import os
 import time
 import threading
 
-
 verbose_level = 0
 
 green = "\033[32m"
@@ -41,7 +40,7 @@ def show_message(message):
 if __name__ == '__main__':
     """
     Main
-    
+
     :Author: Miguel Yanes Fernández
     """
 
@@ -173,19 +172,25 @@ if __name__ == '__main__':
 
     show_message("Select an interface")
     while not control.get_running_stopped():
+        control.semGeneral.acquire(True)
         if control.semSelectInterface.acquire(False):
             control.semSelectInterface.release()
+            control.semGeneral.release()
             control.scan_interfaces()
+            time.sleep(1)
         elif control.semStartScan.acquire(False):
             show_message("Start scan")
             control.scan_networks()
+            time.sleep(1)
             control.semRunningScan.release()
+            control.semGeneral.release()
             show_message("Stop the scan to select a network")
         elif control.semRunningScan.acquire(False):
             control.semRunningScan.release()
+            control.semGeneral.release()
             control.filter_networks()
+            time.sleep(1)
         elif control.semStoppedScan.acquire(False):
+            control.semGeneral.release()
             show_message("Scan stopped\nSelect a network or start a new scan")
-        time.sleep(1)
-
     sys.exit(0)

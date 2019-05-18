@@ -26,9 +26,8 @@ import datetime
 
 
 class Control:
-
     model = ""  # reference of the Model object (for the MVC communication)
-    view = ""   # reference of the View object (for the MVC communication)
+    view = ""  # reference of the View object (for the MVC communication)
     operations = ""  # reference of the Operation object (for the operation notifies with View)
     popup = ""  # PopupWindow object to create all different popups
 
@@ -49,7 +48,7 @@ class Control:
     ignore_local_savefiles = False  # option to ignore the local files, for both creating and reading them
     scan_filter_parameters = ["ALL", "ALL"]  # filter parameters to apply during the scan, [encryption, channel]
     main_directory = ""  # directory where the program is running
-    selected_wordlist = "/rockyou.txt"  # default project wordlist
+    selected_wordlist = "/resources/rockyou.txt"  # default project wordlist
     write_directory = "/tmp/WiCC"  # directory to store all generated dump files, can be modified by the user
     local_folder = "/savefiles"  # folder to locally save files
     path_directory_crunch = ""  # directory to save generated lists with crunch
@@ -71,6 +70,7 @@ class Control:
     semStartScan = threading.Semaphore()  # semaphore to notice to start the scan
     semRunningScan = threading.Semaphore()  # semaphore for the running scan state
     semStoppedScan = threading.Semaphore()  # semaphore for when the scan has stopped
+    semGeneral = threading.Semaphore()  # general semaphore
 
     def __init__(self):
         """
@@ -86,7 +86,7 @@ class Control:
             directory, err = self.execute_command(['pwd'])
             self.main_directory = directory.decode('utf-8')[:-1]
             self.local_folder = self.main_directory + self.local_folder
-            self.selected_wordlist = self.local_folder + self.selected_wordlist
+            self.selected_wordlist = self.main_directory + self.selected_wordlist
             self.__instance = self
 
             self.semStartScan.acquire(False)
@@ -181,21 +181,25 @@ class Control:
         :Author: Miguel Yanes Fernández
         """
         if state == "Select interface":
+            self.semGeneral.release()
             self.semSelectInterface.release()
             self.semStartScan.acquire(False)
             self.semRunningScan.acquire(False)
             self.semStoppedScan.acquire(False)
         elif state == "Start scan":
+            self.semGeneral.release()
             self.semSelectInterface.acquire(False)
             self.semStartScan.release()
             self.semRunningScan.acquire(False)
             self.semStoppedScan.acquire(False)
         elif state == "Running scan":
+            self.semGeneral.release()
             self.semSelectInterface.acquire(False)
             self.semStartScan.acquire(False)
             self.semRunningScan.release()
             self.semStoppedScan.acquire(False)
         elif state == "Stop scan":
+            self.semGeneral.release()
             self.semSelectInterface.acquire(False)
             self.semStartScan.acquire(False)
             self.semRunningScan.acquire(False)
@@ -649,6 +653,7 @@ class Control:
         """
         try:
             self.stop_scan()
+            self.semGeneral.release()
             self.view.reaper_calls()
             self.show_message("\n\n\tClossing WiCC ...\n\n")
             os.close(2)  # block writing to stderr
@@ -742,7 +747,7 @@ class Control:
         :Author: Miguel Yanes Fernández
         """
         return self.popup.yesno(title, question)
-    
+
     def show_okcancel_notification(self, title, question):
         """
         Creates an okcancel popup
@@ -829,7 +834,7 @@ class Control:
 
         choice = self.show_yesno_notification("Starting WPA scan",
                                               "You are about to start the scanning process on the "
-                                              "WPA network:\n\n - " + network.get_essid() +
+                                              "WPA network:\n\n   " + network.get_essid() +
                                               "\n\nThe process will take up to a few minutes."
                                               "\n¿Do you want to start the scan?")
         if not choice:
@@ -862,7 +867,7 @@ class Control:
         password = self.check_cracked_networks(self.passwords_file_name)
         if password != "":
             self.show_info_notification("Network already cracked\n\nPassword: " + password +
-                                             "\n\nYou can now restart the scanning process")
+                                        "\n\nYou can now restart the scanning process")
             self.cracking_completed = True
             self.stop_scan()
             self.selected_network = ""
@@ -888,7 +893,7 @@ class Control:
 
         choice = self.show_yesno_notification("Starting cracking process",
                                               "You are about to start the cracking process on the "
-                                              " network:\n - " + network.get_essid() +
+                                              " network:\n\n   " + network.get_essid() +
                                               "\n\nThe process will take up to a few minutes."
                                               "\n¿Do you want to start the cracking process?")
         if not choice:
@@ -938,14 +943,14 @@ class Control:
 
         if password != "":
             self.show_info_notification("Cracking process finished\n\nPassword: " + password +
-                                             "\n\nYou can now restart the scanning process")
+                                        "\n\nYou can now restart the scanning process")
             self.create_local_folder()
             bssid = self.model.search_network(self.selected_network).get_bssid()
             essid = self.model.search_network(self.selected_network).get_essid()
             self.store_local_file(self.passwords_file_name, bssid + " " + password + " " + essid)
         else:
             self.show_info_notification("Cracking process finished\n\nNo password retrieved"
-                                             "\n\nYou can restart the scanning process")
+                                        "\n\nYou can restart the scanning process")
 
         self.set_buttons_wep_initial()
         self.set_buttons_wpa_initial()

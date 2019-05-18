@@ -511,13 +511,12 @@ class View:
             self.interfaces_combobox['values'] = interfaces_list
             self.interfaces_combobox.update()
 
-        if networks:
-            self.networks_old = networks
-            self.networks_treeview.delete(*self.networks_treeview.get_children())
-            for item in networks:
-                self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6],
-                                                                              item[9] + " dbi", item[16]))
-                self.networks_treeview.update()
+        self.networks_old = networks
+        self.networks_treeview.delete(*self.networks_treeview.get_children())
+        for item in networks:
+            self.networks_treeview.insert("", END, text=item[13], values=(item[0], item[1], item[4], item[6],
+                                                                          item[9] + " dbi", item[16]))
+            self.networks_treeview.update()
 
     def current_mac(self):
         """
