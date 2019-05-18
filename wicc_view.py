@@ -705,12 +705,11 @@ class View:
                 #self.button_stop_attack_wpa['state'] = status
             elif button == "attack_wep":
                 self.button_start_attack_wep['state'] = status
-            elif button == "stop_attack_wep":
-                self.button_stop_attack_wep['state'] = status
+            #elif button == "stop_attack_wep":
+                #self.button_stop_attack_wep['state'] = status
             elif button == "select network":
                 self.button_select_network['state'] = status
 
-    @staticmethod
     def show_about(self):
         """
         Creates a new About object
@@ -719,7 +718,6 @@ class View:
         """
         About()
 
-    @staticmethod
     def open_link(self):
         """
         Opens the URL on a new tab in the default web browser.

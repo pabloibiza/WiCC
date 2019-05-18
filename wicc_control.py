@@ -50,7 +50,7 @@ class Control:
     ignore_local_savefiles = False  # option to ingnore the local files, for both creating and reading them
     main_directory = ""  # directory where the program is running
     local_folder = "/savefiles"  # folder to locally save files
-    path_directory_crunch = "/home"  # directory to save generated lists with crunch
+    path_directory_crunch = ""  # directory to save generated lists with crunch
     generated_wordlist_name = "wicc_wordlist"  # name of the generated files in generate_wordlist()
     hex_values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
     hex_values_even = ['2', '4', '6', '8', 'a', 'c', 'e']
@@ -1039,20 +1039,27 @@ class Control:
         exists = True
         file_name = ""
 
+        if self.path_directory_crunch != "":
+            directory = self.path_directory_crunch
+        else:
+            directory = self.local_folder
+
         while exists:
             if index == 0:
                 file_name = self.generated_wordlist_name + ".txt"
             else:
-                file_name = self.generated_wordlist_name + "_" + str(index) + ".txt"
+                file_name = self.generated_wordlist_name + "(" + str(index) + ").txt"
 
-            file_path = self.path_directory_crunch + "/" + file_name
+            file_path = directory + "/" + file_name
             exists = os.path.isfile(file_path)
             index += 1
 
-        output_list = self.path_directory_crunch + "/" + file_name
+        output_list = directory + "/" + file_name
         command = ['crunch', '0', '0', '-o', output_list, '-p']
         for word in words_list:
             command.append(word)
+
+        self.show_message("Generating custom wordlist")
         self.execute_command(command)
 
     def get_wordlist(self):

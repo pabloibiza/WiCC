@@ -32,7 +32,6 @@ class GenerateWordlist:
 
         self.build_window()
         self.reset_list()
-        self.root.attributes('-topmost', True)
         self.root.mainloop()
 
     def build_window(self):
