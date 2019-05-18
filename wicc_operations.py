@@ -32,4 +32,5 @@ class Operation:
     SILENT_SCAN = "Silent Scan"
     OPEN_CRACKED = "open cracked"
     DOS_ATTACK = "start dos attack"
+    DECRYPT_FILE = "decrypt file"
 

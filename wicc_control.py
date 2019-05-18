@@ -7,6 +7,7 @@
     as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
     at TU Dublin - Blanchardstown Campus
 """
+import subprocess
 
 from wicc_operations import Operation
 from wicc_model import Model
@@ -645,6 +646,8 @@ class Control:
             self.open_cracked_passwords()
         elif operation == Operation.DOS_ATTACK:
             self.dos_attack(value)
+        elif operation == Operation.DECRYPT_FILE:
+            self.decrypt_file(value)
 
     def stop_running(self):
         """
@@ -926,7 +929,7 @@ class Control:
                                         "\n\nYou can now restart the scanning process")
             self.create_local_folder()
             bssid = self.model.search_network(self.selected_network).get_bssid()
-            essid = self.model.search_network(self.selected_network).get_essid()
+            essid = self.model.search_network(self.selected_network).get_essid()[1:]
             self.store_local_file(self.passwords_file_name, bssid + " " + password + " " + essid)
         else:
             self.show_info_notification("Cracking process finished\n\nNo password retrieved"
@@ -1202,7 +1205,7 @@ class Control:
         :param seconds: number of deauth packets to send.
         :return:
         """
-        print("---------------------------------------------------------------------" + seconds)
+
         network_mac = self.model.search_network(self.selected_network).get_bssid()
         interface = self.selected_interface
         interface_mon = interface + "mon"
@@ -1211,7 +1214,7 @@ class Control:
         check_kill = ['airmon-ng', 'check', 'kill']
         aireplay = ['aireplay-ng', '-0', '5', '--ignore-negative-one', '-a', network_mac, '-D', interface_mon]
         airmon_stop = ['airmon-ng', 'stop', interface]
-        restart_NM = ['NetworkManager']
+        restart_nm = ['NetworkManager']
 
         self.show_message("EXECUTING DoS ATTACK")
         self.execute_command(airmon_start)
@@ -1221,7 +1224,34 @@ class Control:
             self.execute_command(aireplay)
         time.sleep(2)
         self.execute_command(airmon_stop)
-        self.execute_command(restart_NM)
+        self.execute_command(restart_nm)
         self.show_message("DoS ATTACK FINISHED")
 
+    def decrypt_file(self, file_path):
+        """
+        Decrypts a .cap file using pyrit and airdecap-ng.
+        :param file_path: string. Path to the file.
 
+        :author: Pablo Sanz Alguacil
+        """
+
+        command_pyrit1 = ['pyrit', '-r', str(file_path), 'analyze']
+        command_pyrit2 = ['grep', 'AccessPoint']
+        pyrit1 = subprocess.Popen(command_pyrit1, stdout=subprocess.PIPE,)
+        pyrit2 = subprocess.Popen(command_pyrit2, stdin=pyrit1.stdout, stdout=subprocess.PIPE)
+        (stdout, sterr) = pyrit2.communicate()
+        brute_essid = stdout.decode('utf-8').split(" ")[3]
+        essid = brute_essid[2:len(brute_essid) - 4]
+
+        password = ""
+        cracked_passwords = self.local_folder + "/" + self.passwords_file_name
+        with open(cracked_passwords, 'r') as passwords_list:
+            for line in passwords_list:
+                elements = line.split(" ")
+                if elements[2][0:len(elements[2]) - 1] == essid:
+                    password = elements[1]
+
+        self.show_message("Decrypting .cap file")
+        airdecap = ['airdecap-ng', '-p', password, file_path, '-e', essid]
+        self.execute_command(airdecap)
+        self.show_message("Cap file decrypted")

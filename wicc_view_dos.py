@@ -82,7 +82,3 @@ class DoS:
 
         self.main_view.disable_window(False)
         self.root.destroy()
-
-
-
-

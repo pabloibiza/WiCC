@@ -109,6 +109,11 @@ class View:
                                     underline=0,
                                     compound=LEFT)
 
+        self.tools_menu.add_command(label='Decrypt capture file',
+                                    command=self.decrypt_cap_file,
+                                    underline=0,
+                                    compound=LEFT)
+
         # MENU 3
         self.help_menu.add_command(label='Help',
                                    command=self.open_link,
@@ -710,3 +715,23 @@ class View:
         """
         self.disable_window(True)
         DoS(self)
+
+    def decrypt_cap_file(self):
+        """
+        Sends a notification and a path to Control to decrypt a .cap file.
+
+        :author: Pablo Sanz Alguacil
+        """
+
+        file_path = filedialog.askopenfilename(parent=self.root,
+                                      initialdir='/home',
+                                      title='Choose wordlist file',
+                                      filetypes=[('Capture', '.cap'),
+                                                 ('Packet Capture', '.cap'),
+                                                 ("All files", "*.*")])
+
+        self.send_notify(Operation.DECRYPT_FILE, file_path)
+
+        command = ['pyrit', '-r', file_path, 'analyze', '|', 'grep', 'AccessPoint', '|', 'awk', '\'{$1=\"\";', 'print',
+                   '$0}\'', '|', 'sed', '\"s/[()\']//g;s/.$//\"', '|', 'sort']
+
