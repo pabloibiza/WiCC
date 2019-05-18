@@ -41,7 +41,7 @@ class WEP(EncryptionType):
         super(WEP, self).scan_network()
 
         if not self.silent_attack:
-            self.execute_command(['rm', 'replay*'])
+            self.execute_command(['rm', self.write_directory + '/qreplay*'])
             fakeauth_cmd = ['aireplay-ng', '--fakeauth', '0', '-b', self.bssid, '-e', self.essid, '-T', '3',
                             self.interface, '-h', self.mac]
             arpreplay_cmd = ['aireplay-ng', '--arpreplay', '-b', self.bssid, '-h', self.mac,

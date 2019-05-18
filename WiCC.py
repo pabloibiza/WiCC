@@ -67,6 +67,7 @@ if __name__ == '__main__':
     print("  - Adam Chankley")
     print("")
     print("Project page: https://github.com/pabloibiza/WiCC")
+    print("License: GPLv3")
 
     auto_select = False  # auto-select the network interface
     ignore_savefiles = False  # ignore the generated local savefiles
