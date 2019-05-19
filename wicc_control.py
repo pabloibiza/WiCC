@@ -1202,7 +1202,7 @@ class Control:
         """
         Performs a Dos Attack using aireplay-ng.
 
-        :param loops: string. Number of times to send 5 packets
+        :param loops: string. Number of times to send 5 packets (1 per second)
         :return:
         """
 
