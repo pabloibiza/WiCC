@@ -647,7 +647,8 @@ class Control:
         elif operation == Operation.DOS_ATTACK:
             self.dos_attack(value)
         elif operation == Operation.DECRYPT_FILE:
-            self.decrypt_file(value)
+            if value:
+                self.decrypt_file(value)
 
     def stop_running(self):
         """
@@ -1237,10 +1238,10 @@ class Control:
         """
 
         try:
-            command_pyrit1 = ['pyrit', '-r', str(file_path), 'analyze']
-            command_pyrit2 = ['grep', 'AccessPoint']
-            pyrit1 = subprocess.Popen(command_pyrit1, stdout=subprocess.PIPE,)
-            pyrit2 = subprocess.Popen(command_pyrit2, stdin=pyrit1.stdout, stdout=subprocess.PIPE)
+            command_pyrit = ['pyrit', '-r', str(file_path), 'analyze']
+            command_grep = ['grep', 'AccessPoint']
+            pyrit1 = subprocess.Popen(command_pyrit, stdout=subprocess.PIPE,)
+            pyrit2 = subprocess.Popen(command_grep, stdin=pyrit1.stdout, stdout=subprocess.PIPE)
             (stdout, sterr) = pyrit2.communicate()
             brute_essid = stdout.decode('utf-8').split(" ")[3]
             essid = brute_essid[2:len(brute_essid) - 4]
