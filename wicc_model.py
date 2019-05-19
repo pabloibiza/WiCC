@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    WiCC (Wireless Cracking Camp)
-    GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
-    Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
-    Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
 """
 
 from wicc_interface import Interface
@@ -17,6 +18,7 @@ class Model:
     networks = []
     clients = []
     network_filters = [False, False]
+    net_attack_instances = []  # object instances of the net attack classes
 
     def __init__(self):
         """
@@ -46,7 +48,6 @@ class Model:
         interface = Interface(name, address, type, power, channel)
         if not self.interfaces.__contains__(interface):
             self.interfaces.append(interface)
-        #self.interfaces.add_object(interface)
 
     def set_networks(self, networks):
         """
@@ -201,9 +202,9 @@ class Model:
             list_interfaces.append(object.get_list())
         list_networks = []
 
-        if(self.network_filters[1]):
+        if self.network_filters[1]:
             for network in self.networks:
-                if(network.get_clients() != 0):
+                if network.get_clients() != 0:
                     list_networks.append(network.get_list())
         else:
             for object in self.networks:
@@ -212,24 +213,42 @@ class Model:
         return list_interfaces, list_networks
 
     def search_network(self, network_id):
+        """
+        Search a network given an id
+        :param network_id: id of the network
+        :return: network object, if found
+
+        :Author: Miguel Yanes Fernández
+        """
         for network in self.networks:
             if network.get_id() == network_id:
                 return network
         return None
 
     def get_interfaces(self):
+        """
+        Get the interfaces array
+        :return: interfaces
+
+        :Author: Miguel Yanes Fernández
+        """
         return self.interfaces
 
     def get_mac(self, interface_name):
+        """
+        Returns an inteface's mac
+        :param interface_name:
+        :return: mac address
+
+        :author: Miguel Yanes Fernández
+        """
         for interface in self.interfaces:
             if interface.get_name() == interface_name:
-                address = interface.get_address()
-                print("Interface " + interface_name + ", address " + address)
                 return interface.get_address()
 
-    def get_filters(self, wps_filter_status, clients_filter_status):
+    def set_filters(self, wps_filter_status, clients_filter_status):
         """
-
+        Sets the filters for the networks.
         :param wps_filter_status:
         :param clients_filter_status:
         :return:
@@ -238,3 +257,46 @@ class Model:
         """
         self.network_filters[0] = wps_filter_status
         self.network_filters[1] = clients_filter_status
+
+    def clear_interfaces(self):
+        """
+        Resets the interfaces variable
+        :return: none
+
+        :Author: Miguel Yanes Fernández
+        """
+        self.interfaces = []
+
+    def clear_networks(self):
+        """
+        Resets the networks variable
+        :return: none
+
+        :Author: Miguel Yanes Fernández
+        """
+        self.networks = []
+
+    def add_net_attack(self, mac, object_reference):
+        """
+        Add a net_attack object, inlcudin the network mac (bssid)
+        :param mac: network mac
+        :param object_reference: net_attack object reference
+        :return: none
+
+        :Author: Miguel Yanes Fernández
+        """
+        self.net_attack_instances.append([mac, object_reference])
+
+    def get_net_attack(self, mac):
+        """
+        Search a net attack object with a given mac address
+        :param mac: mac address of the network
+        :return: net attack object, if found
+
+        :author: Miguel Yanes Fernández
+        """
+        for i in range(0, len(self.net_attack_instances)):
+            if self.net_attack_instances[i][0] == mac:
+                return self.net_attack_instances[i][1]
+        return None
+

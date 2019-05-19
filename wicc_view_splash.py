@@ -1,12 +1,19 @@
-# create a splash screen, 80% of display screen size, centered,
-# displaying a GIF image with needed info, disappearing after 5 seconds
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
+"""
 import tkinter as tk
 
+
 class Splash:
-    image_file = "Resources/splash.png"
+    image_file = "resources/splash.png"
     width = 600
     height = 400
-
 
     def __init__(self):
         root = tk.Tk()
@@ -20,7 +27,6 @@ class Splash:
         x = (ws / 2) - (self.width / 2)
         y = (hs / 2) - (self.height / 2)
         root.geometry('%dx%d+%d+%d' % (self.width, self.height, x, y))
-
 
         image = tk.PhotoImage(file=self.image_file)
         canvas = tk.Canvas(root, height=self.height, width=self.width, bg="brown")

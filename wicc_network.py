@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    WiCC (Wireless Cracking Camp)
-    GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
-    Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
-    Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
 """
 
 
@@ -75,23 +76,23 @@ class Network:
         :return: string of parameters
         """
         output = ""
-        output.__add__("ID: " + self.id)
+        output.__add__("ID: " + str(self.id))
         output.__add__(" BSSID: " + self.bssid)
         output.__add__(" First Seen: " + self.first_seen)
         output.__add__(" Last Seen: " + self.last_seen)
-        output.__add__(" Channel: " + self.channel)
-        output.__add__(" Speed: " + self.speed)
+        output.__add__(" Channel: " + str(self.channel))
+        output.__add__(" Speed: " + str(self.speed))
         output.__add__(" Privacy: " + self.privacy)
         output.__add__(" Cipher:" + self.cipher)
         output.__add__(" Authentication: " + self.authentication)
-        output.__add__(" Power: " + self.power)
-        output.__add__(" Beacons: " + self.beacons)
-        output.__add__(" IVs: " + self.ivs)
+        output.__add__(" Power: " + str(self.power))
+        output.__add__(" Beacons: " + str(self.beacons))
+        output.__add__(" IVs: " + str(self.ivs))
         output.__add__(" LAN-IP: " + self.lan_ip)
         output.__add__(" ESSID: " + self.essid)
-        output.__add__(" Handshake: " + self.handshake)
+        output.__add__(" Handshake: " + str(self.handshake))
         output.__add__(" Password: " + self.password)
-        output.__add__(" Clients: " + self.clients)
+        output.__add__(" Clients: " + str(self.clients))
         return output
 
     def get_list(self):
@@ -150,4 +151,3 @@ class Network:
     def get_clients(self):
         return self.num_clients
 
-    # TO DO getters and setters

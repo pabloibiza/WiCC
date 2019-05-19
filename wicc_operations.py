@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    WiCC (Wireless Cracking Camp)
-    GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
-    Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
-    Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
 """
 
 
 class Operation:
+    """
+    Enumeration class for the operations used in the notifys between View and Control
+    """
     SELECT_INTERFACE = "Select interface"
     SELECT_NETWORK = "Select network"
     ATTACK_NETWORK = "Attack network"
@@ -23,3 +27,10 @@ class Operation:
     CHECK_MAC = "Check mac"
     PATH_GENERATED_LISTS = "Path generated lists"
     GENERATE_LIST = "Generate list"
+    SELECT_TEMPORARY_FILES_LOCATION = "Select temporary files location"
+    START_SCAN_WPA = "Start scan wpa"
+    SILENT_SCAN = "Silent Scan"
+    OPEN_CRACKED = "open cracked"
+    DOS_ATTACK = "start dos attack"
+    DECRYPT_FILE = "decrypt file"
+

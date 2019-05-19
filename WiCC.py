@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
+"""
 
 from wicc_control import Control
 import sys
 import os
 import time
 import threading
-
 
 verbose_level = 0
 
@@ -17,14 +23,6 @@ white = "\033[0m"
 cyan = "\033[36m"
 light_blue = "\033[1;34m"
 light_cyan = "\033[1;36m"
-
-
-def print_ascii(file):
-    output = ""
-    with open(file, "r") as art:
-        for line in art:
-            output += line
-    print(output)
 
 
 def show_message(message):
@@ -42,7 +40,7 @@ def show_message(message):
 if __name__ == '__main__':
     """
     Main
-    
+
     :Author: Miguel Yanes Fernández
     """
 
@@ -56,27 +54,32 @@ if __name__ == '__main__':
         print("\n\tError: Must be executed with Python 3\n")
         sys.exit(1)
 
-    control = Control()
-
     exit = False
-
-
-    print_ascii("Resources/ascii_art.txt")
-    print(cyan + "=============================================")
-    print(light_blue + "      __      __ ___________  ________   ")
+    print(cyan)
+    print("=============================================" + light_blue)
+    print("      __      __ ___________  ________   ")
     print("     /  \    /  \__\_   ___ \|_   ___ \  ")
-    print("     \   \/\/   /  /    \  \//    \  \/ ")
-    print(blue +"      \        /|  \     \___\     \____ ")
+    print("     \   \/\/   /  /    \  \//    \  \/  " + blue)
+    print("      \        /|  \     \___\     \____ ")
     print("       \__/\__/ |__|\________/\________/ ")
     print("")
     print("")
-    print("              Wifi Cracking Camp")
-    print(cyan + "=============================================")
+    print("              Wifi Cracking Camp" + cyan)
+    print("=============================================")
+    print(blue)
+    print("Version v1.0 - 20th of May 2019")
+    print("Developed by:")
+    print("  - Pablo Sanz Alguacil")
+    print("  - Miguel Yanes Fernández")
+    print("  - Adam Chankley")
+    print("")
+    print("Project page: https://github.com/pabloibiza/WiCC")
+    print("License: GPLv3")
 
-    headless = False  # run the program without the front-end
     auto_select = False  # auto-select the network interface
-    splash_image = True  # show splash image during startup
     ignore_savefiles = False  # ignore the generated local savefiles
+    verbose_level = 0
+    popups = True
     args = sys.argv[1:]
 
     options_message = ""
@@ -85,126 +88,111 @@ if __name__ == '__main__':
         if '-v' in arg:
             if verbose_level == 0:
                 if arg == '-v':
-                    control.set_verbose_level(1)
                     verbose_level = 1
                     options_message += " *** Verbose level set to " + str(verbose_level) + "\n"
                 elif arg == '-vv':
-                    control.set_verbose_level(2)
                     verbose_level = 2
                     options_message += "*** Verbose level set to " + str(verbose_level) + "\n"
                 elif arg == '-vvv':
-                    control.set_verbose_level(3)
                     verbose_level = 3
                     options_message += " *** Verbose level set to " + str(verbose_level) + "\n"
-        elif arg == '-h':
-            if not headless:
-                headless = True
-                options_message += " *** Running program headless\n"
         elif arg == '-a':
             if not auto_select:
                 auto_select = True
                 options_message += " *** Auto-select network interface\n"
-        elif arg == '-s':
-            if splash_image:
-                splash_image = False
-                options_message += " *** Not showing splash image\n"
         elif arg == '-i':
             if not ignore_savefiles:
                 ignore_savefiles = True
-                control.set_ignore_savefiles(ignore_savefiles)
                 options_message += " *** Ignoring local savefiles\n"
-        elif arg == '--help':
+        elif arg == '-p':
+            if popups:
+                popups = False
+                options_message += " *** Not showing informational popups\n"
+        elif arg == '--help' or arg == '-h':
             print("Viewing help")
             print("Usage: # python3 WiCC.py [option(s)]\n")
             print("Options (mainly for debugging purposes):")
-            print("   -h \trun the program headless")
-            print("   -a \tauto-select the first available network interface")
-            print("   -s \tavoid showing the splash image during startup")
-            print("   -v \tselect the verbose level for the program (default: 0, no output)")
-            print("\t   -v   level 1 (basic output)")
-            print("\t   -vv  level 2 (advanced output)")
-            print("\t   -vvv level 3 (advanced output and executed commands)\n")
+            print("   -h | --help \tshow the help")
+            print("   -a \t\tauto-select the first available network interface")
+            print("   -i \t\tignore local save files")
+            print("   -p \t\tnot show informational popups")
+            print("   -v \t\tselect the verbose level for the program (default: 0, no output)")
+            print("\t-v  \tlevel 1 (basic output)")
+            print("\t-vv \tlevel 2 (advanced output)")
+            print("\t-vvv\tlevel 3 (advanced output and executed commands)\n")
             sys.exit(0)
         else:
             print("*** Unrecognized option " + arg)
             print("*** Use option --help to view the help and finish execution. Only for debugging purposes\n")
-            break
+            sys.exit(0)
     print(options_message)
     print(white)
 
-    software, some_missing = control.check_software()
+    control = Control()
+
+    control.set_verbose_level(verbose_level)
+    control.set_ignore_savefiles(ignore_savefiles)
+    control.set_informational_popups(popups)
+    control.set_auto_select(auto_select)
+
+    install_required_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'python3-tk', 'iw', 'net-tools', 'aircrack-ng']
+    install_optional_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'pyrit', 'crunch', 'make', 'gcc']
+
+    software, some_missing, stop_execution, message = control.check_software()
+
+    view_thread = threading.Thread(target=control.start_view)
+    view_thread.start()
+    view_thread.join(1)
+
     if some_missing:
         # variable 'software' is an array of pair [tool_name, boolean_if_its_installed]
-        print("The required software is not installed:\n")
+        print("The following software is not installed:\n")
         for i in range(0, len(software)):
             if not software[i][1]:
                 print("\t***Missing " + software[i][0])
         print("\n")
-        sys.exit(1)
+        time.sleep(0)
+        control.show_warning_notification(message)
+        if stop_execution:
+            install_required = input("Would you like to install the required mandatory software? (y): ")
+            if install_required == 'y':
+                control.execute_command(install_required_cmd)
+                install_optional = input("Would you also like to install the optional software? (y): ")
+                if install_optional == 'y':
+                    control.execute_command(install_optional_cmd)
+            else:
+                sys.exit(1)
     else:
         show_message("All required software is installed")
 
-    if headless:
-        view_thread = threading.Thread(target=control.start_view, args=(True, splash_image,))
-    else:
-        view_thread = threading.Thread(target=control.start_view, args=(False, splash_image,))
-    view_thread.start()
-    view_thread.join(3)
+    time.sleep(1)
 
-    try:
-        while not exit and not control.get_running_stopped():
-            if control.has_selected_interface():
-                if auto_select:
-                    control.view.disable_buttons()
-                show_message("Selected interface: " + control.selectedInterface)
-                control.scan_networks()
-                show_message("Start scanning available networks...")
-                time.sleep(3)
-                while not control.selectedNetwork and control.running_scan() and not control.get_running_stopped():
-                    time.sleep(1)
-                    show_message("\t... Scanning networks ...")
-                    if not control.filter_networks():
-                        time.sleep(1)
-                        control.stop_scan()
-                        time.sleep(1)
-                        show_message(" * An error ocurred, please, re-select the interface")
-                        control.selectedInterface = ""
-                        control.last_selectedInterface = ""
-                        control.model.interfaces = []
-                        while not control.has_selected_interface():
-                            control.scan_interfaces(auto_select)
-                            show_message("Scanning interfaces")
-                            time.sleep(1)
-                        show_message("Selected interface: " + control.selectedInterface)
-                        control.scan_networks()
-                        show_message("Start scanning available networks...")
-                        time.sleep(3)
-                show_message("\n * Network scanning stopped * \n")
-                while not control.selectedNetwork and not control.get_running_stopped():
-                    # waits until a network is selected
-                    time.sleep(1)
-                show_message("Selected network: " + str(control.selectedNetwork))
-                show_message("\nStarting attack...\n")
 
-                while not control.cracking_completed and not control.is_cracking_network() \
-                        and not control.get_running_stopped():
-                    show_message("\t... Cracking network ...")
-                    time.sleep(1)
+    control.show_info_notification("       Welcome to WiCC\n\nSelect an interface and press \"Scan networks\""
+                                   "to begin the process. \n\nIf you need help to use the application go the \"Help\" "
+                                   "section.")
 
-                while control.is_cracking_network() and not control.get_running_stopped():
-                    show_message("\t... Cracking password ...")
-                    # print(control.check_cracking_status())
-                    time.sleep(1)
-
-                show_message("Cracking process finished.")
-                # sys.exit(0)
-            else:
-                show_message("Scanning interfaces")
-                control.scan_interfaces(auto_select)
-                time.sleep(1)
-                if control.get_interfaces() == "":
-                    control.view.show_info_notification("No wireless interfaces found."
-                                                        "\n\nPlease connect a wireless card.")
-    except:
-        sys.exit(1)
-    view_thread.join(0)
+    show_message("Select an interface")
+    while not control.get_running_stopped():
+        control.semGeneral.acquire(True)
+        if control.semSelectInterface.acquire(False):
+            control.semSelectInterface.release()
+            control.semGeneral.release()
+            control.scan_interfaces()
+            time.sleep(1)
+        elif control.semStartScan.acquire(False):
+            show_message("Start scan")
+            control.scan_networks()
+            time.sleep(1)
+            control.semRunningScan.release()
+            control.semGeneral.release()
+            show_message("Stop the scan to select a network")
+        elif control.semRunningScan.acquire(False):
+            control.semRunningScan.release()
+            control.semGeneral.release()
+            control.filter_networks()
+            time.sleep(1)
+        elif control.semStoppedScan.acquire(False):
+            control.semGeneral.release()
+            show_message("Scan stopped\nSelect a network or start a new scan")
+    sys.exit(0)

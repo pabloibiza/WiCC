@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    WiCC (Wireless Cracking Camp)
-    GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
-    Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
-    Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
 """
 from subprocess import Popen, PIPE
 import threading
-import time
+import datetime
 
 
 class EncryptionType:
 
     injection_supported = True  # to know if the interface supports packet injection
+    timestamp = 0
 
     def __init__(self, network, interface, verbose_level, silent_attack, write_directory):
         """
@@ -21,6 +23,8 @@ class EncryptionType:
         :param network: target network
         :param interface: selected wireless interface
         :param verbose_level: verbose level set by main
+        :param silent_attack: if the attack/scan should be in silent mode
+        :param write_directory: directory to write the files
 
         :Author: Miguel Yanes Fernández
         """
@@ -65,28 +69,23 @@ class EncryptionType:
     def scan_network(self):
         """
         Scans the target network and writes the dump file in the selected directory
-        :param write_directory: directory to write the dump file
         :return: none
 
         :Author: Miguel Yanes Fernández
         """
-        if self.write_directory[:5] == '/tmp/':
-            self.execute_command(['rm', '-r', self.write_directory])
-        self.execute_command(['mkdir', self.write_directory])
+        self.timestamp = int(datetime.datetime.now().timestamp()*1000000)
+
         airmon_start_cmd = ['airmon-ng', 'start', self.interface, self.channel]
         self.interface += 'mon'
         airmon_check_cmd = ['airmon-ng', 'check', 'kill']
         airodump_scan_cmd = ['airodump-ng', self.interface, '-a', '--bssid', self.bssid, '--write',
-                             self.write_directory + '/net_attack', '--channel', self.channel, '--write-interval', '2']
+                             self.write_directory + '/net_attack_' + str(self.timestamp), '--channel', self.channel,
+                             '--write-interval', '2', '--output-format', 'pcap']
         self.execute_command(airmon_start_cmd)
         self.execute_command(airmon_check_cmd)
         thread = threading.Thread(target=self.execute_command, args=(airodump_scan_cmd,))
         thread.start()
         thread.join(1)
-
-        aireplay_check_cmd = ['aireplay-ng', '-9', self.interface]
-        aireplay_check_out, err = self.execute_command(aireplay_check_cmd)
-        self.aireplay_check_injection(aireplay_check_out)
 
     def aireplay_check_injection(self, output):
         """
@@ -105,74 +104,11 @@ class EncryptionType:
         return False
 
     def get_injection_supported(self):
+        """
+        Returns if the interface supports packet injection
+        :return: if the interface supports packet injection
+
+        :Author: Miguel Yanes Fernández
+        """
         return self.injection_supported
 
-    def filter_pyrit_out(self, output):
-        """
-        Filters the output from the pyrit command. Checks if pyrit finds any valid handshake
-        :param output: output from the pyrit command
-        :return: boolean whether it found a handshake or not
-
-        :Author: Miguel Yanes Fernández
-        """
-        output = output.decode('utf-8')
-        lines = output.split('\n')
-        for line in lines:
-            if line == 'No valid EAOPL-handshake + ESSID detected.':
-                return False
-            elif 'handshake(s)' in line:
-                self.show_message("pyrit handshake: " + line)
-                return True
-        return False
-
-    def check_cracking_status(self, file):
-        """
-        Checks the status of the password cracking process given a file with the output from aircrack
-        :param file: directory of the file with the aircrack output
-        :return: tbd
-
-        :Author: Miguel Yanes Fernández
-        """
-        return ""
-        #print(file.decode('utf-8'))
-
-    def filter_cowpatty_out(self, output):
-        """
-        Filters the output from the cowpatty command to check if the dump file has any valid handshake
-        :param output: output from the cowpatty command
-        :return: boolean wether it found a valid handshake or not
-
-        :Author: Miguel Yanes Fernández
-        """
-        output = output.decode('utf-8')
-        lines = output.split('\n')
-        for line in lines:
-            if line == 'End of pcap capture file, incomplete four-way handshake exchange.  ' \
-                       'Try using a different capture.':
-                return False
-            elif 'mount crack' in line:
-                self.show_message("cowpatty handshake: " + line)
-                return True
-        return False
-
-    @staticmethod
-    def filter_aircrack(output):
-        """
-        Filter the aircrack output to read the password (if any is found)
-        :param output: output from the aicrack command
-        :return: password (or "" if it wasn't found)
-
-        :Author: Miguel Yanes Fernández
-        """
-        words = output.split(" ")
-        next_1 = False
-        next_2 = False
-        for word in words:
-            if word[:6] == "FOUND!":
-                next_1 = True
-            elif next_1:
-                if not next_2:
-                    next_2 = True
-                else:
-                    return word
-        return ""

@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    WiCC (Wireless Cracking Camp)
-    GUI tool for wireless cracking on WEP and WPA/WPA2 networks.
-    Project developed by Pablo Sanz Alguacil and Miguel Yanes Fernández, as the Group Project for the 3rd year of the
-    Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity, at TU Dublin - Blanchardstown Campus
+    WiCC (Wifi Cracking Camp)
+    GUI tool for wireless pentesting on WEP and WPA/WPA2 networks.
+    Project developed by Pablo Sanz Alguacil, Miguel Yanes Fernández and Adan Chalkley,
+    as the Group Project for the 3rd year of the Bachelor of Sicence in Computing in Digital Forensics and CyberSecurity
+    at TU Dublin - Blanchardstown Campus
 """
 
+from wicc_view_popup import PopUpWindow
 from tkinter import *
-from tkinter import Tk, ttk, Frame, Button, Label, Entry, Text, Checkbutton, \
-    Scale, Listbox, Menu, BOTH, RIGHT, RAISED, N, E, S, W, \
-    HORIZONTAL, END, FALSE, IntVar, StringVar, messagebox, filedialog, LabelFrame
-
+from tkinter import ttk, Label, Checkbutton, LabelFrame
 from wicc_view_right_click import rClicker
 
 
@@ -24,13 +23,20 @@ class ViewMac:
         self.main_view = view
         self.spoofing_status = spoofing_status
         self.build_window()
-        self.set_spoofing()
+        self.popup_gen = PopUpWindow()
+        self.set_spoofing_checkbutton()
         self.root.mainloop()
 
     def build_window(self):
-        self.root = Tk()
-        self.root.geometry('440x490')
+        """
+        Generates the window.
+
+        :author: Pablo Sanz Alguacil
+        """
+
+        self.root = Toplevel()
         self.root.protocol("WM_DELETE_WINDOW", self.destroy_window)
+        self.root.geometry('440x490')
         self.root.resizable(width=False, height=False)
         self.root.title('WiCC - Mac Changer Tools')
 
@@ -55,7 +61,7 @@ class ViewMac:
 
         # ENTRY - CUSTOM MAC
         self.entry_custom_mac = ttk.Entry(self.labelframe_custom_mac)
-        self.entry_custom_mac.grid(column=2, row=0, padx=5)
+        self.entry_custom_mac.grid(column=2, row=0, padx=8)
         self.entry_custom_mac.bind('<Button-3>', rClicker, add='')
 
         # BUTTON - CUSTOM MAC
@@ -109,32 +115,66 @@ class ViewMac:
         self.button_done.pack(padx=15, pady=15)
 
     def customize_mac(self):
+        """
+        Sends an order to the main view to set the MAC address to the sended one.
+        Filters the address before send it (only hexadecimal values).
+
+        :author: Pablo Sanz Alguacil
+        """
+
         address = self.entry_custom_mac.get().lower()
+        colon_count = 0
+        address_length = len(self.entry_custom_mac.get())
         address_splited = list(address)
         boolean_fg = True
         for character in address_splited:
-            if character in self.accepted_characters:
-                pass
+            if character in self.accepted_characters and address_length == 17:
+                if character == ":":
+                    colon_count = colon_count + 1
             else:
                 boolean_fg = False
-        if boolean_fg:
+        if boolean_fg and colon_count == 5:
             self.notify_view(0, self.entry_custom_mac.get())
         else:
-            self.main_view.show_warning_notification("Address not valid")
+            self.popup_gen.warning("Warning", "Address not valid")
 
     def randomize_mac(self):
+        """
+        Sends an order to the main view to randomize the MAC address.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.notify_view(1, "")
 
     def restore_mac(self):
+        """
+        Sends an order to the main view to restore the original MAC address.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.notify_view(2, "")
 
-    def set_spoofing(self):
+    def set_spoofing_checkbutton(self):
+        """
+        Selects or deselcts the MAC spoofing checkbutton.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         if self.spoofing_status:
             self.checkbutton_mac_spoofing.select()
         else:
             self.checkbutton_mac_spoofing.deselect()
 
     def mac_spoofing(self):
+        """
+        Sends an order to the main view to set the MAC spoofing status. Saves the status in a local variable.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         if self.spoofing_status:
             self.spoofing_status = False
             self.notify_view(3, False)
@@ -145,17 +185,25 @@ class ViewMac:
     def notify_view(self, operation,value):
         """
         Operation values (int)
-        0 - Custom mac
-        1 - Random mac
-        2 - Restore mac
-        3 - Mac spoofing
+        [0] Custom mac
+        [1] Random mac
+        [2] Restore mac
+        [3] Mac spoofing
+        Sends and operation and value to the main view.
         :param self:
-        :param operation:
-        :param value:
-        :return:
+        :param operation: integer
+        :param value: object
+
+        :author: Pablo Sanz Alguacil
         """
         self.main_view.get_notify_childs(operation, value)
 
     def destroy_window(self):
+        """
+        Enables all buttons in the main window and destroys this window.
+
+        :author: Pablo Sanz Alguacil
+        """
+
         self.main_view.disable_window(False)
         self.root.destroy()
