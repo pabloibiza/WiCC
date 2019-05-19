@@ -39,8 +39,9 @@ class DoS:
         self.labelframe_info.pack(fill="both", expand="no", pady=15)
 
         self.label_info = Label(self.labelframe_info, pady=15, text="With this tool yo can perform a DoS Attack."
-                                                "\n\nIntroduce the attack's duration in seconds (0 for infinite)."
-                                                "\nWait until the tool finishes the attack. ")
+                                                                    "\n\nIntroduce the attack's duration in seconds."
+                                                                    "\nIntroduce 0 for infite time attack."
+                                                                    "\nWait until the tool finishes the attack. ")
         self.label_info.pack()
 
         self.labelframe_buttons = LabelFrame(self.root)
