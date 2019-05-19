@@ -19,31 +19,27 @@ Bachelor of Science in Computing in Digital Forensics and Cyber Security at the 
 
 <br/><br/><br/>
 Wireless pentesting tool with functionalities such as password cracking (in WEP and WPA/WPA2 networks), DoS attacks, 
-client de-authentication, data decryption.
+client de-authentication,and data decryption.
 <br/><br/>
 
 # Project insight
 
-Tool developed in Python 3.7, developed and tested under **Kali** and **Parrot OS** distributions. 
+Tool developed in Python 3.7, developed and tested under [**Kali Linux**](https://www.kali.org/) and [**Parrot OS**](https://www.parrotsec.org/) distributions.
 This tool is a GUI toolkit that integrates different open source tools for wireless pentesting. 
 The utilised tools are the following:
 
-* aircrack-ng suite (including airdecap)
-* ifconfig
-* genpmk
-* pyrit
-* coWPAtty
-* pgrep
-* crunch
+* [aircrack-ng suite](https://tools.kali.org/wireless-attacks/aircrack-ng) (including [airdecap-ng](https://tools.kali.org/wireless-attacks/aireplay-ng))
+* [ifconfig](https://en.wikipedia.org/wiki/Ifconfig)
+* [pyrit](https://github.com/JPaulMora/Pyrit)
+* [coWPAtty](https://tools.kali.org/wireless-attacks/cowpatty)
+* [crunch](https://tools.kali.org/password-attacks/crunch)
 <br/><br/>
 
 # Requirements
 
 You will need to run the application with root privileges, and using some version of Python 3+. Also, you need to have installed *aircrack-ng suite* and *ifconfig*, the rest of the tools mentioned in the section *Project insight* are optional. If any of the mentioned tools is not installed, the application will ask you to automatically install it. Of course, as this is a wireless pentesting tool, you will need some wireless card to perform the scans/attacks. In case you miss some of these requirements, you won't be able to initiate the tool. 
 
-Also it is highly recommended to use a wireless card that supports both monitor mode and packet injection. 
-In case your wireless card doesn't support them, you will be able to execute the attacks but may miss some advanced 
-functionalities to, for example, speed-up the network cracking process.
+Is recommendable to run it on **Kali Linux** or **Parrot OS** since both have the required tools preinstalled. Also it is highly recommended to use a wireless card that supports both monitor mode and packet injection. In case your wireless card doesn't support monitor mode, you won't be able to execute the attacks and scans.
 <br/><br/>
 
 # What is monitor mode?
@@ -54,14 +50,12 @@ Usually the wireless adapter is unable to transmit in monitor mode and is restri
 
 # Usage
 
-The tool is a framework utility, but you need to run it from the command line. To do so, you need to run with root privileges and
-with Python 3+:
+The tool is a framework utility, but you need to run it from the command line. To do so, you need to run under root privileges and Python 3+:
 
 > `$ sudo python3 WiCC.py [options]`
 
 <br/><br/>
-There are also some advanced options that you can choose from the command line. These options are originaly meant for debugging
-purposes, but you may find some of them useful:
+There are also some advanced options that you can choose from the command line. These options are originaly meant for debugging purposes, but you may find some of them useful:
 * `-a` Auto-select the first available network interface.
 * `-i` Ignore local save files.
 * `-p` Only basic pop-ups mode.
@@ -73,11 +67,14 @@ purposes, but you may find some of them useful:
        
      * `-vvv` Level 3 (advanced output and executed commands)
 
-You can always view the help with the option `--help` or `-h
+You can always view the help with the option `--help` or `-h`
+<br/><br/>
+<br/><br/>
+![attack_wpa_gif](https://media.giphy.com/media/ZBDcgn9nMvCZUGSJrf/giphy.gif)
 <br/><br/>
 
 # Final release
-The version 1.0 includes password cracking (in WEP and WPA/WPA2 networks), DoS attacks, client de-authentication, and data decryption funtionalities.
+The version 1.0 includes password cracking (WEP and WPA/WPA2 networks), DoS attacks, client de-authentication, and data decryption funtionalities.
 If you want to get in contact to notify us about some bugs you encountered, or about some feature you thing could be interesting to add, you can use the contact information showed on our GitHub profiles listed below.
 <br/><br/>
 
