@@ -1242,13 +1242,14 @@ class Control:
         (stdout, sterr) = pyrit2.communicate()
         brute_essid = stdout.decode('utf-8').split(" ")[3]
         essid = brute_essid[2:len(brute_essid) - 4]
+        bssid = stdout.decode('utf-8').split(" ")[2]
 
         password = ""
         cracked_passwords = self.local_folder + "/" + self.passwords_file_name
         with open(cracked_passwords, 'r') as passwords_list:
             for line in passwords_list:
                 elements = line.split(" ")
-                if elements[2][0:len(elements[2]) - 1] == essid:
+                if elements[2][0:len(elements[2]) - 1] == essid and elements[0].lower() == bssid:
                     password = elements[1]
 
         self.show_message("Decrypting .cap file")
