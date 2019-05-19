@@ -1198,11 +1198,11 @@ class Control:
         except FileNotFoundError:
             self.show_warning_notification("No stored cracked networks. You need to do and finish an attack")
 
-    def dos_attack(self, seconds):
+    def dos_attack(self, loops):
         """
         Performs a Dos Attack using aireplay-ng.
 
-        :param seconds: number of deauth packets to send.
+        :param loops: string. Number of times to send 5 packets
         :return:
         """
 
@@ -1216,16 +1216,17 @@ class Control:
         airmon_stop = ['airmon-ng', 'stop', interface]
         restart_nm = ['NetworkManager']
 
-        self.show_message("EXECUTING DoS ATTACK")
+        self.show_message("Executing DoS attack")
         self.execute_command(airmon_start)
         self.execute_command(check_kill)
         time.sleep(2)
-        for x in range(0, int(seconds)):
+        for x in range(0, int(loops)):
             self.execute_command(aireplay)
         time.sleep(2)
         self.execute_command(airmon_stop)
         self.execute_command(restart_nm)
-        self.show_message("DoS ATTACK FINISHED")
+        self.show_message("DoS attack finished")
+        self.show_info_notification("DoS attack finished")
 
     def decrypt_file(self, file_path):
         """
@@ -1249,10 +1250,11 @@ class Control:
         with open(cracked_passwords, 'r') as passwords_list:
             for line in passwords_list:
                 elements = line.split(" ")
-                if elements[2][0:len(elements[2]) - 1] == essid and elements[0].lower() == bssid:
+                if elements[0].lower() == bssid:
                     password = elements[1]
 
         self.show_message("Decrypting .cap file")
         airdecap = ['airdecap-ng', '-p', password, file_path, '-e', essid]
         self.execute_command(airdecap)
         self.show_message("Cap file decrypted")
+        self.show_info_notification("File decrypted")
