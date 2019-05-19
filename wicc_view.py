@@ -259,7 +259,7 @@ class View:
 
         # BUTTON - DOS ATTACK WEP
         self.button_dos_wep = Button(self.labelframe_wep, text="DoS Attack", command=self.dos_attack)
-        self.button_dos_wep.grid(column=1, row=0, padx=5)
+        self.button_dos_wep.grid(column=1, row=0, padx=640)
 
         # BUTTON - SCAN WPA
         self.button_scan_wpa = Button(self.labelframe_wpa, text="2 - Capture handshake", command=self.start_scan_wpa)
@@ -271,7 +271,7 @@ class View:
 
         # BUTTON - DOS ATTACK WPA
         self.button_dos_wpa = Button(self.labelframe_wpa, text="DoS Attack", command=self.dos_attack)
-        self.button_dos_wpa.grid(column=2, row=0, padx=5)
+        self.button_dos_wpa.grid(column=2, row=0, padx=455)
 
         self.root.mainloop()
 
