@@ -24,8 +24,8 @@ client de-authentication, data decryption.
 
 # Project insight
 
-Tool developed in Python 3.7, developed and tested under Debian distributions (Ubuntu has also been tested). 
-This tool is a frontend toolkit that integrates different open source tools for wireless pentesting. 
+Tool developed in Python 3.7, developed and tested under **Kali** and **Parrot OS** distributions. 
+This tool is a GUI toolkit that integrates different open source tools for wireless pentesting. 
 The utilised tools are the following:
 
 * aircrack-ng suite (including airdecap)
