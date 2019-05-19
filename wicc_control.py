@@ -1236,25 +1236,29 @@ class Control:
         :author: Pablo Sanz Alguacil
         """
 
-        command_pyrit1 = ['pyrit', '-r', str(file_path), 'analyze']
-        command_pyrit2 = ['grep', 'AccessPoint']
-        pyrit1 = subprocess.Popen(command_pyrit1, stdout=subprocess.PIPE,)
-        pyrit2 = subprocess.Popen(command_pyrit2, stdin=pyrit1.stdout, stdout=subprocess.PIPE)
-        (stdout, sterr) = pyrit2.communicate()
-        brute_essid = stdout.decode('utf-8').split(" ")[3]
-        essid = brute_essid[2:len(brute_essid) - 4]
-        bssid = stdout.decode('utf-8').split(" ")[2]
+        try:
+            command_pyrit1 = ['pyrit', '-r', str(file_path), 'analyze']
+            command_pyrit2 = ['grep', 'AccessPoint']
+            pyrit1 = subprocess.Popen(command_pyrit1, stdout=subprocess.PIPE,)
+            pyrit2 = subprocess.Popen(command_pyrit2, stdin=pyrit1.stdout, stdout=subprocess.PIPE)
+            (stdout, sterr) = pyrit2.communicate()
+            brute_essid = stdout.decode('utf-8').split(" ")[3]
+            essid = brute_essid[2:len(brute_essid) - 4]
+            bssid = stdout.decode('utf-8').split(" ")[2]
 
-        password = ""
-        cracked_passwords = self.local_folder + "/" + self.passwords_file_name
-        with open(cracked_passwords, 'r') as passwords_list:
-            for line in passwords_list:
-                elements = line.split(" ")
-                if elements[0].lower() == bssid:
-                    password = elements[1]
+            password = ""
+            cracked_passwords = self.local_folder + "/" + self.passwords_file_name
+            with open(cracked_passwords, 'r') as passwords_list:
+                for line in passwords_list:
+                    elements = line.split(" ")
+                    if elements[0].lower() == bssid:
+                        password = elements[1]
 
-        self.show_message("Decrypting .cap file")
-        airdecap = ['airdecap-ng', '-p', password, file_path, '-e', essid]
-        self.execute_command(airdecap)
-        self.show_message("Cap file decrypted")
-        self.show_info_notification("File decrypted")
+            self.show_message("Decrypting .cap file")
+            airdecap = ['airdecap-ng', '-p', password, file_path, '-e', essid]
+            self.execute_command(airdecap)
+            self.show_message("Cap file decrypted")
+            self.show_info_notification("File decrypted")
+
+        except:
+            self.show_warning_notification("Decryption fail")
