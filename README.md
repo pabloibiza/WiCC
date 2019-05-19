@@ -19,7 +19,7 @@ Bachelor of Science in Computing in Digital Forensics and Cyber Security at the 
 
 <br/><br/><br/>
 Wireless pentesting tool with functionalities such as password cracking (in WEP and WPA/WPA2 networks), DoS attacks, 
-client de-authentication, data decryption.
+client de-authentication,and data decryption.
 <br/><br/>
 
 # Project insight
