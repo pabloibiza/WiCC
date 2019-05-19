@@ -7,7 +7,7 @@ WiCC
 ![](https://img.shields.io/github/contributors/pabloibiza/WiCC.svg)
 ![](https://img.shields.io/github/repo-size/pabloibiza/WiCC.svg)
 
-[logo]:https://github.com/pabloibiza/WiCC/blob/master/resources/logo_circle_code.png
+<a href="url"><img src="https://github.com/pabloibiza/WiCC/blob/master/resources/logo_circle_code.png" align="left" height="210" width="210" >
 </a>
 <br/>
 *WiFi Cracking Camp*
