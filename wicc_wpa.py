@@ -15,7 +15,7 @@ import time
 
 class WPA(EncryptionType):
 
-    def __init__(self, network, interface, wordlist, verbose_level, silent_attack, write_directory):
+    def __init__(self, network, interface, wordlist, verbose_level, silent_attack, write_directory, is_pyrit_installed):
         """
         Constructor for the class WPA. Calls the parent's class constructor
         :param network: selected target network
@@ -30,6 +30,7 @@ class WPA(EncryptionType):
         EncryptionType.__init__(self, network, interface, verbose_level, silent_attack, write_directory)
         self.wordlist = wordlist
         self.pmk = ""
+        self.is_pyrit_installed = is_pyrit_installed
 
     def scan_network(self):
         """
@@ -53,6 +54,9 @@ class WPA(EncryptionType):
         else:
             second_iterator = 7  # when 15, de-auth's clients on the network
 
+        pyrit_out = ""
+        cowpatty_out = ""
+
         while not valid_handshake:
             if not valid_handshake:
                 time.sleep(1)
@@ -65,10 +69,13 @@ class WPA(EncryptionType):
             else:
                 break
             time.sleep(0.5)
-            pyrit_out, err = self.execute_command(pyrit_cmd)
-            time.sleep(0.5)
+            if self.is_pyrit_installed:
+                pyrit_out, err = self.execute_command(pyrit_cmd)
+                time.sleep(0.5)
             cowpatty_out, err = self.execute_command(cowpatty_cmd)
-            valid_handshake = self.filter_pyrit_out(pyrit_out) or self.filter_cowpatty_out(cowpatty_out)
+            valid_handshake = self.filter_cowpatty_out()
+            if self.is_pyrit_installed:
+                valid_handshake = valid_handshake or self.filter_pyrit_out(pyrit_out)
 
     def kill_genpmk(self):
         """

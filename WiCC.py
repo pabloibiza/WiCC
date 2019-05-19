@@ -67,6 +67,7 @@ if __name__ == '__main__':
     print("              Wifi Cracking Camp" + cyan)
     print("=============================================")
     print(blue)
+    print("Version v1.0 - 20th of May 2019")
     print("Developed by:")
     print("  - Pablo Sanz Alguacil")
     print("  - Miguel Yanes Fernández")
@@ -137,7 +138,11 @@ if __name__ == '__main__':
     install_required_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'python3-tk', 'iw', 'net-tools', 'aircrack-ng']
     install_optional_cmd = ['echo', 'y', '|', 'apt-get', 'install', 'pyrit', 'crunch', 'make', 'gcc']
 
-    software, some_missing, stop_execution = control.check_software()
+    software, some_missing, stop_execution, message = control.check_software()
+
+    view_thread = threading.Thread(target=control.start_view)
+    view_thread.start()
+    view_thread.join(1)
 
     if some_missing:
         # variable 'software' is an array of pair [tool_name, boolean_if_its_installed]
@@ -146,6 +151,8 @@ if __name__ == '__main__':
             if not software[i][1]:
                 print("\t***Missing " + software[i][0])
         print("\n")
+        time.sleep(0)
+        control.show_warning_notification(message)
         if stop_execution:
             install_required = input("Would you like to install the required mandatory software? (y): ")
             if install_required == 'y':
@@ -155,16 +162,11 @@ if __name__ == '__main__':
                     control.execute_command(install_optional_cmd)
             else:
                 sys.exit(1)
-        else:
-            install_optional = input("Would you like to install the optional software? (y):")
-            if install_optional == 'y':
-                control.execute_command(install_optional_cmd)
     else:
         show_message("All required software is installed")
 
-    view_thread = threading.Thread(target=control.start_view)
-    view_thread.start()
-    view_thread.join(1)
+    time.sleep(1)
+
 
     control.show_info_notification("       Welcome to WiCC\n\nSelect an interface and press \"Scan networks\""
                                    "to begin the process. \n\nIf you need help to use the application go the \"Help\" "

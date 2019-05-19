@@ -56,10 +56,10 @@ class Control:
     generated_wordlist_name = "wicc_wordlist"  # name of the generated files in generate_wordlist()
     hex_values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']  # all hex values
     hex_values_even = ['2', '4', '6', '8', 'a', 'c', 'e']  # even hex values
-    required_software = [["ifconfig", False], ["aircrack-ng", False], ["pyrit", False], ["cowpatty", False],
+    required_software = [["ifconfig", False], ["aircrack-ng", False], ["pyri", False], ["cowpatty", False],
                          ["pgrep", False], ["NetworkManager", False], ["genpmk", False], ["iw", False],
                          ['crunch', False]]  # software required to run the program
-    mandatory_software = ['ifconfig', 'aircrack-ng']  # mandatory software (from the required one)
+    mandatory_software = ['ifconfig', 'aircrack-ng', 'cowpatty']  # mandatory software (from the required one)
 
     __instance = None  # used for singleton check
     timestamp = 0  # timestamp added to the created dump files (just for the initial scan)
@@ -237,7 +237,7 @@ class Control:
                         mandatory_msg += " - " + missing_software + "\n"
 
                 if (missing_software not in optional_msg) and (missing_software not in mandatory_msg):
-                    optional_msg += " - " + missing_software + "\n"
+                    optional_msg += "\n  - " + missing_software
 
         if some_missing:
             if mandatory_msg.count('\n') > 1:
@@ -246,9 +246,9 @@ class Control:
             if optional_msg.count('\n') > 1:
                 info_msg += "\n\n" + optional_msg
 
-            self.show_info_notification(info_msg)
+            info_msg += "\n"
 
-        return self.required_software, some_missing, stop_execution
+        return self.required_software, some_missing, stop_execution, info_msg
 
     def check_monitor_mode(self):
         """
@@ -480,7 +480,7 @@ class Control:
                     self.scan_networks()
                     return True
                 self.show_message(" * Error * - Wireless card may not support monitor mode")
-                self.show_info_notification("Error when scanning networks. \n"
+                self.show_warning_notification("Error while scanning networks. \n"
                                             "The selected wireless card may not support Monitor mode")
                 self.selected_interface = ""
                 self.stop_scan()
@@ -797,8 +797,6 @@ class Control:
     def set_buttons_wep_initial(self):
         self.view.get_notify_buttons(["attack_wep"], True)
 
-
-
     def scan_wpa(self):
         """
         Scan a wpa network, waiting until a handshake is captured
@@ -809,15 +807,6 @@ class Control:
 
         network = self.model.search_network(self.selected_network)
 
-        self.show_message("create wpa instance")
-
-        self.net_attack = self.get_net_attack(network.get_bssid())
-        if not self.net_attack:
-            self.net_attack = WPA(network, self.selected_interface, self.selected_wordlist,
-                                  self.verbose_level, self.silent_attack, self.write_directory)
-
-        self.add_net_attack(network.get_bssid(), self.net_attack)
-
         choice = self.show_yesno_notification("Starting WPA scan",
                                               "You are about to start the scanning process on the "
                                               "WPA network:\n\n   " + network.get_essid() +
@@ -826,6 +815,22 @@ class Control:
         if not choice:
             self.set_buttons_wpa_initial()
             return
+
+        self.show_message("create wpa instance")
+
+        self.net_attack = self.get_net_attack(network.get_bssid())
+        if not self.net_attack:
+            is_pyrit = False
+            for pair in self.required_software:
+                if pair[0] == 'pyri':
+                    is_pyrit = pair[1]
+            if not is_pyrit:
+                self.show_message("Running scan without pyrit (not installed)")
+            self.net_attack = WPA(network, self.selected_interface, self.selected_wordlist,
+                                  self.verbose_level, self.silent_attack, self.write_directory, is_pyrit)
+
+        self.add_net_attack(network.get_bssid(), self.net_attack)
+
 
         self.show_message("start scanning")
         self.net_attack.scan_network()
