@@ -56,7 +56,7 @@ class Control:
     generated_wordlist_name = "wicc_wordlist"  # name of the generated files in generate_wordlist()
     hex_values = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']  # all hex values
     hex_values_even = ['2', '4', '6', '8', 'a', 'c', 'e']  # even hex values
-    required_software = [["ifconfig", False], ["aircrack-ng", False], ["pyri", False], ["cowpatty", False],
+    required_software = [["ifconfig", False], ["aircrack-ng", False], ["pyrit", False], ["cowpatty", False],
                          ["pgrep", False], ["NetworkManager", False], ["genpmk", False], ["iw", False],
                          ['crunch', False]]  # software required to run the program
     mandatory_software = ['ifconfig', 'aircrack-ng', 'cowpatty']  # mandatory software (from the required one)
@@ -390,7 +390,7 @@ class Control:
             self.stop_scan()
             self.selected_interface = ""
             if not self.auto_select:
-                self.show_info_notification("Card already in monitor mode.\nPlease, re-select the wireless interface")
+                self.show_warning_notification("Card already in monitor mode.\nPlease, re-select the wireless interface")
                 self.show_message("Card already in monitor mode")
                 self.view.set_buttons(True)
                 self.set_semaphores_state("Select interface")
@@ -601,10 +601,16 @@ class Control:
             self.selected_interface = value
             if self.selected_interface == "":
                 self.view.set_buttons(True)
+                self.view.get_notify_buttons(["select network"], False)
                 self.show_info_notification("Please, select a network interface")
+                self.show_message("Select interface")
             else:
                 self.set_semaphores_state("Start scan")
         elif operation == Operation.SELECT_NETWORK:
+            if value == "":
+                self.popup.warning("Select a network", "No network selected")
+                self.show_message("No network selected, please, select one")
+                return
             self.selected_network = value
             self.set_buttons_wpa_initial()
             self.set_buttons_wep_initial()
@@ -822,7 +828,7 @@ class Control:
         if not self.net_attack:
             is_pyrit = False
             for pair in self.required_software:
-                if pair[0] == 'pyri':
+                if pair[0] == 'pyrit':
                     is_pyrit = pair[1]
             if not is_pyrit:
                 self.show_message("Running scan without pyrit (not installed)")

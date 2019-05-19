@@ -302,7 +302,7 @@ class View:
             self.send_notify(Operation.SELECT_NETWORK, network_id)
 
         except:
-            self.popup_gen.error("Error", "No network selected")
+            self.send_notify(Operation.SELECT_NETWORK, "")
 
     def start_scan(self):
         """
