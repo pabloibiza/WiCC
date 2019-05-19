@@ -73,7 +73,7 @@ purposes, but you may find some of them useful:
        
      * `-vvv` Level 3 (advanced output and executed commands)
 
-You can always view the help with the option `--help` or `-h
+You can always view the help with the option `--help` or `-h`
 <br/><br/>
 ![attack_wpa_gif](https://media.giphy.com/media/ZBDcgn9nMvCZUGSJrf/giphy.gif)
 
