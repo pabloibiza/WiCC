@@ -75,6 +75,7 @@ purposes, but you may find some of them useful:
 
 You can always view the help with the option `--help` or `-h
 <br/><br/>
+![simple_attack_gif](https://media.giphy.com/media/dBgBVtLapPO4YBofuk/source.mp4)
 
 # Final release
 The version 1.0 includes password cracking (in WEP and WPA/WPA2 networks), DoS attacks, client de-authentication, and data decryption funtionalities.
