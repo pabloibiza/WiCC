@@ -73,7 +73,7 @@ class WPA(EncryptionType):
                 pyrit_out, err = self.execute_command(pyrit_cmd)
                 time.sleep(0.5)
             cowpatty_out, err = self.execute_command(cowpatty_cmd)
-            valid_handshake = self.filter_cowpatty_out()
+            valid_handshake = self.filter_cowpatty_out(cowpatty_out)
             if self.is_pyrit_installed:
                 valid_handshake = valid_handshake or self.filter_pyrit_out(pyrit_out)
 
