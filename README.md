@@ -22,6 +22,11 @@ Wireless pentesting tool with functionalities such as password cracking (in WEP 
 client de-authentication,and data decryption.
 <br/><br/>
 
+# New version - WiCC 2
+
+**The original WiCC project is no longer mantained**, as its new versions are developped and mantained at the repository [WiCC2](https://github.com/wicc2/WiCC2). WiCC 2 is the newest version with added functionalities and fixes, so please refer to that version for further updates.
+<br/><br/>
+
 # Project insight
 
 Tool developed in Python 3.7, developed and tested under [**Kali Linux**](https://www.kali.org/) and [**Parrot OS**](https://www.parrotsec.org/) distributions.
@@ -74,7 +79,7 @@ You can always view the help with the option `--help` or `-h`
 <br/><br/>
 
 # Final release
-The version 1.0 includes password cracking (WEP and WPA/WPA2 networks), DoS attacks, client de-authentication, and data decryption funtionalities.
+The version 1.0 includes password cracking (WEP and WPA/WPA2 networks), DoS attacks, client de-authentication, and data decryption funtionalities. From now on, the WiCC project is mantained in [a different repository](https://github.com/wicc2/WiCC2). Newer releases can be found there.<br/>
 If you want to get in contact to notify us about some bugs you encountered, or about some feature you thing could be interesting to add, you can use the contact information showed on our GitHub profiles listed below.
 <br/><br/>
 
