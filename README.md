@@ -86,7 +86,7 @@ If you want to get in contact to notify us about some bugs you encountered, or a
 # Authors
 
 * **Miguel Yanes Fernández** - *Project Manager, back-end developer, and documentation* - Github: [MiguelYanes](https://github.com/MiguelYanes)
-* **Pablo Sanz Alguacil** - *UX designer, front-end developer, and documentation* - Github: [pabloibiza](https://github.com/pabloibiza)
+* **Pablo Sanz Alguacil** - *UX designer, front-end developer, back-end collaborator, and documentation* - Github: [pabloibiza](https://github.com/pabloibiza)
 * **Adam Chalkley** - *Documentation and research* - [adamchalkley2019](https://github.com/adamchalkley2019)
 
 See also the list of [contributors](https://github.com/pabloibiza/WiCC/contributors) who participated in this project.
